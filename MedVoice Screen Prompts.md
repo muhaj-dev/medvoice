@@ -6,7 +6,7 @@
 
 ## PROMPT 00 — Onboarding Screen
 
-```
+```text
 Read AGENTS.md first and follow it strictly.
 
 Implement the Onboarding screen. This is the first screen the user sees when 
@@ -56,7 +56,7 @@ Labels and step indicators use monospace font.
 
 ## PROMPT 01 — Home Screen (Insights Tab)
 
-```
+```text
 Read AGENTS.md first and follow it strictly.
 
 Implement the Home screen exactly as shown in the attached design. This is the 
@@ -126,7 +126,7 @@ LOG, ANALYSIS, FAMILY.
 
 ## PROMPT 02 — Home Screen (Entries Tab)
 
-```
+```text
 Read AGENTS.md first and follow it strictly.
 
 This is the same Home screen at (tabs)/index but with the ENTRIES tab active 
@@ -173,7 +173,7 @@ Load entries from useHealthStore.entries (sorted newest first).
 
 ## PROMPT 03 — Log / Recording Screen
 
-```
+```text
 Read AGENTS.md first and follow it strictly.
 
 Implement the Log screen at route (tabs)/log exactly as shown in the attached 
@@ -229,7 +229,7 @@ other layout.
 
 ## PROMPT 04 — Analysis Screen (Processing Pipeline)
 
-```
+```text
 Read AGENTS.md first and follow it strictly.
 
 Implement the Analysis screen at route (tabs)/analysis exactly as shown in the 
@@ -298,7 +298,7 @@ Store the full analysis result in useHealthStore before navigating.
 
 ## PROMPT 05 — Analysis Summary Screen
 
-```
+```text
 Read AGENTS.md first and follow it strictly.
 
 Implement the Analysis Summary screen at route analysis/summary exactly as 
@@ -370,7 +370,7 @@ yet, show a "No patterns detected" empty state with a green checkmark and
 
 ## PROMPT 06 — Family Circle Screen
 
-```
+```text
 Read AGENTS.md first and follow it strictly.
 
 Implement the Family Circle screen at route (tabs)/family exactly as shown 
@@ -441,7 +441,7 @@ red dot notification in that case).
 
 ## PROMPT 07 — Family Invite Screen
 
-```
+```text
 Read AGENTS.md first and follow it strictly.
 
 Implement the Family Invite screen at route family/invite.

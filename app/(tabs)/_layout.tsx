@@ -1,97 +1,107 @@
 import { Tabs } from "expo-router";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@/constants/colors";
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>["name"];
 
-function TabIcon({
-  name,
-  focused,
-}: {
-  name: IoniconsName;
-  focused: boolean;
-}) {
+type TabConfig = {
+  icon: IoniconsName;
+  iconActive: IoniconsName;
+  label: string;
+};
+
+const TAB_CONFIG: Record<string, TabConfig> = {
+  index: { icon: "home-outline", iconActive: "home", label: "HOME" },
+  log: { icon: "mic-outline", iconActive: "mic", label: "LOG" },
+  analysis: {
+    icon: "bar-chart-outline",
+    iconActive: "bar-chart",
+    label: "ANALYSIS",
+  },
+  family: { icon: "people-outline", iconActive: "people", label: "FAMILY" },
+};
+
+type CustomTabBarProps = {
+  state: {
+    index: number;
+    routes: { key: string; name: string }[];
+  };
+  navigation: {
+    emit: (event: {
+      type: string;
+      target: string;
+      canPreventDefault: boolean;
+    }) => { defaultPrevented: boolean };
+    navigate: (name: string) => void;
+  };
+};
+
+function CustomTabBar({ state, navigation }: CustomTabBarProps) {
   return (
-    <Ionicons
-      name={name}
-      size={22}
-      color={focused ? colors.textPrimary : colors.textMuted}
-    />
+    <View className="flex-row bg-surface border-t border-edge h-18 pt-2 pb-2.5">
+      {state.routes.map((route, index) => {
+        const isFocused = state.index === index;
+        const config = TAB_CONFIG[route.name] ?? {
+          icon: "help-outline" as IoniconsName,
+          iconActive: "help" as IoniconsName,
+          label: route.name.toUpperCase(),
+        };
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: "tabPress",
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            onPress={onPress}
+            activeOpacity={0.7}
+            className="flex-1 items-center justify-center gap-0.5"
+          >
+            <Ionicons
+              name={isFocused ? config.iconActive : config.icon}
+              size={22}
+              color={isFocused ? colors.textPrimary : colors.textMuted}
+            />
+            <Text
+              className={`font-code text-[10px] font-medium tracking-[0.5px] ${
+                isFocused ? "text-white" : "text-ghost"
+              }`}
+            >
+              {config.label}
+            </Text>
+            <View
+              className={`w-1 h-1 rounded-full ${
+                isFocused ? "bg-brand" : "bg-transparent"
+              }`}
+            />
+          </TouchableOpacity>
+        );
+      })}
+    </View>
   );
 }
 
 export default function TabsLayout() {
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.bgPrimary,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-          height: 64,
-          paddingBottom: 10,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: colors.textPrimary,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarLabelStyle: {
-          fontFamily: "monospace",
-          fontSize: 10,
-          fontWeight: "500",
-          letterSpacing: 0.5,
-          marginTop: 2,
-        },
-      }}
+      tabBar={(props) => (
+        <CustomTabBar {...(props as unknown as CustomTabBarProps)} />
+      )}
+      screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "HOME",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              name={focused ? "home" : "home-outline"}
-              focused={focused}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="log"
-        options={{
-          title: "LOG",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              name={focused ? "mic" : "mic-outline"}
-              focused={focused}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="analysis"
-        options={{
-          title: "ANALYSIS",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              name={focused ? "bar-chart" : "bar-chart-outline"}
-              focused={focused}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="family"
-        options={{
-          title: "FAMILY",
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              name={focused ? "people" : "people-outline"}
-              focused={focused}
-            />
-          ),
-        }}
-      />
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="log" />
+      <Tabs.Screen name="analysis" />
+      <Tabs.Screen name="family" />
     </Tabs>
   );
 }

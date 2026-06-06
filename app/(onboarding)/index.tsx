@@ -335,12 +335,10 @@ function Step3() {
     <View className="flex-1 items-center gap-7 pt-4">
       {/* Shield icon */}
       <View
-        style={styles.shieldOuter}
-        className="w-32 h-32 rounded-full items-center justify-center"
+        className="w-32 h-32 rounded-full items-center justify-center bg-[rgba(59,130,246,0.07)] border border-[rgba(59,130,246,0.18)]"
       >
         <View
-          style={styles.shieldInner}
-          className="w-24 h-24 rounded-full items-center justify-center"
+          className="w-24 h-24 rounded-full items-center justify-center bg-[rgba(59,130,246,0.12)] border border-[rgba(59,130,246,0.28)]"
         >
           <Ionicons
             name="shield-checkmark"
@@ -363,12 +361,11 @@ function Step3() {
       </View>
 
       {/* Promise card */}
-      <View style={styles.promiseCard} className="w-full gap-4">
+      <View className="w-full gap-4 bg-card border border-edge rounded-2xl p-5">
         {PROMISES.map((p, i) => (
           <View key={i} className="flex-row items-start gap-3.5">
             <View
-              style={styles.checkCircle}
-              className="w-6 h-6 rounded-full items-center justify-center mt-0.5 shrink-0"
+              className="w-6 h-6 rounded-full items-center justify-center mt-0.5 shrink-0 bg-[rgba(52,211,153,0.12)] border-[1.5px] border-teal"
             >
               <Ionicons
                 name="checkmark"
@@ -460,30 +457,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  // Shield (Step 3)
-  shieldOuter: {
-    backgroundColor: "rgba(59,130,246,0.07)",
-    borderWidth: 1,
-    borderColor: "rgba(59,130,246,0.18)",
-  },
-  shieldInner: {
-    backgroundColor: "rgba(59,130,246,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(59,130,246,0.28)",
-  },
-  // Promise card
-  promiseCard: {
-    backgroundColor: colors.bgCard,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 16,
-    padding: 20,
-  },
-  checkCircle: {
-    backgroundColor: "rgba(52,211,153,0.12)",
-    borderWidth: 1.5,
-    borderColor: colors.successGreen,
-  },
   // Continue button
   continueBtn: {
     backgroundColor: colors.accentBlue,
@@ -526,15 +499,20 @@ export default function OnboardingSetupScreen() {
     }
     if (saving) return;
     setSaving(true);
-    setProfile({
-      name: name.trim(),
-      age: parseInt(age, 10) || 0,
-      role: role!,
-      conditions,
-      medications,
-    });
-    await completeOnboarding();
-    router.replace("/(tabs)");
+    try {
+      setProfile({
+        name: name.trim(),
+        age: parseInt(age, 10) || undefined,
+        role: role!,
+        conditions,
+        medications,
+      });
+      await completeOnboarding();
+      router.replace("/(tabs)/index");
+    } catch (error) {
+      console.error("Failed to complete onboarding:", error);
+      setSaving(false);
+    }
   };
 
   const handleBack = () => {

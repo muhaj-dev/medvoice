@@ -15,7 +15,7 @@ Built with Expo SDK 54, React Native 0.81.5, TypeScript, Expo Router, NativeWind
 
 ## Current Goal
 
-- Feature 02: Home Screen — full HOME tab UI (greeting, entry cards, insights toggle).
+- Feature 03: Log Screen — voice recording with animated waveform and live transcription.
 
 ---
 
@@ -40,6 +40,35 @@ Built with Expo SDK 54, React Native 0.81.5, TypeScript, Expo Router, NativeWind
 ## In Progress
 
 - None.
+
+## Completed (Home Screen)
+
+- **Home Screen — Entries Tab** — `app/(tabs)/index.tsx` + `components/EntryCard.tsx`
+  - `EntryCard` component: status dot (red/yellow/green by severity), formatted timestamp ("Today · 8:14 AM" / "Yesterday" / weekday / "Jan 5"), "VIEW →" link navigates to `/analysis/summary?id=`, transcript snippet in Georgia italic truncated 2 lines, category tag pills (#1e293b bg, #8b9bb4 text, monospace 10px, radius 99)
+  - Empty state: mic-outline icon + "No entries yet" Georgia + subtext
+  - ENTRIES tab in home screen now renders `EntryCard` list (sorted newest-first from store) or empty state
+
+- **Home Screen** — `app/(tabs)/index.tsx` (Feature 02)
+  - Header row: date "THURSDAY, JUNE 5" (monospace) left-aligned; blue circular family-icon button right, navigates to `/family`
+  - Greeting block: "Good morning," in white Georgia 28px + user name in teal italic Georgia 28px (from `useUserStore`)
+  - ALL DATA ON-DEVICE privacy badge — green dot, semi-transparent teal background, rgba border
+  - "How are you feeling?" microphone card — blue mic icon circle, Georgia heading, muted subtext; taps navigate to `/log`
+  - ENTRIES / INSIGHTS segmented toggle — active=bgCard+white, inactive=transparent+dim; defaults to INSIGHTS
+  - Three insight stat cards (INSIGHTS tab): label (monospace), large value (Georgia 36px colored by severity), unit, trend symbol aligned right
+  - Empty state for ENTRIES tab when no entries exist
+  - Stats computed from `useHealthStore` entries via `computeInsightStats()` selector — shows "—" / 0 when no data
+
+- **Custom Tab Bar** — `app/(tabs)/_layout.tsx`
+  - Replaced standard Expo tab bar with custom `CustomTabBar` component
+  - Each tab: icon + label + 4px blue dot below (transparent dot for inactive tabs, `accentBlue` for active)
+  - Consistent 72px height, dark navy background, border-top
+
+- **Health Types** — `types/health.ts`
+  - `HealthEntry`, `HealthPattern`, `RagInsight`, `PipelineStep`, `InsightStat`, `Severity` types
+
+- **Health Store** — `store/useHealthStore.ts`
+  - Zustand store: `entries[]`, `addEntry`, `removeEntry`
+  - `computeInsightStats(entries)` exported selector — computes knee pain count, sleep/fatigue correlation %, entries logged from real entry data; falls back to "—" when no data
 
 ## Completed (Onboarding Setup + App Shell)
 
@@ -86,12 +115,7 @@ Built with Expo SDK 54, React Native 0.81.5, TypeScript, Expo Router, NativeWind
 
 ## Next Up
 
-- Feature 02: Home Screen — full `(tabs)/index` UI
-  - Good morning greeting + date, family circle icon, ALL DATA ON-DEVICE badge
-  - MicrophoneCard ("How are you feeling?")
-  - ENTRIES / INSIGHTS segmented toggle
-  - Entry cards and insight stat cards
-  - Reads from `useHealthStore` (to be created)
+- Feature 03: Log Screen — voice recording with animated waveform, live transcription card, stop button
 
 ---
 
