@@ -1,98 +1,247 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useState, useMemo } from "react";
+import { colors } from "@/constants/colors";
+import { useUserStore } from "@/store/useUserStore";
+import { useHealthStore, computeInsightStats } from "@/store/useHealthStore";
+import { EntryCard } from "@/components/EntryCard";
+import type { InsightStat } from "@/types/health";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type ActiveTab = "entries" | "insights";
 
-export default function HomeScreen() {
+const DAYS = [
+  "SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY",
+  "THURSDAY", "FRIDAY", "SATURDAY",
+];
+const MONTHS = [
+  "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+  "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER",
+];
+
+function getFormattedDate(): string {
+  const now = new Date();
+  return `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
+}
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning,";
+  if (hour < 17) return "Good afternoon,";
+  return "Good evening,";
+}
+
+// ─── Privacy Badge ────────────────────────────────────────────────────────────
+
+function PrivacyBadge() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View className="medv-badge medv-badge--privacy">
+      <View className="w-2 h-2 rounded-full bg-teal" />
+      <Text className="font-code text-[11px] font-semibold text-white tracking-[1.2px]">
+        ALL DATA ON-DEVICE
+      </Text>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+// ─── Microphone Card ──────────────────────────────────────────────────────────
+
+function MicrophoneCard({ onPress }: { onPress: () => void }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.85}
+      className="bg-card border border-edge rounded-2xl p-6"
+    >
+      <View className="w-16 h-16 rounded-full bg-brand items-center justify-center mb-4">
+        <Ionicons name="mic" size={28} color="#fff" />
+      </View>
+      <Text className="font-georgia text-[20px] font-semibold text-white mb-2">
+        How are you feeling?
+      </Text>
+      <Text className="font-georgia text-[13px] text-dim leading-5">
+        Tap to speak. MedPsy analyzes locally — your words never leave this
+        device.
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+// ─── Entries / Insights Toggle ────────────────────────────────────────────────
+
+function EntriesInsightsToggle({
+  active,
+  onChange,
+}: {
+  active: ActiveTab;
+  onChange: (tab: ActiveTab) => void;
+}) {
+  return (
+    <View className="medv-toggle">
+      <TouchableOpacity
+        onPress={() => onChange("entries")}
+        activeOpacity={0.7}
+        className={`medv-toggle-item ${active === "entries" ? "medv-toggle-item--active" : ""}`}
+      >
+        <Text
+          className={`font-code text-[12px] font-semibold tracking-[1px] ${
+            active === "entries" ? "text-white" : "text-dim"
+          }`}
+        >
+          ENTRIES
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => onChange("insights")}
+        activeOpacity={0.7}
+        className={`medv-toggle-item ${active === "insights" ? "medv-toggle-item--active" : ""}`}
+      >
+        <Text
+          className={`font-code text-[12px] font-semibold tracking-[1px] ${
+            active === "insights" ? "text-white" : "text-dim"
+          }`}
+        >
+          INSIGHTS
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// ─── Insight Stat Card ────────────────────────────────────────────────────────
+
+function InsightStatCard({ stat }: { stat: InsightStat }) {
+  // Conditional Tailwind classes — full strings are literals so the scanner picks them up
+  const valueClass =
+    stat.trendColor === "red"
+      ? "text-danger"
+      : stat.trendColor === "green"
+      ? "text-teal"
+      : "text-warn";
+
+  const trendSymbol =
+    stat.trend === "up" ? "↑" : stat.trend === "down" ? "↓" : "~";
+
+  return (
+    <View className="medv-card">
+      <View className="flex-row justify-between items-start mb-1">
+        <Text className="font-code text-[11px] font-semibold text-dim tracking-[1.2px]">
+          {stat.label}
+        </Text>
+        <Text className={`text-[20px] font-bold ${valueClass}`}>
+          {trendSymbol}
+        </Text>
+      </View>
+      <View className="flex-row items-baseline gap-1.5">
+        <Text className={`font-georgia text-[36px] font-bold ${valueClass}`}>
+          {stat.value}
+        </Text>
+        <Text className="font-georgia text-[13px] text-dim">{stat.unit}</Text>
+      </View>
+    </View>
+  );
+}
+
+// ─── Empty Entries State ──────────────────────────────────────────────────────
+
+function EmptyEntriesState() {
+  return (
+    <View className="items-center justify-center py-12 gap-2.5">
+      <Ionicons name="mic-outline" size={36} color={colors.textSecondary} />
+      <Text className="font-georgia text-[16px] text-dim mt-1">
+        No entries yet
+      </Text>
+      <Text className="font-georgia text-[13px] text-dim text-center leading-5 px-6 opacity-70">
+        Tap the microphone above to log your first health update.
+      </Text>
+    </View>
+  );
+}
+
+// ─── Home Screen ──────────────────────────────────────────────────────────────
+
+export default function HomeScreen() {
+  const router = useRouter();
+  const { profile } = useUserStore();
+  const entries = useHealthStore((state) => state.entries);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("insights");
+
+  const insightStats = useMemo(() => computeInsightStats(entries), [entries]);
+  const dateLabel = useMemo(() => getFormattedDate(), []);
+  const greeting = useMemo(() => getGreeting(), []);
+  const displayName = profile?.name ?? "Friend";
+
+  return (
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bgPrimary }}
+      edges={["top"]}
+    >
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Header row: date + family button ── */}
+        <View className="flex-row items-center justify-between mb-4">
+          <Text className="font-code text-[11px] font-semibold text-dim tracking-[1.2px]">
+            {dateLabel}
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.navigate("/family")}
+            activeOpacity={0.8}
+            className="w-11 h-11 rounded-full bg-brand items-center justify-center"
+          >
+            <Ionicons name="people" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Greeting ── */}
+        <View className="mb-4">
+          <Text className="font-georgia text-[28px] text-white leading-9">
+            {greeting}
+          </Text>
+          <Text className="font-georgia text-[28px] font-bold italic text-teal leading-9">
+            {displayName}
+          </Text>
+        </View>
+
+        {/* ── Privacy badge ── */}
+        <View className="mb-5">
+          <PrivacyBadge />
+        </View>
+
+        {/* ── Mic card ── */}
+        <View className="mb-4">
+          <MicrophoneCard onPress={() => router.navigate("/log")} />
+        </View>
+
+        {/* ── Toggle ── */}
+        <View className="mb-4">
+          <EntriesInsightsToggle active={activeTab} onChange={setActiveTab} />
+        </View>
+
+        {/* ── Content ── */}
+        {activeTab === "insights" ? (
+          <View className="gap-3">
+            {insightStats.map((stat) => (
+              <InsightStatCard key={stat.label} stat={stat} />
+            ))}
+          </View>
+        ) : (
+          <View>
+            {entries.length === 0 ? (
+              <EmptyEntriesState />
+            ) : (
+              <View>
+                {entries.map((entry) => (
+                  <EntryCard key={entry.id} entry={entry} />
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}

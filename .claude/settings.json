@@ -1,4 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+      "Skill(ux-strategist)",
+      "Skill(ux-strategist:*)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('expo-router:', p.dependencies['expo-router']\\); console.log\\('expo:', p.dependencies['expo']\\)\")"
+    ]
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }

@@ -1,0 +1,295 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
+
+/* ====================================================================
+   MEDVOICE DESIGN SYSTEM — v1.0  (Tailwind v4 + NativeWind v5)
+   ====================================================================
+   @theme variables automatically generate utility classes:
+     --color-NAME  →  bg-NAME · text-NAME · border-NAME
+     --font-family-NAME  →  font-NAME
+
+   Mapping reference (CSS var → generated Tailwind class):
+     --color-surface         →  bg-surface        (main app background #111827)
+     --color-card            →  bg-card           (card background #151d2e)
+     --color-deep            →  bg-deep           (inner card #0c0f1a)
+     --color-brand           →  bg-brand / text-brand / border-brand (#3b82f6)
+     --color-brand-light     →  text-brand-light  (#7dd3fc)
+     --color-teal            →  text-teal / border-teal / bg-teal (#34d399)
+     --color-danger          →  text-danger / border-danger (#f87171)
+     --color-warn            →  text-warn / border-warn (#fbbf24)
+     --color-edge            →  border-edge / bg-edge (#1e293b)
+     --color-dim             →  text-dim  (secondary text #8b9bb4)
+     --color-ghost           →  text-ghost (muted text #4a5568)
+     --font-family-georgia   →  font-georgia
+     --font-family-code      →  font-code
+   ==================================================================== */
+
+@theme {
+  /* --- Backgrounds --- */
+  --color-surface: #111827;
+  --color-card: #151d2e;
+  --color-deep: #0c0f1a;
+
+  /* --- Brand / Accent --- */
+  --color-brand: #3b82f6;
+  --color-brand-light: #7dd3fc;
+
+  /* --- Status --- */
+  --color-teal: #34d399;
+
+  /* --- Severity --- */
+  --color-danger: #f87171;
+  --color-warn: #fbbf24;
+
+  /* --- Structural --- */
+  --color-edge: #1e293b;
+
+  /* --- Text --- */
+  --color-dim: #8b9bb4;
+  --color-ghost: #4a5568;
+
+  /* --- Font Families --- */
+  --font-family-georgia: Georgia, serif;
+  --font-family-code: "Courier New", Courier, monospace;
+}
+
+/* ====================================================================
+   BEM COMPONENT UTILITIES  (prefix: medv-)
+   block    →  medv-[block]
+   modifier →  medv-[block]--[modifier]
+   ====================================================================
+   Usage in JSX:
+     <View className="medv-card" />
+     <View className="medv-badge medv-badge--privacy" />
+   ==================================================================== */
+
+/* ------------------------------------------------------------------ */
+/*  card                                                               */
+/* ------------------------------------------------------------------ */
+
+@utility medv-card {
+  background-color: #151d2e;
+  border-radius: 16px;
+  border-width: 1px;
+  border-color: #1e293b;
+  padding: 16px;
+}
+
+@utility medv-card--lg {
+  border-radius: 20px;
+}
+
+@utility medv-card--inner {
+  background-color: #0c0f1a;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  screen  (full-screen wrapper, replaces repeated SafeAreaView body) */
+/* ------------------------------------------------------------------ */
+
+@utility medv-screen {
+  flex: 1;
+  background-color: #111827;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  badge                                                              */
+/* ------------------------------------------------------------------ */
+
+@utility medv-badge {
+  flex-direction: row;
+  align-items: center;
+  align-self: flex-start;
+  border-radius: 9999px;
+  border-width: 1px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  gap: 5px;
+}
+
+/* ALL DATA ON-DEVICE privacy badge */
+@utility medv-badge--privacy {
+  background-color: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.35);
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* Severity badges */
+@utility medv-badge--moderate {
+  border-color: #f87171;
+}
+
+@utility medv-badge--mild {
+  border-color: #fbbf24;
+}
+
+@utility medv-badge--good {
+  border-color: #34d399;
+}
+
+/* Connection status badges */
+@utility medv-badge--online {
+  border-color: #34d399;
+}
+
+@utility medv-badge--offline {
+  border-color: #4a5568;
+}
+
+/* ------------------------------------------------------------------ */
+/*  banner  (full-width status strip)                                  */
+/* ------------------------------------------------------------------ */
+
+@utility medv-banner {
+  flex-direction: row;
+  align-items: center;
+  border-radius: 12px;
+  border-width: 1px;
+  padding-left: 14px;
+  padding-right: 14px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  gap: 8px;
+}
+
+@utility medv-banner--success {
+  background-color: rgba(52, 211, 153, 0.10);
+  border-color: rgba(52, 211, 153, 0.30);
+}
+
+@utility medv-banner--info {
+  background-color: rgba(59, 130, 246, 0.10);
+  border-color: rgba(59, 130, 246, 0.30);
+}
+
+/* ------------------------------------------------------------------ */
+/*  divider                                                            */
+/* ------------------------------------------------------------------ */
+
+@utility medv-divider {
+  height: 1px;
+  background-color: #1e293b;
+}
+
+/* ------------------------------------------------------------------ */
+/*  touch  (48×48 pt minimum touch target — elderly accessibility)    */
+/* ------------------------------------------------------------------ */
+
+@utility medv-touch {
+  min-height: 48px;
+  min-width: 48px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ------------------------------------------------------------------ */
+/*  row  (common horizontal-flex pattern)                              */
+/* ------------------------------------------------------------------ */
+
+@utility medv-row {
+  flex-direction: row;
+  align-items: center;
+}
+
+@utility medv-row--between {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ------------------------------------------------------------------ */
+/*  gap  (12px section gap)                                            */
+/* ------------------------------------------------------------------ */
+
+@utility medv-gap {
+  gap: 12px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  btn  (action buttons)                                              */
+/* ------------------------------------------------------------------ */
+
+@utility medv-btn {
+  border-radius: 12px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+}
+
+@utility medv-btn--primary {
+  background-color: #3b82f6;
+}
+
+@utility medv-btn--teal {
+  background-color: #34d399;
+}
+
+@utility medv-btn--outline {
+  background-color: transparent;
+  border-width: 1px;
+  border-color: #1e293b;
+}
+
+/* ------------------------------------------------------------------ */
+/*  avatar  (circular family member avatar)                            */
+/* ------------------------------------------------------------------ */
+
+@utility medv-avatar {
+  border-radius: 9999px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  tag  (health category pill tags on entry cards)                    */
+/* ------------------------------------------------------------------ */
+
+@utility medv-tag {
+  background-color: #1e293b;
+  border-radius: 9999px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  toggle  (ENTRIES / INSIGHTS segmented control)                     */
+/* ------------------------------------------------------------------ */
+
+@utility medv-toggle {
+  flex-direction: row;
+  border-radius: 10px;
+  border-width: 1px;
+  border-color: #1e293b;
+  overflow: hidden;
+}
+
+@utility medv-toggle-item {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+@utility medv-toggle-item--active {
+  background-color: #151d2e;
+}
