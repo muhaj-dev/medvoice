@@ -1,4 +1,10 @@
 {
+  "permissions": {
+    "allow": [
+      "Skill(ux-strategist)",
+      "Skill(ux-strategist:*)"
+    ]
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }

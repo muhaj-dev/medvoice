@@ -11,11 +11,11 @@ Built with Expo SDK 54, React Native 0.81.5, TypeScript, Expo Router, NativeWind
 
 ## Current Phase
 
-- Phase 0 complete. Ready to begin Phase 1 (Text-based MedPsy health analysis).
+- Phase 0 + App Shell complete. Ready to begin Phase 1 (Text-based MedPsy health analysis).
 
 ## Current Goal
 
-- Feature 01: App Shell & Navigation — bottom tab bar (HOME, LOG, ANALYSIS, FAMILY), screen stubs.
+- Feature 02: Home Screen — full HOME tab UI (greeting, entry cards, insights toggle).
 
 ---
 
@@ -40,6 +40,25 @@ Built with Expo SDK 54, React Native 0.81.5, TypeScript, Expo Router, NativeWind
 ## In Progress
 
 - None.
+
+## Completed (Onboarding Setup + App Shell)
+
+- **Onboarding Setup Screen** — `app/(onboarding)/index.tsx` (route `/(onboarding)`)
+  - 3-step wizard with step indicator (STEP X OF 3 · dot pills)
+  - Step 1: Role selection — patient vs caregiver, two large selectable cards with Ionicons, blue selected state
+  - Step 2: Personal profile — Name (required), Age (optional), expandable Conditions + Medications tag inputs with add/remove chip UX
+  - Step 3: Privacy promise — shield-checkmark icon, "Your data stays on your device" heading, 3 green-checkmark rows, "Get Started" button
+  - Continue button disabled until requirements met; saving state during async persist
+  - `app/index.tsx` replaced with a gate: loads AsyncStorage → routes to `/(onboarding)` or `/(tabs)`
+  - Onboarding state persisted to AsyncStorage via `useUserStore` (Zustand)
+  - `SplashScreen.hideAsync()` moved from root layout to gate, so splash covers the storage check
+
+- **App Shell & Navigation** — Feature 01
+  - `app/(tabs)/_layout.tsx` — Expo Router `<Tabs>` with 4 tabs: HOME / LOG / ANALYSIS / FAMILY
+  - Dark navy tab bar (#111827), Ionicons, white active / muted gray inactive, monospace labels
+  - Screen stubs: `(tabs)/index`, `(tabs)/log`, `(tabs)/analysis`, `(tabs)/family`
+  - `types/user.ts` — UserRole, UserProfile types
+  - `store/useUserStore.ts` — Zustand store with AsyncStorage persistence
 
 ## Completed (Onboarding)
 
@@ -67,25 +86,27 @@ Built with Expo SDK 54, React Native 0.81.5, TypeScript, Expo Router, NativeWind
 
 ## Next Up
 
-- Feature 01: App Shell & Navigation
-  - Bottom tab bar: HOME (house), LOG (mic), ANALYSIS (bar-chart), FAMILY (people) — 4 tabs only
-  - Dark navy tab bar matching `bgPrimary` (#111827), active tab white icon + blue dot indicator
-  - Screen stubs for each tab route under `app/(tabs)/`
-  - `SafeAreaView` with inline styles (not NativeWind) per style exception rules
+- Feature 02: Home Screen — full `(tabs)/index` UI
+  - Good morning greeting + date, family circle icon, ALL DATA ON-DEVICE badge
+  - MicrophoneCard ("How are you feeling?")
+  - ENTRIES / INSIGHTS segmented toggle
+  - Entry cards and insight stat cards
+  - Reads from `useHealthStore` (to be created)
 
 ---
 
 ## Build Order (Phases)
 
-| Phase | Feature                           | Key QVAC Capability      | Status  |
-|-------|-----------------------------------|--------------------------|---------|
-| 0     | Project setup + NativeWind        | —                        | ✅ Done |
-| 0.5   | Design system tokens & global CSS | —                        | ✅ Done |
-| 1     | Text-based MedPsy health analysis | Text Generation (MedPsy) | ⏳ Next |
-| 2     | Voice recording + TTS response    | Transcription + TTS      | —       |
-| 3     | Health timeline + smart search    | Embeddings + RAG         | —       |
-| 4     | Family connection via P2P         | Holepunch P2P            | —       |
-| 5     | UI polish + demo preparation      | All                      | —       |
+| Phase | Feature                           | Key QVAC Capability      | Status     |
+|-------|-----------------------------------|--------------------------|------------|
+| 0     | Project setup + NativeWind        | —                        | ✅ Done    |
+| 0.5   | Design system tokens & global CSS | —                        | ✅ Done    |
+| 0.6   | Onboarding setup + App shell      | —                        | ✅ Done    |
+| 1     | Text-based MedPsy health analysis | Text Generation (MedPsy) | ⏳ Next    |
+| 2     | Voice recording + TTS response    | Transcription + TTS      | —          |
+| 3     | Health timeline + smart search    | Embeddings + RAG         | —          |
+| 4     | Family connection via P2P         | Holepunch P2P            | —          |
+| 5     | UI polish + demo preparation      | All                      | —          |
 
 ---
 
