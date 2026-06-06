@@ -1,24 +1,37 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import "../global.css";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import * as SplashScreen from "expo-splash-screen";
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { colors } from "@/constants/colors";
+
+// Keep the splash screen up until the app is ready
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  useEffect(() => {
+    // Using system fonts (Georgia / monospace) — no custom font loading needed.
+    // If bundled fonts are added in the future, load them here with useFonts()
+    // before calling hideAsync().
+    SplashScreen.hideAsync();
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <>
+      {/* Light icons on dark background throughout the entire app */}
+      <StatusBar style="light" backgroundColor={colors.bgPrimary} />
+
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          // Ensures every screen defaults to the dark background colour
+          contentStyle: { backgroundColor: colors.bgPrimary },
+          // Smooth slide animation across all screen transitions
+          animation: "slide_from_right",
+        }}
+      />
+    </>
   );
 }
