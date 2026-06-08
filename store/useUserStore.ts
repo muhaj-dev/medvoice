@@ -2,8 +2,8 @@ import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { UserProfile } from "@/types/user";
 
-const PROFILE_KEY = "@medvoice:user_profile";
-const ONBOARDING_KEY = "@medvoice:onboarding_complete";
+const PROFILE_KEY = "@medvoice:v2:profile";
+const ONBOARDING_KEY = "@medvoice:v2:onboarding";
 
 type UserStore = {
   profile: UserProfile | null;
