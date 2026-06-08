@@ -37,9 +37,9 @@ export async function loadParakeetModel(
   parakeetModelId = await loadModel({
     modelSrc: PARAKEET_TDT_0_6B_V3_Q8_0,
     modelType: "parakeet",
-    onProgress: ({ progress }) => {
-      if (onProgress && typeof progress === "number") {
-        onProgress(Math.round(progress * 100));
+    onProgress: ({ percentage }) => {
+      if (onProgress && typeof percentage === "number") {
+        onProgress(Math.round(percentage));
       }
     },
   });
@@ -56,9 +56,9 @@ export async function loadMedGemmaModel(
   medgemmaModelId = await loadModel({
     modelSrc: MEDGEMMA_4B_IT_Q4_1,
     modelType: "llm",
-    onProgress: ({ progress }) => {
-      if (onProgress && typeof progress === "number") {
-        onProgress(Math.round(progress * 100));
+    onProgress: ({ percentage }) => {
+      if (onProgress && typeof percentage === "number") {
+        onProgress(Math.round(percentage));
       }
     },
   });
@@ -75,9 +75,9 @@ export async function loadEmbeddingModel(
   embeddingModelId = await loadModel({
     modelSrc: EMBEDDINGGEMMA_300M_Q8_0,
     modelType: "embed",
-    onProgress: ({ progress }) => {
-      if (onProgress && typeof progress === "number") {
-        onProgress(Math.round(progress * 100));
+    onProgress: ({ percentage }) => {
+      if (onProgress && typeof percentage === "number") {
+        onProgress(Math.round(percentage));
       }
     },
   });
@@ -93,10 +93,9 @@ export async function loadTTSModel(
 
   ttsModelId = await loadModel({
     modelSrc: TTS_EN_SUPERTONIC_Q4_0,
-    modelType: "tts",
-    onProgress: ({ progress }) => {
-      if (onProgress && typeof progress === "number") {
-        onProgress(Math.round(progress * 100));
+    onProgress: ({ percentage }) => {
+      if (onProgress && typeof percentage === "number") {
+        onProgress(Math.round(percentage));
       }
     },
   });

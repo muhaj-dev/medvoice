@@ -1,14 +1,15 @@
 import { useRef, useState } from "react";
 import { View, TextInput, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 
 type Props = {
   onSearch: (query: string) => void;
 };
 
 export function TimelineSearchBar({ onSearch }: Props) {
+  const colors = useTheme();
   const [value, setValue] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const handleChange = (text: string) => {
     setValue(text);
@@ -22,6 +23,34 @@ export function TimelineSearchBar({ onSearch }: Props) {
     setValue("");
     onSearch("");
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.bgCard,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 14,
+      height: 52,
+      paddingHorizontal: 16,
+      gap: 10,
+    },
+    icon: {
+      fontSize: 16,
+    },
+    input: {
+      flex: 1,
+      fontFamily: "Georgia",
+      fontSize: 14,
+      color: colors.textPrimary,
+      height: "100%",
+    },
+    clear: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+  });
 
   return (
     <View style={styles.container}>
@@ -43,31 +72,3 @@ export function TimelineSearchBar({ onSearch }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.bgCard,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    height: 52,
-    paddingHorizontal: 16,
-    gap: 10,
-  },
-  icon: {
-    fontSize: 16,
-  },
-  input: {
-    flex: 1,
-    fontFamily: "Georgia",
-    fontSize: 14,
-    color: colors.textPrimary,
-    height: "100%",
-  },
-  clear: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-});

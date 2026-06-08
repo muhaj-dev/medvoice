@@ -1,9 +1,10 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 
 export function AddFamilyMemberSection() {
+  const colors = useTheme();
   return (
     <View style={{ gap: 12 }}>
       <Text

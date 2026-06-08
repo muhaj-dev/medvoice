@@ -1,34 +1,59 @@
-/**
- * MedVoice — Official Color Tokens (Do Not Change)
- * Source of truth for all colors in the app.
- * Use these in StyleSheet.create() calls; for className styling use the
- * matching Tailwind custom properties defined in global.css.
- */
-export const colors = {
-  // Backgrounds
-  bgPrimary: "#111827",   // Main app background
-  bgCard: "#151d2e",      // Card / elevated surface
-  bgDeep: "#0c0f1a",      // Inner card / deepest surface
+export type ColorTokens = {
+  bgPrimary: string;
+  bgCard: string;
+  bgDeep: string;
+  accentBlue: string;
+  accentBlueLight: string;
+  successGreen: string;
+  warningRed: string;
+  warningAmber: string;
+  border: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  tabActive: string;
+  tabInactive: string;
+  tabDot: string;
+};
 
-  // Accents
-  accentBlue: "#3b82f6",      // Primary blue — buttons, active elements, waveform
-  accentBlueLight: "#7dd3fc", // Light blue — waveform bars, subtle highlights
+export const darkColors: ColorTokens = {
+  bgPrimary:       "#111827",
+  bgCard:          "#151d2e",
+  bgDeep:          "#0c0f1a",
+  accentBlue:      "#3b82f6",
+  accentBlueLight: "#7dd3fc",
+  successGreen:    "#34d399",
+  warningRed:      "#f87171",
+  warningAmber:    "#fbbf24",
+  border:          "#1e293b",
+  textPrimary:     "#ffffff",
+  textSecondary:   "#8b9bb4",
+  textMuted:       "#4a5568",
+  tabActive:       "#ffffff",
+  tabInactive:     "#4a5568",
+  tabDot:          "#3b82f6",
+};
 
-  // Status
-  successGreen: "#34d399", // Online · privacy badge · checkmarks · teal name
+export const lightColors: ColorTokens = {
+  bgPrimary:       "#ffffff",
+  bgCard:          "#e8ecf0",
+  bgDeep:          "#d1d5db",
+  accentBlue:      "#3b82f6",
+  accentBlueLight: "#60a5fa",
+  successGreen:    "#059669",
+  warningRed:      "#dc2626",
+  warningAmber:    "#d97706",
+  border:          "#d1d5db",
+  textPrimary:     "#0d1117",
+  textSecondary:   "#475569",
+  textMuted:       "#94a3b8",
+  tabActive:       "#0d1117",
+  tabInactive:     "#94a3b8",
+  tabDot:          "#3b82f6",
+};
 
-  // Warning & Severity
-  warningRed: "#f87171",    // MODERATE concern · stop button · red trend arrows
-  warningAmber: "#fbbf24",  // MILD concern · yellow trend symbols · RAG highlights
+/** Dark alias kept for any static fallback usage */
+export const colors: ColorTokens = darkColors;
 
-  // Border / Divider
-  border: "#1e293b",
-
-  // Text
-  textPrimary: "#FFFFFF",
-  textSecondary: "#8B9BB4", // Muted blue-gray — subtitles, secondary info
-  textMuted: "#4A5568",     // Dimmed — inactive tabs, placeholders
-} as const;
-
-export type ColorKey = keyof typeof colors;
-export type ColorValue = (typeof colors)[ColorKey];
+export type ColorKey = keyof ColorTokens;
+export type ColorValue = ColorTokens[ColorKey];

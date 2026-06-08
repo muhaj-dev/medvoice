@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { PipelineStepRow, StepStatus } from "@/components/PipelineStepRow";
 import { transcribeAudioFile } from "@/lib/transcription";
@@ -21,17 +21,12 @@ const INITIAL_STEPS: Step[] = [
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export default function AnalysisProcessingScreen() {
+  const colors = useTheme();
   const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS);
   const isRunning = useRef(false);
 
   const markStep = (id: number, status: StepStatus) =>
     setSteps((prev) => prev.map((s) => (s.id === id ? { ...s, status } : s)));
-
-  useEffect(() => {
-    if (isRunning.current) return;
-    isRunning.current = true;
-    runPipeline();
-  }, []);
 
   const runPipeline = async () => {
     const { audioUri, finalTranscript, setFinalTranscript, setAnalysisResult } =
@@ -83,6 +78,61 @@ export default function AnalysisProcessingScreen() {
     router.replace("/analysis/result" as any);
   };
 
+  useEffect(() => {
+    if (isRunning.current) return;
+    isRunning.current = true;
+    runPipeline();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const styles = StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.bgPrimary },
+    backBtn: {
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 4,
+      alignSelf: "flex-start",
+    },
+    backText: {
+      fontFamily: "monospace",
+      fontSize: 12,
+      color: colors.textSecondary,
+      letterSpacing: 0.5,
+    },
+    scroll: { flex: 1 },
+    scrollContent: {
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 40,
+    },
+    processingLabel: {
+      fontFamily: "monospace",
+      fontSize: 11,
+      color: colors.textSecondary,
+      letterSpacing: 1.54,
+      marginBottom: 20,
+    },
+    headingLine1: {
+      fontFamily: "Georgia",
+      fontSize: 32,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      lineHeight: 38,
+    },
+    headingLine2: {
+      fontFamily: "Georgia",
+      fontSize: 32,
+      fontWeight: "700",
+      fontStyle: "italic",
+      color: colors.accentBlue,
+      lineHeight: 38,
+      marginBottom: 36,
+    },
+    stepsList: {
+      gap: 16,
+    },
+  });
+
   return (
     <SafeAreaView style={styles.root}>
       <TouchableOpacity
@@ -119,51 +169,3 @@ export default function AnalysisProcessingScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bgPrimary },
-  backBtn: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 4,
-    alignSelf: "flex-start",
-  },
-  backText: {
-    fontFamily: "monospace",
-    fontSize: 12,
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-  },
-  scroll: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 40,
-  },
-  processingLabel: {
-    fontFamily: "monospace",
-    fontSize: 11,
-    color: colors.textSecondary,
-    letterSpacing: 1.54,
-    marginBottom: 20,
-  },
-  headingLine1: {
-    fontFamily: "Georgia",
-    fontSize: 32,
-    fontWeight: "700",
-    color: colors.textPrimary,
-    lineHeight: 38,
-  },
-  headingLine2: {
-    fontFamily: "Georgia",
-    fontSize: 32,
-    fontWeight: "700",
-    fontStyle: "italic",
-    color: colors.accentBlue,
-    lineHeight: 38,
-    marginBottom: 36,
-  },
-  stepsList: {
-    gap: 16,
-  },
-});

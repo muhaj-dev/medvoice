@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { useUserStore } from "@/store/useUserStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { PrivacyBadge } from "@/components/PrivacyBadge";
@@ -27,6 +27,7 @@ function getGreeting(): string {
 }
 
 export default function HomeScreen() {
+  const colors = useTheme();
   const profile = useUserStore((s) => s.profile);
   const entries = useHealthStore((s) => s.entries);
   const recentEntries = useMemo(() => entries.slice(0, 3), [entries]);

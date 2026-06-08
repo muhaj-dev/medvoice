@@ -1,8 +1,8 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
 import { RoleCard } from "@/components/RoleCard";
 import { OnboardingNavButtons } from "@/components/OnboardingNavButtons";
@@ -25,6 +25,7 @@ const ROLES = [
 ];
 
 export default function RoleScreen() {
+  const colors = useTheme();
   const router = useRouter();
   const profile = useUserStore((s) => s.profile);
   const setProfile = useUserStore((s) => s.setProfile);
@@ -43,8 +44,8 @@ export default function RoleScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }} edges={["top", "bottom"]}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
         <View className="items-center mb-9">
           <OnboardingProgressDots current={2} />
         </View>
@@ -57,7 +58,7 @@ export default function RoleScreen() {
             MedVoice?
           </Text>
           <Text className="font-georgia text-[14px] text-dim">
-            We'll personalise the app for you.
+            {"We'll personalise the app for you."}
           </Text>
         </View>
 
@@ -75,7 +76,7 @@ export default function RoleScreen() {
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={{ paddingHorizontal: 20, paddingBottom: 8 }}>
         <OnboardingNavButtons
           onBack={() => router.back()}
           onContinue={handleContinue}
@@ -86,8 +87,3 @@ export default function RoleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bgPrimary },
-  scroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20 },
-  footer: { paddingHorizontal: 20, paddingBottom: 8 },
-});

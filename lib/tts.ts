@@ -3,21 +3,21 @@
  * No audio or text is sent to any server.
  */
 
-import { speak } from "@qvac/sdk";
+import { textToSpeech } from "@qvac/sdk";
 import { loadTTSModel } from "./qvac";
 
-let stopHandle: (() => void) | null = null;
+let cancelCurrent: (() => void) | null = null;
 
 export async function speakResponse(text: string): Promise<void> {
   stopSpeaking();
   const modelId = await loadTTSModel();
-  const handle = speak({ modelId, text });
-  stopHandle = () => handle.cancel?.();
-  await handle.complete;
-  stopHandle = null;
+  const result = textToSpeech({ modelId, text });
+  cancelCurrent = () => result.done.catch(() => {});
+  await result.done;
+  cancelCurrent = null;
 }
 
 export function stopSpeaking(): void {
-  stopHandle?.();
-  stopHandle = null;
+  cancelCurrent?.();
+  cancelCurrent = null;
 }

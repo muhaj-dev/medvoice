@@ -1,12 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Animated, Alert, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { AudioModule } from "expo-audio";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 
 export function PulsingMicButton() {
-  const pulseOpacity = useRef(new Animated.Value(0.3)).current;
+  const colors = useTheme();
+  const [pulseOpacity] = useState(() => new Animated.Value(0.3));
 
   useEffect(() => {
     Animated.loop(
@@ -42,6 +43,43 @@ export function PulsingMicButton() {
     router.push("/recording/active" as any);
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      width: 100,
+      height: 100,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    glowRing: {
+      position: "absolute",
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      borderWidth: 10,
+      borderColor: "rgba(59, 130, 246, 0.35)",
+    },
+    button: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colors.accentBlue,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: colors.accentBlue,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.55,
+      shadowRadius: 18,
+      elevation: 12,
+    },
+    tapLabel: {
+      position: "absolute",
+      top: 108,
+      fontFamily: "Georgia",
+      fontSize: 13,
+      color: colors.textSecondary,
+    },
+  });
+
   return (
     <View style={styles.container}>
       {/* Pulsing glow ring behind the button */}
@@ -58,40 +96,3 @@ export function PulsingMicButton() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: 100,
-    height: 100,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  glowRing: {
-    position: "absolute",
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 10,
-    borderColor: "rgba(59, 130, 246, 0.35)",
-  },
-  button: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.accentBlue,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: colors.accentBlue,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.55,
-    shadowRadius: 18,
-    elevation: 12,
-  },
-  tapLabel: {
-    position: "absolute",
-    top: 108,
-    fontFamily: "Georgia",
-    fontSize: 13,
-    color: colors.textSecondary,
-  },
-});

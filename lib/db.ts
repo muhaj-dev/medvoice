@@ -1,0 +1,187 @@
+import * as SQLite from 'expo-sqlite';
+import type { HealthEntry, HealthPattern } from '@/types/health';
+import type { FamilyMember } from '@/types/family';
+
+let db: SQLite.SQLiteDatabase | null = null;
+
+export async function getDb(): Promise<SQLite.SQLiteDatabase> {
+  if (!db) {
+    db = await SQLite.openDatabaseAsync('medvoice.db');
+    await initDb(db);
+  }
+  return db;
+}
+
+async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
+  await database.execAsync(`
+    CREATE TABLE IF NOT EXISTS health_entries (
+      id         TEXT PRIMARY KEY,
+      timestamp  TEXT NOT NULL,
+      transcript TEXT NOT NULL,
+      analysis   TEXT NOT NULL,
+      tags       TEXT,
+      severity   TEXT,
+      embedding  TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS health_patterns (
+      id             TEXT PRIMARY KEY,
+      entry_id       TEXT NOT NULL,
+      pattern_name   TEXT NOT NULL,
+      severity       TEXT NOT NULL,
+      description    TEXT NOT NULL,
+      recommendation TEXT NOT NULL,
+      created_at     TEXT NOT NULL,
+      FOREIGN KEY (entry_id) REFERENCES health_entries(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS family_members (
+      id                TEXT PRIMARY KEY,
+      name              TEXT NOT NULL,
+      relationship      TEXT,
+      public_key        TEXT NOT NULL,
+      connection_status TEXT,
+      last_synced       TEXT
+    );
+  `);
+}
+
+// ── Health Entries ────────────────────────────────────────────────────────────
+
+export async function insertEntry(entry: HealthEntry): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `INSERT OR REPLACE INTO health_entries
+       (id, timestamp, transcript, analysis, tags, severity, embedding)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      entry.id,
+      entry.timestamp,
+      entry.transcript,
+      entry.analysis,
+      JSON.stringify(entry.tags),
+      entry.severity ?? null,
+      entry.embedding ? JSON.stringify(entry.embedding) : null,
+    ],
+  );
+}
+
+export async function loadAllEntries(): Promise<HealthEntry[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<{
+    id: string;
+    timestamp: string;
+    transcript: string;
+    analysis: string;
+    tags: string | null;
+    severity: string | null;
+    embedding: string | null;
+  }>('SELECT * FROM health_entries ORDER BY timestamp DESC');
+
+  return rows.map((row) => ({
+    id: row.id,
+    timestamp: row.timestamp,
+    transcript: row.transcript,
+    analysis: row.analysis,
+    tags: row.tags ? (JSON.parse(row.tags) as string[]) : [],
+    severity: (row.severity as HealthEntry['severity']) ?? null,
+    embedding: row.embedding
+      ? (JSON.parse(row.embedding) as number[])
+      : undefined,
+  }));
+}
+
+export async function deleteEntry(id: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync('DELETE FROM health_entries WHERE id = ?', [id]);
+}
+
+// ── Health Patterns ───────────────────────────────────────────────────────────
+
+export async function insertPattern(pattern: HealthPattern): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `INSERT OR REPLACE INTO health_patterns
+       (id, entry_id, pattern_name, severity, description, recommendation, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      pattern.id,
+      pattern.entryId,
+      pattern.patternName,
+      pattern.severity,
+      pattern.description,
+      pattern.recommendation,
+      pattern.createdAt,
+    ],
+  );
+}
+
+export async function loadPatternsForEntry(
+  entryId: string,
+): Promise<HealthPattern[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<{
+    id: string;
+    entry_id: string;
+    pattern_name: string;
+    severity: string;
+    description: string;
+    recommendation: string;
+    created_at: string;
+  }>('SELECT * FROM health_patterns WHERE entry_id = ?', [entryId]);
+
+  return rows.map((row) => ({
+    id: row.id,
+    entryId: row.entry_id,
+    patternName: row.pattern_name,
+    severity: row.severity as HealthPattern['severity'],
+    description: row.description,
+    recommendation: row.recommendation,
+    createdAt: row.created_at,
+  }));
+}
+
+// ── Family Members ────────────────────────────────────────────────────────────
+
+export async function insertFamilyMember(member: FamilyMember): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `INSERT OR REPLACE INTO family_members
+       (id, name, relationship, public_key, connection_status, last_synced)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      member.id,
+      member.name,
+      member.relationship,
+      member.publicKey,
+      member.connectionStatus,
+      member.lastSynced ?? null,
+    ],
+  );
+}
+
+export async function loadAllFamilyMembers(): Promise<FamilyMember[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<{
+    id: string;
+    name: string;
+    relationship: string | null;
+    public_key: string;
+    connection_status: string | null;
+    last_synced: string | null;
+  }>('SELECT * FROM family_members');
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    relationship: row.relationship ?? '',
+    publicKey: row.public_key,
+    connectionStatus: (row.connection_status as FamilyMember['connectionStatus']) ?? 'offline',
+    lastSynced: row.last_synced,
+  }));
+}
+
+export async function deleteFamilyMember(id: string): Promise<void> {
+  const database = await getDb();
+  await database.runAsync('DELETE FROM family_members WHERE id = ?', [id]);
+}

@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
 import { FeatureRow } from "@/components/FeatureRow";
 
@@ -12,7 +12,43 @@ const FEATURES = [
 ] as const;
 
 export default function WelcomeScreen() {
+  const colors = useTheme();
   const router = useRouter();
+
+  const styles = StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bgPrimary,
+    },
+    scroll: {
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      paddingBottom: 20,
+    },
+    heartCircle: {
+      width: 120,
+      height: 120,
+      borderRadius: 60,
+      backgroundColor: colors.bgCard,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: colors.accentBlue,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.5,
+      shadowRadius: 28,
+      elevation: 14,
+    },
+    heartEmoji: {
+      fontSize: 52,
+    },
+    getStartedBtn: {
+      backgroundColor: colors.accentBlue,
+      borderRadius: 14,
+      height: 54,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  });
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
@@ -65,37 +101,3 @@ export default function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bgPrimary,
-  },
-  scroll: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  heartCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.bgCard,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: colors.accentBlue,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 28,
-    elevation: 14,
-  },
-  heartEmoji: {
-    fontSize: 52,
-  },
-  getStartedBtn: {
-    backgroundColor: colors.accentBlue,
-    borderRadius: 14,
-    height: 54,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

@@ -1,6 +1,6 @@
 import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { useFamilyStore } from "@/store/useFamilyStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { LiveMonitoringBadge } from "@/components/LiveMonitoringBadge";
@@ -16,6 +16,7 @@ function deriveConcernCount(severity: string | null): number {
 }
 
 export default function CareViewScreen() {
+  const colors = useTheme();
   const members = useFamilyStore((s) => s.members);
   const entries = useHealthStore((s) => s.entries);
 
@@ -51,7 +52,7 @@ export default function CareViewScreen() {
         {/* Name heading */}
         <View className="mb-5">
           <Text className="font-georgia text-[32px] font-bold text-white leading-[38px]">
-            {connectedMember.name}'s
+            {connectedMember.name}&apos;s
           </Text>
           <Text className="font-georgia text-[32px] font-bold italic text-teal leading-[38px]">
             Health

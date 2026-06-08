@@ -1,5 +1,6 @@
+import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 
 type Severity = "moderate" | "mild" | "good";
 
@@ -8,34 +9,30 @@ type Props = {
   patternCount?: number;
 };
 
-const CONFIG: Record<Severity, {
-  label: string;
-  color: string;
-  bg: string;
-  borderColor: string;
-}> = {
-  moderate: {
-    label: "MODERATE CONCERN",
-    color: colors.warningRed,
-    bg: "rgba(248,113,113,0.1)",
-    borderColor: "rgba(248,113,113,0.25)",
-  },
-  mild: {
-    label: "MILD CONCERN",
-    color: colors.warningAmber,
-    bg: "rgba(251,191,36,0.08)",
-    borderColor: "rgba(251,191,36,0.25)",
-  },
-  good: {
-    label: "LOOKING GOOD",
-    color: colors.successGreen,
-    bg: "rgba(52,211,153,0.08)",
-    borderColor: "rgba(52,211,153,0.25)",
-  },
-};
-
 export function ConcernBanner({ severity, patternCount = 0 }: Props) {
-  const cfg = CONFIG[severity];
+  const colors = useTheme();
+
+  const cfg = useMemo(() => ({
+    moderate: {
+      label: "MODERATE CONCERN",
+      color: colors.warningRed,
+      bg: "rgba(248,113,113,0.1)",
+      borderColor: "rgba(248,113,113,0.25)",
+    },
+    mild: {
+      label: "MILD CONCERN",
+      color: colors.warningAmber,
+      bg: "rgba(251,191,36,0.08)",
+      borderColor: "rgba(251,191,36,0.25)",
+    },
+    good: {
+      label: "LOOKING GOOD",
+      color: colors.successGreen,
+      bg: "rgba(52,211,153,0.08)",
+      borderColor: "rgba(52,211,153,0.25)",
+    },
+  })[severity], [severity, colors]);
+
   const showPatterns = severity !== "good" && patternCount > 0;
 
   return (
@@ -50,7 +47,9 @@ export function ConcernBanner({ severity, patternCount = 0 }: Props) {
             </Text>
           )}
         </View>
-        <Text style={styles.subtext}>Review MedPsy's findings below</Text>
+        <Text style={[styles.subtext, { color: colors.textSecondary }]}>
+          {"Review MedPsy's findings below"}
+        </Text>
       </View>
     </View>
   );
@@ -65,10 +64,7 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
-  emoji: {
-    fontSize: 22,
-    marginTop: 1,
-  },
+  emoji: { fontSize: 22, marginTop: 1 },
   content: { flex: 1 },
   topRow: {
     flexDirection: "row",
@@ -92,7 +88,6 @@ const styles = StyleSheet.create({
   subtext: {
     fontFamily: "Georgia",
     fontSize: 13,
-    color: colors.textSecondary,
     lineHeight: 20,
   },
 });

@@ -1,9 +1,40 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 
 export function TapToTalkCard() {
+  const colors = useTheme();
+
+  const styles = StyleSheet.create({
+    card: {
+      backgroundColor: colors.bgCard,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 20,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    glowHalo: {
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      backgroundColor: "rgba(59, 130, 246, 0.18)",
+      shadowColor: colors.accentBlue,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.5,
+      shadowRadius: 22,
+      elevation: 14,
+    },
+    micCircle: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: colors.accentBlue,
+    },
+  });
+
   return (
     <Pressable
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
@@ -29,32 +60,3 @@ export function TapToTalkCard() {
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.bgCard,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 20,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  glowHalo: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: "rgba(59, 130, 246, 0.18)",
-    shadowColor: colors.accentBlue,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 22,
-    elevation: 14,
-  },
-  micCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.accentBlue,
-  },
-});

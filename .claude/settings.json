@@ -40,7 +40,10 @@
       "PowerShell(\\(Get-Content \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\app\\\\\\(tabs\\)\\\\family\\\\scan-code.tsx\"\\).Count)",
       "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('expo-camera:', p.dependencies['expo-camera']\\)\")",
       "Bash(dir \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\app\\\\\\(tabs\\)\")",
-      "Bash(dir \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\components\")"
+      "Bash(dir \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\components\")",
+      "PowerShell(\\(Get-Content \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\app\\\\\\(tabs\\)\\\\care-view.tsx\" | Measure-Object -Line\\).Lines)",
+      "PowerShell(\\(Get-Content \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\app\\\\recording\\\\active.tsx\" | Measure-Object -Line\\).Lines)",
+      "PowerShell(\\(Get-Content \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\app\\\\analysis\\\\processing.tsx\" | Measure-Object -Line\\).Lines)"
     ]
   },
   "enabledPlugins": {

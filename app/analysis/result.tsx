@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { YouSaidCard } from "@/components/YouSaidCard";
@@ -13,6 +13,7 @@ import { speakResponse, stopSpeaking } from "@/lib/tts";
 import type { HealthEntry } from "@/types/health";
 
 export default function AnalysisResultScreen() {
+  const colors = useTheme();
   const { finalTranscript, analysisResult, resetRecording } = useRecordingStore();
   const { addEntry } = useHealthStore();
   const [saved, setSaved] = useState(false);
@@ -39,7 +40,7 @@ export default function AnalysisResultScreen() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (saved) return;
     const entry: HealthEntry = {
       id: Date.now().toString(),
@@ -49,13 +50,50 @@ export default function AnalysisResultScreen() {
       tags: result.tags,
       severity: result.severity,
     };
-    addEntry(entry);
+    await addEntry(entry);
     setSaved(true);
     setTimeout(() => {
       resetRecording();
       router.replace("/(tabs)" as any);
     }, 700);
   };
+
+  const styles = StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.bgPrimary },
+    backBtn: {
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 4,
+      alignSelf: "flex-start",
+    },
+    backText: {
+      fontFamily: "monospace",
+      fontSize: 12,
+      color: colors.textSecondary,
+      letterSpacing: 0.5,
+    },
+    screenLabel: {
+      fontFamily: "monospace",
+      fontSize: 11,
+      color: colors.textSecondary,
+      letterSpacing: 1.2,
+      paddingHorizontal: 20,
+      marginBottom: 16,
+    },
+    scroll: { flex: 1 },
+    scrollContent: {
+      paddingHorizontal: 20,
+      paddingBottom: 24,
+    },
+    cards: { gap: 12 },
+    bottomBar: {
+      paddingHorizontal: 20,
+      paddingBottom: 20,
+      paddingTop: 16,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+  });
 
   return (
     <SafeAreaView style={styles.root}>
@@ -100,40 +138,3 @@ export default function AnalysisResultScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bgPrimary },
-  backBtn: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 4,
-    alignSelf: "flex-start",
-  },
-  backText: {
-    fontFamily: "monospace",
-    fontSize: 12,
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-  },
-  screenLabel: {
-    fontFamily: "monospace",
-    fontSize: 11,
-    color: colors.textSecondary,
-    letterSpacing: 1.2,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  scroll: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-  },
-  cards: { gap: 12 },
-  bottomBar: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-});

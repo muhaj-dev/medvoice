@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
   onBack: () => void;
@@ -7,6 +7,48 @@ type Props = {
 };
 
 export function CameraPermissionError({ onBack, onRequestPermission }: Props) {
+  const colors = useTheme();
+
+  const styles = StyleSheet.create({
+    wrap: { flex: 1, paddingHorizontal: 20, paddingTop: 8 },
+    backBtn: { alignSelf: 'flex-start', marginBottom: 32, paddingVertical: 8 },
+    backText: {
+      fontFamily: 'monospace',
+      fontSize: 12,
+      color: colors.textSecondary,
+      letterSpacing: 1,
+    },
+    body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 },
+    title: {
+      fontFamily: 'Georgia',
+      fontSize: 20,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontFamily: 'Georgia',
+      fontSize: 14,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+      maxWidth: 280,
+    },
+    btn: {
+      backgroundColor: colors.accentBlue,
+      borderRadius: 12,
+      paddingVertical: 14,
+      paddingHorizontal: 24,
+    },
+    btnText: {
+      fontFamily: 'monospace',
+      fontSize: 12,
+      fontWeight: '600',
+      letterSpacing: 1.2,
+      color: '#ffffff',
+    },
+  });
+
   return (
     <View style={styles.wrap}>
       <TouchableOpacity
@@ -28,43 +70,3 @@ export function CameraPermissionError({ onBack, onRequestPermission }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: 20, paddingTop: 8 },
-  backBtn: { alignSelf: 'flex-start', marginBottom: 32, paddingVertical: 8 },
-  backText: {
-    fontFamily: 'monospace',
-    fontSize: 12,
-    color: colors.textSecondary,
-    letterSpacing: 1,
-  },
-  body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 },
-  title: {
-    fontFamily: 'Georgia',
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontFamily: 'Georgia',
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-    maxWidth: 280,
-  },
-  btn: {
-    backgroundColor: colors.accentBlue,
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-  },
-  btnText: {
-    fontFamily: 'monospace',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 1.2,
-    color: '#ffffff',
-  },
-});

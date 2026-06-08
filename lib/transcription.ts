@@ -22,5 +22,5 @@ export async function transcribeAudioFile(
     audioChunk: audioUri,
   });
 
-  return result.text ?? "";
+  return result ?? "";
 }

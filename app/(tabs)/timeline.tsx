@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { useHealthStore } from "@/store/useHealthStore";
 import { TimelineSearchBar } from "@/components/TimelineSearchBar";
 import { TimelineEntryCard } from "@/components/TimelineEntryCard";
@@ -19,13 +19,10 @@ function filterEntries(entries: HealthEntry[], query: string): HealthEntry[] {
 }
 
 export default function TimelineScreen() {
+  const colors = useTheme();
   const { entries } = useHealthStore();
   const [query, setQuery] = useState("");
-  const [filtered, setFiltered] = useState<HealthEntry[]>(entries);
-
-  useEffect(() => {
-    setFiltered(filterEntries(entries, query));
-  }, [entries, query]);
+  const filtered = useMemo(() => filterEntries(entries, query), [entries, query]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>

@@ -1,20 +1,86 @@
-import { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { useState, useCallback, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { colors } from '@/constants/colors';
+import { useCameraPermissions } from 'expo-camera';
+import { useTheme } from '@/hooks/useTheme';
 import { QRScannerViewfinder } from '@/components/QRScannerViewfinder';
 import { ScanConnectModal } from '@/components/ScanConnectModal';
+import { CameraPermissionError } from '@/components/CameraPermissionError';
 import { connectFamilyMember } from '@/lib/p2p';
 import { useFamilyStore } from '@/store/useFamilyStore';
 import type { FamilyMember } from '@/types/family';
 
 export default function ScanCodeScreen() {
+  const colors = useTheme();
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      paddingHorizontal: 20,
+      paddingTop: 8,
+    },
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadingText: {
+      fontFamily: 'Georgia',
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+    backBtn: {
+      alignSelf: 'flex-start',
+      marginBottom: 32,
+      paddingVertical: 8,
+    },
+    backText: {
+      fontFamily: 'monospace',
+      fontSize: 12,
+      color: colors.textSecondary,
+      letterSpacing: 1,
+    },
+    header: {
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 36,
+    },
+    title: {
+      fontFamily: 'Georgia',
+      fontSize: 24,
+      fontWeight: '700',
+      color: colors.textPrimary,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontFamily: 'Georgia',
+      fontSize: 14,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    viewfinderWrap: {
+      alignItems: 'center',
+      marginBottom: 28,
+    },
+    hint: {
+      fontFamily: 'Georgia',
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
+  });
   const { addMember } = useFamilyStore();
+  const [permission, requestPermission] = useCameraPermissions();
   const [paused, setPaused] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [pendingKey, setPendingKey] = useState('');
+
+  // Auto-request on mount
+  useEffect(() => {
+    requestPermission();
+  }, [requestPermission]);
 
   const handleCodeDetected = useCallback(
     (data: string) => {
@@ -25,7 +91,7 @@ export default function ScanCodeScreen() {
       setTimeout(() => {
         setShowSuccess(false);
         setShowModal(true);
-      }, 500);
+      }, 600);
     },
     [paused]
   );
@@ -48,12 +114,32 @@ export default function ScanCodeScreen() {
     [addMember, pendingKey]
   );
 
+  // Still loading permission status
+  if (!permission) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
+        <View style={styles.center}>
+          <Text style={styles.loadingText}>Requesting camera access…</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Permission denied
+  if (!permission.granted) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
+        <CameraPermissionError
+          onBack={() => router.back()}
+          onRequestPermission={requestPermission}
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.container}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backBtn}
@@ -63,13 +149,14 @@ export default function ScanCodeScreen() {
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <Text style={styles.title}>Scan Family Member's Code</Text>
+          <Text style={styles.title}>{"Scan Family Member's Code"}</Text>
           <Text style={styles.subtitle}>Point your camera at their QR code</Text>
         </View>
 
         <View style={styles.viewfinderWrap}>
           <QRScannerViewfinder
             onCodeDetected={handleCodeDetected}
+            hasPermission={permission.granted}
             paused={paused}
             showSuccess={showSuccess}
           />
@@ -78,51 +165,16 @@ export default function ScanCodeScreen() {
         <Text style={styles.hint}>
           The code will be detected automatically.{'\n'}No need to tap anything.
         </Text>
-      </ScrollView>
+      </View>
 
       <ScanConnectModal
         visible={showModal}
         onConfirm={handleConfirm}
-        onDismiss={() => setShowModal(false)}
+        onDismiss={() => {
+          setShowModal(false);
+          setPaused(false);
+        }}
       />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 100,
-  },
-  backBtn: { alignSelf: 'flex-start', marginBottom: 32, paddingVertical: 8 },
-  backText: {
-    fontFamily: 'monospace',
-    fontSize: 12,
-    color: colors.textSecondary,
-    letterSpacing: 1,
-  },
-  header: { alignItems: 'center', gap: 12, marginBottom: 32 },
-  title: {
-    fontFamily: 'Georgia',
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontFamily: 'Georgia',
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  viewfinderWrap: { alignItems: 'center', marginBottom: 28 },
-  hint: {
-    fontFamily: 'Georgia',
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-});

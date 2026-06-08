@@ -1,7 +1,7 @@
 import { ScrollView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 import { useFamilyStore } from '@/store/useFamilyStore';
 import { P2PMeshBanner } from '@/components/P2PMeshBanner';
 import { FamilyMemberCard } from '@/components/FamilyMemberCard';
@@ -9,6 +9,7 @@ import { AddFamilyMemberSection } from '@/components/AddFamilyMemberSection';
 import { HowP2PWorksCard } from '@/components/HowP2PWorksCard';
 
 export default function FamilyScreen() {
+  const colors = useTheme();
   const { members } = useFamilyStore();
   const onlineCount = members.filter((m) => m.connectionStatus === 'online').length;
 
@@ -24,7 +25,7 @@ export default function FamilyScreen() {
             <Text className="font-georgia text-[36px] font-bold text-white leading-10">
               Family
             </Text>
-            <Text className="font-georgia text-[36px] italic text-brand-light leading-10">
+            <Text className="font-georgia text-[36px] italic text-brand-light leading-4">
               Connection
             </Text>
             <Text className="font-georgia text-[13px] text-dim mt-1.5">

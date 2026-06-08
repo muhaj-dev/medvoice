@@ -10,12 +10,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
 import { OnboardingNavButtons } from "@/components/OnboardingNavButtons";
 import { useUserStore } from "@/store/useUserStore";
 
 export default function ProfileScreen() {
+  const colors = useTheme();
   const router = useRouter();
   const profile = useUserStore((s) => s.profile);
   const setProfile = useUserStore((s) => s.setProfile);
@@ -38,6 +39,32 @@ export default function ProfileScreen() {
     await completeOnboarding();
     router.replace("/(tabs)");
   };
+
+  const styles = StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bgPrimary },
+    kav: { flex: 1 },
+    scroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20 },
+    fields: { gap: 16 },
+    label: {
+      fontFamily: "monospace",
+      fontSize: 11,
+      color: colors.textSecondary,
+      letterSpacing: 1.2,
+      marginBottom: 6,
+    },
+    input: {
+      backgroundColor: colors.bgCard,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderRadius: 12,
+      height: 56,
+      paddingHorizontal: 16,
+      fontFamily: "Georgia",
+      fontSize: 16,
+      color: colors.textPrimary,
+    },
+    footer: { paddingHorizontal: 20, paddingBottom: 8 },
+  });
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
@@ -126,28 +153,3 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bgPrimary },
-  kav: { flex: 1 },
-  scroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20 },
-  fields: { gap: 16 },
-  label: {
-    fontFamily: "monospace",
-    fontSize: 11,
-    color: colors.textSecondary,
-    letterSpacing: 1.2,
-    marginBottom: 6,
-  },
-  input: {
-    backgroundColor: colors.bgCard,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: 12,
-    height: 56,
-    paddingHorizontal: 16,
-    fontFamily: "Georgia",
-    fontSize: 16,
-    color: colors.textPrimary,
-  },
-  footer: { paddingHorizontal: 20, paddingBottom: 8 },
-});
