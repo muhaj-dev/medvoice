@@ -12,14 +12,11 @@ type TabConfig = {
 };
 
 const TAB_CONFIG: Record<string, TabConfig> = {
-  index: { icon: "home-outline", iconActive: "home", label: "HOME" },
-  log: { icon: "mic-outline", iconActive: "mic", label: "LOG" },
-  analysis: {
-    icon: "bar-chart-outline",
-    iconActive: "bar-chart",
-    label: "ANALYSIS",
-  },
-  family: { icon: "people-outline", iconActive: "people", label: "FAMILY" },
+  index:       { icon: "home-outline",     iconActive: "home",     label: "HOME"      },
+  timeline:    { icon: "time-outline",     iconActive: "time",     label: "TIMELINE"  },
+  family:      { icon: "people-outline",   iconActive: "people",   label: "FAMILY"    },
+  "care-view": { icon: "eye-outline",      iconActive: "eye",      label: "CARE VIEW" },
+  settings:    { icon: "settings-outline", iconActive: "settings", label: "SETTINGS"  },
 };
 
 type CustomTabBarProps = {
@@ -72,7 +69,7 @@ function CustomTabBar({ state, navigation }: CustomTabBarProps) {
               color={isFocused ? colors.textPrimary : colors.textMuted}
             />
             <Text
-              className={`font-code text-[10px] font-medium tracking-[0.5px] ${
+              className={`font-code text-[10px] tracking-[0.5px] ${
                 isFocused ? "text-white" : "text-ghost"
               }`}
             >
@@ -99,9 +96,10 @@ export default function TabsLayout() {
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="log" />
-      <Tabs.Screen name="analysis" />
+      <Tabs.Screen name="timeline" />
       <Tabs.Screen name="family" />
+      <Tabs.Screen name="care-view" />
+      <Tabs.Screen name="settings" />
     </Tabs>
   );
 }

@@ -18,7 +18,7 @@ export default function Index() {
   useEffect(() => {
     if (!ready) return;
     SplashScreen.hideAsync();
-    router.replace(onboardingComplete ? "/(tabs)" : "/(onboarding)");
+    router.replace((onboardingComplete ? "/(tabs)" : "/(onboarding)/welcome") as any);
   }, [ready, onboardingComplete]);
 
   return <View style={{ flex: 1, backgroundColor: colors.bgPrimary }} />;
