@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
 import type { ColorTokens } from "@/constants/colors";
 
@@ -13,6 +13,7 @@ type Props = {
   valueSuffixColor?: string;
   valueFontSize?: number;
   isLast?: boolean;
+  onPress?: () => void;
 };
 
 export function SettingsRow({
@@ -25,13 +26,15 @@ export function SettingsRow({
   valueSuffixColor,
   valueFontSize = 13,
   isLast = false,
+  onPress,
 }: Props) {
   const colors = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const resolvedValueColor = valueColor ?? colors.textSecondary;
+  const rowStyle = [styles.row, !isLast && styles.rowBorder];
 
-  return (
-    <View style={[styles.row, !isLast && styles.rowBorder]}>
+  const content = (
+    <>
       <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
         <Text style={styles.iconText}>{icon}</Text>
       </View>
@@ -55,8 +58,18 @@ export function SettingsRow({
           </Text>
         ) : null}
       </View>
-    </View>
+    </>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={rowStyle}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return <View style={rowStyle}>{content}</View>;
 }
 
 function makeStyles(colors: ColorTokens) {

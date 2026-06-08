@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useUserStore } from "@/store/useUserStore";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
 import { FeatureRow } from "@/components/FeatureRow";
 
@@ -14,6 +16,11 @@ const FEATURES = [
 export default function WelcomeScreen() {
   const colors = useTheme();
   const router = useRouter();
+  const onboardingComplete = useUserStore((s) => s.onboardingComplete);
+
+  useEffect(() => {
+    if (onboardingComplete) router.replace("/(tabs)" as any);
+  }, [onboardingComplete]);
 
   const styles = StyleSheet.create({
     safe: {
@@ -65,16 +72,13 @@ export default function WelcomeScreen() {
           <Text style={styles.heartEmoji}>❤️</Text>
         </View>
 
-        <Text className="font-georgia text-[32px] font-bold text-white text-center mb-2">
+        <Text style={{ fontFamily: 'Georgia', fontSize: 32, fontWeight: '700', color: colors.textPrimary, textAlign: 'center', marginBottom: 8 }}>
           MedVoice
         </Text>
-        <Text className="font-georgia text-[18px] italic text-brand text-center mb-4">
+        <Text style={{ fontFamily: 'Georgia', fontSize: 18, fontStyle: 'italic', color: colors.accentBlue, textAlign: 'center', marginBottom: 16 }}>
           Your Private Health Companion
         </Text>
-        <Text
-          className="font-georgia text-[14px] text-dim text-center mb-7 self-center"
-          style={{ lineHeight: 22, maxWidth: 280 }}
-        >
+        <Text style={{ fontFamily: 'Georgia', fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: 28, lineHeight: 22, maxWidth: 280, alignSelf: 'center' }}>
           AI-powered health insights that live entirely on your phone. Your data
           never leaves your device. Ever.
         </Text>

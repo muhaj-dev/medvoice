@@ -5,18 +5,22 @@ import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { useHealthStore } from "@/store/useHealthStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { YouSaidCard } from "@/components/YouSaidCard";
 import { ConcernBanner } from "@/components/ConcernBanner";
 import { PatternCard } from "@/components/PatternCard";
 import { AnalysisActionButtons } from "@/components/AnalysisActionButtons";
 import { speakResponse, stopSpeaking } from "@/lib/tts";
+import { insertPattern } from "@/lib/db";
 import type { HealthEntry } from "@/types/health";
 
 export default function AnalysisResultScreen() {
   const colors = useTheme();
-  const { finalTranscript, analysisResult, resetRecording } = useRecordingStore();
+  const { finalTranscript, analysisResult, entryEmbedding, resetRecording } = useRecordingStore();
   const { addEntry } = useHealthStore();
+  const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const result = analysisResult ?? {
@@ -41,21 +45,40 @@ export default function AnalysisResultScreen() {
   };
 
   const handleSave = async () => {
-    if (saved) return;
-    const entry: HealthEntry = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      transcript: finalTranscript || "Health update recorded.",
-      analysis: result.summary,
-      tags: result.tags,
-      severity: result.severity,
-    };
-    await addEntry(entry);
-    setSaved(true);
-    setTimeout(() => {
-      resetRecording();
-      router.replace("/(tabs)" as any);
-    }, 700);
+    if (saved || isSaving) return;
+    setIsSaving(true);
+    try {
+      const entry: HealthEntry = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        transcript: finalTranscript || "Health update recorded.",
+        analysis: result.summary,
+        tags: result.tags,
+        severity: result.severity,
+        embedding: entryEmbedding ?? undefined,
+      };
+      await addEntry(entry);
+      await Promise.all(
+        (result.patterns ?? []).map((p, i) =>
+          insertPattern({
+            id: `${entry.id}_p${i}`,
+            entryId: entry.id,
+            patternName: p.name,
+            severity: p.severity,
+            description: p.description,
+            recommendation: "",
+            createdAt: entry.timestamp,
+          })
+        )
+      );
+      setSaved(true);
+      setTimeout(() => {
+        resetRecording();
+        router.replace("/(tabs)" as any);
+      }, 700);
+    } catch {
+      setIsSaving(false);
+    }
   };
 
   const styles = StyleSheet.create({
@@ -130,9 +153,11 @@ export default function AnalysisResultScreen() {
       <View style={styles.bottomBar}>
         <AnalysisActionButtons
           isSpeaking={isSpeaking}
+          ttsEnabled={ttsEnabled}
           onReadAloud={handleReadAloud}
           onSave={handleSave}
           saved={saved}
+          isSaving={isSaving}
         />
       </View>
     </SafeAreaView>

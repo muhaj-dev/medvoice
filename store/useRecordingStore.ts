@@ -20,12 +20,14 @@ type RecordingStore = {
   finalTranscript: string;
   audioUri: string | null;
   analysisResult: AnalysisResult | null;
+  entryEmbedding: number[] | null;
   setIsRecording: (value: boolean) => void;
   appendTranscript: (word: string) => void;
   setTranscript: (text: string) => void;
   setFinalTranscript: (text: string) => void;
   setAudioUri: (uri: string) => void;
   setAnalysisResult: (result: AnalysisResult) => void;
+  setEntryEmbedding: (embedding: number[]) => void;
   resetRecording: () => void;
 };
 
@@ -35,6 +37,7 @@ export const useRecordingStore = create<RecordingStore>((set) => ({
   finalTranscript: "",
   audioUri: null,
   analysisResult: null,
+  entryEmbedding: null,
 
   setIsRecording: (value) => set({ isRecording: value }),
 
@@ -51,6 +54,8 @@ export const useRecordingStore = create<RecordingStore>((set) => ({
 
   setAnalysisResult: (result) => set({ analysisResult: result }),
 
+  setEntryEmbedding: (embedding) => set({ entryEmbedding: embedding }),
+
   resetRecording: () =>
     set({
       isRecording: false,
@@ -58,5 +63,6 @@ export const useRecordingStore = create<RecordingStore>((set) => ({
       finalTranscript: "",
       audioUri: null,
       analysisResult: null,
+      entryEmbedding: null,
     }),
 }));

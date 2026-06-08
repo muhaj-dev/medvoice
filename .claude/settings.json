@@ -43,7 +43,10 @@
       "Bash(dir \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\components\")",
       "PowerShell(\\(Get-Content \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\app\\\\\\(tabs\\)\\\\care-view.tsx\" | Measure-Object -Line\\).Lines)",
       "PowerShell(\\(Get-Content \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\app\\\\recording\\\\active.tsx\" | Measure-Object -Line\\).Lines)",
-      "PowerShell(\\(Get-Content \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\app\\\\analysis\\\\processing.tsx\" | Measure-Object -Line\\).Lines)"
+      "PowerShell(\\(Get-Content \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\\\\app\\\\analysis\\\\processing.tsx\" | Measure-Object -Line\\).Lines)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\USER\\\\Documents\\\\Hacks\\\\Medv\" -Recurse -Directory)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)"
     ]
   },
   "enabledPlugins": {

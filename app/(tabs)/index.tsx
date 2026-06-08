@@ -9,6 +9,7 @@ import { useHealthStore } from "@/store/useHealthStore";
 import { PrivacyBadge } from "@/components/PrivacyBadge";
 import { TapToTalkCard } from "@/components/TapToTalkCard";
 import { RecentEntryCard } from "@/components/RecentEntryCard";
+import { ModelLoadingCard } from "@/components/ModelLoadingCard";
 
 const DAYS = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
 const MONTHS = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
@@ -42,7 +43,7 @@ export default function HomeScreen() {
       >
         {/* Date + Settings button */}
         <View className="flex-row items-center justify-between mb-3.5">
-          <Text className="font-code text-[11px] text-dim tracking-[1.2px]">
+          <Text style={{ fontFamily: 'monospace', fontSize: 11, color: colors.textSecondary, letterSpacing: 1.2 }}>
             {getFormattedDate()}
           </Text>
           <TouchableOpacity
@@ -57,13 +58,16 @@ export default function HomeScreen() {
 
         {/* Greeting */}
         <View className="mb-4">
-          <Text className="font-georgia text-[28px] font-bold text-white leading-8.5">
+          <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', color: colors.textPrimary, lineHeight: 34 }}>
             {getGreeting()}
           </Text>
-          <Text className="font-georgia text-[28px] font-bold italic text-teal leading-8.5">
+          <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', fontStyle: 'italic', color: colors.successGreen, lineHeight: 34 }}>
             {profile?.name ?? "there"}
           </Text>
         </View>
+
+        {/* Model download progress — visible on first run until all models are ready */}
+        <ModelLoadingCard />
 
         {/* Privacy badge */}
         <PrivacyBadge />
@@ -75,7 +79,7 @@ export default function HomeScreen() {
 
         {/* Recent Entries header */}
         <View className="flex-row items-center justify-between mb-3">
-          <Text className="font-code text-[11px] text-dim tracking-[1.2px]">
+          <Text style={{ fontFamily: 'monospace', fontSize: 11, color: colors.textSecondary, letterSpacing: 1.2 }}>
             RECENT ENTRIES
           </Text>
           <TouchableOpacity
@@ -83,7 +87,7 @@ export default function HomeScreen() {
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text className="font-code text-[11px] text-brand">SEE ALL →</Text>
+            <Text style={{ fontFamily: 'monospace', fontSize: 11, color: colors.accentBlue }}>SEE ALL →</Text>
           </TouchableOpacity>
         </View>
 
@@ -91,8 +95,8 @@ export default function HomeScreen() {
         {recentEntries.length === 0 ? (
           <View className="items-center py-9 gap-1.5">
             <Text className="text-[32px] mb-2">🎙️</Text>
-            <Text className="font-georgia text-[15px] text-dim">No entries yet</Text>
-            <Text className="font-georgia text-[13px] text-ghost text-center leading-5">
+            <Text style={{ fontFamily: 'Georgia', fontSize: 15, color: colors.textSecondary }}>No entries yet</Text>
+            <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 20 }}>
               Tap the microphone above to get started
             </Text>
           </View>

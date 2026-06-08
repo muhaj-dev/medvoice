@@ -3,12 +3,14 @@ import { useTheme } from "@/hooks/useTheme";
 
 type Props = {
   isSpeaking: boolean;
+  ttsEnabled?: boolean;
   onReadAloud: () => void;
   onSave: () => void;
   saved: boolean;
+  isSaving?: boolean;
 };
 
-export function AnalysisActionButtons({ isSpeaking, onReadAloud, onSave, saved }: Props) {
+export function AnalysisActionButtons({ isSpeaking, ttsEnabled = true, onReadAloud, onSave, saved, isSaving }: Props) {
   const colors = useTheme();
 
   const styles = StyleSheet.create({
@@ -41,7 +43,7 @@ export function AnalysisActionButtons({ isSpeaking, onReadAloud, onSave, saved }
       justifyContent: "center",
     },
     savedBtn: {
-      backgroundColor: colors.successGreen,
+      backgroundColor: colors.success,
     },
     saveBtnText: {
       fontFamily: "monospace",
@@ -55,12 +57,13 @@ export function AnalysisActionButtons({ isSpeaking, onReadAloud, onSave, saved }
   return (
     <View style={styles.row}>
       <TouchableOpacity
-        style={styles.readAloudBtn}
-        onPress={onReadAloud}
+        style={[styles.readAloudBtn, !ttsEnabled && { opacity: 0.4 }]}
+        onPress={ttsEnabled ? onReadAloud : undefined}
         activeOpacity={0.75}
+        disabled={!ttsEnabled}
       >
         <Text style={styles.readAloudText}>
-          {isSpeaking ? "⏹  STOP" : "🔊  READ ALOUD"}
+          {!ttsEnabled ? "🔇  TTS OFF" : isSpeaking ? "⏹  STOP" : "🔊  READ ALOUD"}
         </Text>
       </TouchableOpacity>
 
@@ -68,10 +71,10 @@ export function AnalysisActionButtons({ isSpeaking, onReadAloud, onSave, saved }
         style={[styles.saveBtn, saved && styles.savedBtn]}
         onPress={onSave}
         activeOpacity={0.85}
-        disabled={saved}
+        disabled={saved || isSaving}
       >
         <Text style={styles.saveBtnText}>
-          {saved ? "✓  SAVED" : "💾  SAVE"}
+          {saved ? "✓  SAVED" : isSaving ? "SAVING..." : "💾  SAVE"}
         </Text>
       </TouchableOpacity>
     </View>

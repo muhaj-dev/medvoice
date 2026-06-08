@@ -58,7 +58,9 @@ export default function RecordingActiveScreen() {
     const uri = audioRecorder.uri ?? null;
     setIsRecording(false);
     if (uri) setAudioUri(uri);
-    setFinalTranscript(transcript);
+    // Do NOT persist demo words as finalTranscript — processing.tsx will call
+    // transcribeAudioFile(audioUri) to produce the real transcript.
+    setFinalTranscript("");
     router.replace("/analysis/processing" as any);
   };
 

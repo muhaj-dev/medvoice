@@ -2,7 +2,6 @@ import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { useFamilyStore } from "@/store/useFamilyStore";
-import { useHealthStore } from "@/store/useHealthStore";
 import { LiveMonitoringBadge } from "@/components/LiveMonitoringBadge";
 import { ConcernFlaggedBanner } from "@/components/ConcernFlaggedBanner";
 import { LatestEntryCard } from "@/components/LatestEntryCard";
@@ -18,10 +17,10 @@ function deriveConcernCount(severity: string | null): number {
 export default function CareViewScreen() {
   const colors = useTheme();
   const members = useFamilyStore((s) => s.members);
-  const entries = useHealthStore((s) => s.entries);
+  const syncedEntries = useFamilyStore((s) => s.syncedEntries);
 
   const connectedMember =
-    members.find((m) => m.connectionStatus === "online") ?? members[0] ?? null;
+    members.find((m) => m.connectionStatus === "online") ?? null;
 
   if (!connectedMember) {
     return (
@@ -31,8 +30,8 @@ export default function CareViewScreen() {
     );
   }
 
-  const latestEntry = entries[0] ?? null;
-  const recentEntries = entries.slice(1, 4);
+  const latestEntry = syncedEntries[0] ?? null;
+  const recentEntries = syncedEntries.slice(1, 4);
   const count = deriveConcernCount(latestEntry?.severity ?? null);
 
   return (
@@ -43,7 +42,7 @@ export default function CareViewScreen() {
       >
         {/* MONITORING + LIVE badge */}
         <View className="flex-row items-center justify-between mb-3.5">
-          <Text className="font-code text-[10px] font-semibold text-dim tracking-[1.2px]">
+          <Text style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: '600', color: colors.textSecondary, letterSpacing: 1.2 }}>
             MONITORING
           </Text>
           <LiveMonitoringBadge />
@@ -51,10 +50,10 @@ export default function CareViewScreen() {
 
         {/* Name heading */}
         <View className="mb-5">
-          <Text className="font-georgia text-[32px] font-bold text-white leading-[38px]">
-            {connectedMember.name}&apos;s
+          <Text style={{ fontFamily: 'Georgia', fontSize: 32, fontWeight: '700', color: colors.textPrimary, lineHeight: 38 }}>
+            {connectedMember.name}'s
           </Text>
-          <Text className="font-georgia text-[32px] font-bold italic text-teal leading-[38px]">
+          <Text style={{ fontFamily: 'Georgia', fontSize: 32, fontWeight: '700', fontStyle: 'italic', color: colors.successGreen, lineHeight: 38 }}>
             Health
           </Text>
         </View>
@@ -66,15 +65,19 @@ export default function CareViewScreen() {
         {latestEntry ? (
           <LatestEntryCard entry={latestEntry} />
         ) : (
-          <View className="bg-card border border-edge rounded-2xl p-[18px] items-center mb-3.5">
-            <Text className="font-georgia text-[14px] text-dim">
-              No entries synced yet
+          <View style={{ backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 20, alignItems: 'center', marginBottom: 14, gap: 8 }}>
+            <Text style={{ fontSize: 28 }}>📡</Text>
+            <Text style={{ fontFamily: 'Georgia', fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
+              Waiting for P2P sync
+            </Text>
+            <Text style={{ fontFamily: 'Georgia', fontSize: 12, color: colors.textMuted, textAlign: 'center', lineHeight: 18 }}>
+              {connectedMember?.name ?? 'Your family member'} needs to open their MedVoice app to sync health data
             </Text>
           </View>
         )}
 
         {/* Recent entries label */}
-        <Text className="font-code text-[10px] font-semibold text-dim tracking-[1.2px] mb-3.5">
+        <Text style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: '600', color: colors.textSecondary, letterSpacing: 1.2, marginBottom: 14 }}>
           RECENT ENTRIES · READ ONLY
         </Text>
 
@@ -88,7 +91,7 @@ export default function CareViewScreen() {
           ))
         ) : (
           <View className="items-center py-6">
-            <Text className="font-georgia text-[13px] text-ghost">
+            <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textMuted }}>
               No previous entries
             </Text>
           </View>

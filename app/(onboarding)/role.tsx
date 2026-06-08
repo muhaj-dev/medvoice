@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
@@ -29,7 +29,12 @@ export default function RoleScreen() {
   const router = useRouter();
   const profile = useUserStore((s) => s.profile);
   const setProfile = useUserStore((s) => s.setProfile);
+  const onboardingComplete = useUserStore((s) => s.onboardingComplete);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(profile?.role ?? null);
+
+  useEffect(() => {
+    if (onboardingComplete) router.replace("/(tabs)" as any);
+  }, [onboardingComplete]);
 
   const handleContinue = () => {
     if (!selectedRole) return;
@@ -51,13 +56,13 @@ export default function RoleScreen() {
         </View>
 
         <View className="mb-7">
-          <Text className="font-georgia text-[28px] font-bold text-white leading-9">
+          <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', color: colors.textPrimary, lineHeight: 36 }}>
             How will you use
           </Text>
-          <Text className="font-georgia text-[28px] font-bold italic text-brand leading-9 mb-2.5">
+          <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', fontStyle: 'italic', color: colors.accentBlue, lineHeight: 36, marginBottom: 10 }}>
             MedVoice?
           </Text>
-          <Text className="font-georgia text-[14px] text-dim">
+          <Text style={{ fontFamily: 'Georgia', fontSize: 14, color: colors.textSecondary }}>
             {"We'll personalise the app for you."}
           </Text>
         </View>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,11 @@ export default function ProfileScreen() {
   const profile = useUserStore((s) => s.profile);
   const setProfile = useUserStore((s) => s.setProfile);
   const completeOnboarding = useUserStore((s) => s.completeOnboarding);
+  const onboardingComplete = useUserStore((s) => s.onboardingComplete);
+
+  useEffect(() => {
+    if (onboardingComplete) router.replace("/(tabs)" as any);
+  }, [onboardingComplete]);
 
   const [name, setName] = useState(profile?.name ?? "");
   const [age, setAge] = useState(profile?.age?.toString() ?? "");
@@ -37,7 +42,9 @@ export default function ProfileScreen() {
       medications: medications.split(",").map((s) => s.trim()).filter(Boolean),
     });
     await completeOnboarding();
-    router.replace("/(tabs)");
+    // Dismiss all onboarding screens from the stack, then replace with tabs
+    if (router.canDismiss()) router.dismissAll();
+    router.replace("/(tabs)" as any);
   };
 
   const styles = StyleSheet.create({
@@ -82,13 +89,13 @@ export default function ProfileScreen() {
           </View>
 
           <View className="mb-7">
-            <Text className="font-georgia text-[28px] font-bold text-white leading-9">
+            <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', color: colors.textPrimary, lineHeight: 36 }}>
               Tell us about
             </Text>
-            <Text className="font-georgia text-[28px] font-bold italic text-brand leading-9 mb-2">
+            <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', fontStyle: 'italic', color: colors.accentBlue, lineHeight: 36, marginBottom: 8 }}>
               yourself
             </Text>
-            <Text className="font-georgia text-[13px] text-dim">
+            <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textSecondary }}>
               Stored only on your device. Never shared.
             </Text>
           </View>
