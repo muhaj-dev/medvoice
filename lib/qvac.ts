@@ -46,7 +46,7 @@ export async function loadParakeetModel(
 
   parakeetPromise = loadModel({
     modelSrc: PARAKEET_TDT_0_6B_V3_Q8_0,
-    modelType: "parakeet",
+    modelType: "parakeet-transcription",
     onProgress: ({ percentage }) => {
       const pct = typeof percentage === "number" ? Math.round(percentage) : 0;
       useModelStore.getState().setModelState('parakeet', { status: 'loading', progress: pct });
@@ -77,7 +77,7 @@ export async function loadMedGemmaModel(
 
   medgemmaPromise = loadModel({
     modelSrc: MEDGEMMA_4B_IT_Q4_1,
-    modelType: "llm",
+    modelType: "llamacpp-completion",
     onProgress: ({ percentage }) => {
       const pct = typeof percentage === "number" ? Math.round(percentage) : 0;
       useModelStore.getState().setModelState('medgemma', { status: 'loading', progress: pct });
@@ -108,7 +108,7 @@ export async function loadEmbeddingModel(
 
   embeddingPromise = loadModel({
     modelSrc: EMBEDDINGGEMMA_300M_Q8_0,
-    modelType: "embed",
+    modelType: "llamacpp-embedding",
     onProgress: ({ percentage }) => {
       const pct = typeof percentage === "number" ? Math.round(percentage) : 0;
       useModelStore.getState().setModelState('embedding', { status: 'loading', progress: pct });
@@ -139,6 +139,11 @@ export async function loadTTSModel(
 
   ttsPromise = loadModel({
     modelSrc: TTS_EN_SUPERTONIC_Q4_0,
+    modelType: "tts-ggml",
+    modelConfig: {
+      ttsEngine: "supertonic",
+      language: "en",
+    },
     onProgress: ({ percentage }) => {
       const pct = typeof percentage === "number" ? Math.round(percentage) : 0;
       useModelStore.getState().setModelState('tts', { status: 'loading', progress: pct });

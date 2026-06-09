@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,10 +6,11 @@ import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
 import { useUserStore } from "@/store/useUserStore";
 import { useHealthStore } from "@/store/useHealthStore";
+import { useModelStore } from "@/store/useModelStore";
 import { PrivacyBadge } from "@/components/PrivacyBadge";
 import { TapToTalkCard } from "@/components/TapToTalkCard";
 import { RecentEntryCard } from "@/components/RecentEntryCard";
-import { ModelLoadingCard } from "@/components/ModelLoadingCard";
+import { ModelLoadingModal } from "@/components/ModelLoadingModal";
 
 const DAYS = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
 const MONTHS = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
@@ -32,6 +33,16 @@ export default function HomeScreen() {
   const profile = useUserStore((s) => s.profile);
   const entries = useHealthStore((s) => s.entries);
   const recentEntries = useMemo(() => entries.slice(0, 3), [entries]);
+  const { allReady, anyLoading, parakeet, medgemma, embedding, tts } = useModelStore();
+  const [modelModalVisible, setModelModalVisible] = useState(false);
+
+  const isReady = allReady();
+  const isLoading = anyLoading();
+  const states = { parakeet, medgemma, embedding, tts };
+  const totalProgress = ['parakeet', 'medgemma', 'embedding', 'tts'].reduce((sum, k) => {
+    const s = states[k as keyof typeof states];
+    return sum + (s.status === 'ready' ? 100 : s.progress);
+  }, 0) / 4;
 
   return (
     // SafeAreaView: className not supported — use inline style (AGENTS.md exception)
@@ -66,8 +77,31 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Model download progress — visible on first run until all models are ready */}
-        <ModelLoadingCard />
+        {/* AI model status pill — always tappable to open modal */}
+        <TouchableOpacity
+          onPress={() => setModelModalVisible(true)}
+          activeOpacity={0.7}
+          style={{
+            flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start',
+            backgroundColor: colors.bgCard, borderWidth: 1,
+            borderColor: isReady ? colors.success : isLoading ? colors.accentBlue : colors.border,
+            borderRadius: 99, paddingVertical: 6, paddingHorizontal: 12, marginBottom: 14, gap: 6,
+          }}
+        >
+          <View style={{
+            width: 6, height: 6, borderRadius: 3,
+            backgroundColor: isReady ? colors.success : isLoading ? colors.accentBlue : colors.textMuted,
+          }} />
+          <Text style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: 0.8,
+            color: isReady ? colors.success : isLoading ? colors.accentBlue : colors.textMuted,
+          }}>
+            {isReady ? 'AI READY' : `AI MODELS · ${Math.round(totalProgress)}%`}
+          </Text>
+          <Ionicons name="chevron-forward" size={10}
+            color={isReady ? colors.success : isLoading ? colors.accentBlue : colors.textMuted} />
+        </TouchableOpacity>
+
+        <ModelLoadingModal visible={modelModalVisible} onClose={() => setModelModalVisible(false)} />
 
         {/* Privacy badge */}
         <PrivacyBadge />

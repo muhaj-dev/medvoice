@@ -3,13 +3,18 @@ import type { HealthEntry, HealthPattern } from '@/types/health';
 import type { FamilyMember } from '@/types/family';
 
 let db: SQLite.SQLiteDatabase | null = null;
+let dbInitPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
-export async function getDb(): Promise<SQLite.SQLiteDatabase> {
-  if (!db) {
-    db = await SQLite.openDatabaseAsync('medvoice.db');
-    await initDb(db);
+export function getDb(): Promise<SQLite.SQLiteDatabase> {
+  if (db) return Promise.resolve(db);
+  if (!dbInitPromise) {
+    dbInitPromise = SQLite.openDatabaseAsync('medvoice.db').then(async (database) => {
+      await initDb(database);
+      db = database;
+      return database;
+    });
   }
-  return db;
+  return dbInitPromise;
 }
 
 async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
