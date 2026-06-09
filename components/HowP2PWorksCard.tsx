@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 
 const STEPS = [
   'Both phones need internet briefly',
@@ -9,6 +9,7 @@ const STEPS = [
 ];
 
 export function HowP2PWorksCard() {
+  const colors = useTheme();
   return (
     <View
       style={{

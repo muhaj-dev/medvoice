@@ -1,11 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, Animated, StyleSheet } from "react-native";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 
 type Props = { transcript: string };
 
 export function LiveTranscriptCard({ transcript }: Props) {
-  const cursorOpacity = useRef(new Animated.Value(1)).current;
+  const colors = useTheme();
+  const [cursorOpacity] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
     Animated.loop(
@@ -26,6 +27,36 @@ export function LiveTranscriptCard({ transcript }: Props) {
 
   const hasText = transcript.length > 0;
 
+  const styles = StyleSheet.create({
+    card: {
+      backgroundColor: "rgba(21, 29, 46, 0.9)",
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 16,
+      padding: 20,
+    },
+    text: {
+      fontFamily: "Georgia",
+      fontStyle: "italic",
+      fontSize: 16,
+      color: colors.textPrimary,
+      lineHeight: 26,
+    },
+    placeholder: {
+      fontFamily: "Georgia",
+      fontStyle: "italic",
+      fontSize: 16,
+      color: colors.textMuted,
+      lineHeight: 26,
+    },
+    cursor: {
+      fontFamily: "Georgia",
+      fontStyle: "italic",
+      fontSize: 16,
+      color: colors.textPrimary,
+    },
+  });
+
   return (
     <View style={styles.card}>
       <Text style={hasText ? styles.text : styles.placeholder}>
@@ -37,33 +68,3 @@ export function LiveTranscriptCard({ transcript }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "rgba(21, 29, 46, 0.9)",
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 20,
-  },
-  text: {
-    fontFamily: "Georgia",
-    fontStyle: "italic",
-    fontSize: 16,
-    color: colors.textPrimary,
-    lineHeight: 26,
-  },
-  placeholder: {
-    fontFamily: "Georgia",
-    fontStyle: "italic",
-    fontSize: 16,
-    color: colors.textMuted,
-    lineHeight: 26,
-  },
-  cursor: {
-    fontFamily: "Georgia",
-    fontStyle: "italic",
-    fontSize: 16,
-    color: colors.textPrimary,
-  },
-});

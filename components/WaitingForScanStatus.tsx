@@ -1,13 +1,14 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, Animated } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
   connected: boolean;
 };
 
 export function WaitingForScanStatus({ connected }: Props) {
-  const pulse = useRef(new Animated.Value(0.4)).current;
+  const colors = useTheme();
+  const [pulse] = useState(() => new Animated.Value(0.4));
 
   useEffect(() => {
     if (connected) {

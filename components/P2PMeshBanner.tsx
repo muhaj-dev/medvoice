@@ -1,11 +1,12 @@
 import { View, Text } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = {
   connectedCount: number;
 };
 
 export function P2PMeshBanner({ connectedCount }: Props) {
+  const colors = useTheme();
   return (
     <View
       style={{

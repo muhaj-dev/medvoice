@@ -1,5 +1,7 @@
-import { View, Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/colors";
+import { useMemo } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useTheme } from "@/hooks/useTheme";
+import type { ColorTokens } from "@/constants/colors";
 
 type Props = {
   icon: string;
@@ -11,6 +13,7 @@ type Props = {
   valueSuffixColor?: string;
   valueFontSize?: number;
   isLast?: boolean;
+  onPress?: () => void;
 };
 
 export function SettingsRow({
@@ -18,14 +21,20 @@ export function SettingsRow({
   iconBg,
   label,
   value,
-  valueColor = colors.textSecondary,
+  valueColor,
   valueSuffix,
   valueSuffixColor,
   valueFontSize = 13,
   isLast = false,
+  onPress,
 }: Props) {
-  return (
-    <View style={[styles.row, !isLast && styles.rowBorder]}>
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const resolvedValueColor = valueColor ?? colors.textSecondary;
+  const rowStyle = [styles.row, !isLast && styles.rowBorder];
+
+  const content = (
+    <>
       <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
         <Text style={styles.iconText}>{icon}</Text>
       </View>
@@ -34,7 +43,7 @@ export function SettingsRow({
 
       <View style={styles.valueWrap}>
         {value ? (
-          <Text style={[styles.value, { color: valueColor, fontSize: valueFontSize }]}>
+          <Text style={[styles.value, { color: resolvedValueColor, fontSize: valueFontSize }]}>
             {value}
           </Text>
         ) : null}
@@ -42,52 +51,62 @@ export function SettingsRow({
           <Text
             style={[
               styles.value,
-              { color: valueSuffixColor ?? valueColor, fontSize: valueFontSize },
+              { color: valueSuffixColor ?? resolvedValueColor, fontSize: valueFontSize },
             ]}
           >
             {valueSuffix}
           </Text>
         ) : null}
       </View>
-    </View>
+    </>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={rowStyle}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return <View style={rowStyle}>{content}</View>;
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 13,
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  rowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconText: {
-    fontSize: 18,
-  },
-  label: {
-    flex: 1,
-    fontFamily: "Georgia",
-    fontSize: 15,
-    color: colors.textPrimary,
-  },
-  valueWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  value: {
-    fontFamily: "monospace",
-    fontSize: 13,
-    color: colors.textSecondary,
-  },
-});
+function makeStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 13,
+      paddingHorizontal: 16,
+      gap: 12,
+    },
+    rowBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    iconWrap: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    iconText: { fontSize: 18 },
+    label: {
+      flex: 1,
+      fontFamily: "Georgia",
+      fontSize: 15,
+      color: colors.textPrimary,
+    },
+    valueWrap: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    value: {
+      fontFamily: "monospace",
+      fontSize: 13,
+      color: colors.textSecondary,
+    },
+  });
+}

@@ -21,30 +21,49 @@ import {
   EMBEDDINGGEMMA_300M_Q8_0,
   TTS_EN_SUPERTONIC_Q4_0,
 } from "@qvac/sdk";
+import { useModelStore } from "@/store/useModelStore";
 
-// ── In-memory model IDs (null until loaded) ───────────────────────────────
+// ── In-memory model IDs and in-flight promises ────────────────────────────
+// Promise singletons prevent concurrent callers from triggering duplicate downloads.
 let parakeetModelId: string | null = null;
 let medgemmaModelId: string | null = null;
 let embeddingModelId: string | null = null;
 let ttsModelId: string | null = null;
+
+let parakeetPromise: Promise<string> | null = null;
+let medgemmaPromise: Promise<string> | null = null;
+let embeddingPromise: Promise<string> | null = null;
+let ttsPromise: Promise<string> | null = null;
 
 // ── Parakeet — transcription (speech-to-text) ─────────────────────────────
 export async function loadParakeetModel(
   onProgress?: (pct: number) => void
 ): Promise<string> {
   if (parakeetModelId) return parakeetModelId;
+  if (parakeetPromise) return parakeetPromise;
 
-  parakeetModelId = await loadModel({
+  useModelStore.getState().setModelState('parakeet', { status: 'loading', progress: 0 });
+
+  parakeetPromise = loadModel({
     modelSrc: PARAKEET_TDT_0_6B_V3_Q8_0,
-    modelType: "parakeet",
-    onProgress: ({ progress }) => {
-      if (onProgress && typeof progress === "number") {
-        onProgress(Math.round(progress * 100));
-      }
+    modelType: "parakeet-transcription",
+    onProgress: ({ percentage }) => {
+      const pct = typeof percentage === "number" ? Math.round(percentage) : 0;
+      useModelStore.getState().setModelState('parakeet', { status: 'loading', progress: pct });
+      onProgress?.(pct);
     },
+  }).then((id) => {
+    parakeetModelId = id;
+    parakeetPromise = null;
+    useModelStore.getState().setModelState('parakeet', { status: 'ready', id });
+    return id;
+  }).catch((err) => {
+    parakeetPromise = null;
+    useModelStore.getState().setModelState('parakeet', { status: 'error' });
+    throw err;
   });
 
-  return parakeetModelId;
+  return parakeetPromise;
 }
 
 // ── MedGemma — health analysis (LLM) ─────────────────────────────────────
@@ -52,18 +71,30 @@ export async function loadMedGemmaModel(
   onProgress?: (pct: number) => void
 ): Promise<string> {
   if (medgemmaModelId) return medgemmaModelId;
+  if (medgemmaPromise) return medgemmaPromise;
 
-  medgemmaModelId = await loadModel({
+  useModelStore.getState().setModelState('medgemma', { status: 'loading', progress: 0 });
+
+  medgemmaPromise = loadModel({
     modelSrc: MEDGEMMA_4B_IT_Q4_1,
-    modelType: "llm",
-    onProgress: ({ progress }) => {
-      if (onProgress && typeof progress === "number") {
-        onProgress(Math.round(progress * 100));
-      }
+    modelType: "llamacpp-completion",
+    onProgress: ({ percentage }) => {
+      const pct = typeof percentage === "number" ? Math.round(percentage) : 0;
+      useModelStore.getState().setModelState('medgemma', { status: 'loading', progress: pct });
+      onProgress?.(pct);
     },
+  }).then((id) => {
+    medgemmaModelId = id;
+    medgemmaPromise = null;
+    useModelStore.getState().setModelState('medgemma', { status: 'ready', id });
+    return id;
+  }).catch((err) => {
+    medgemmaPromise = null;
+    useModelStore.getState().setModelState('medgemma', { status: 'error' });
+    throw err;
   });
 
-  return medgemmaModelId;
+  return medgemmaPromise;
 }
 
 // ── EmbeddingGemma — semantic search ──────────────────────────────────────
@@ -71,18 +102,30 @@ export async function loadEmbeddingModel(
   onProgress?: (pct: number) => void
 ): Promise<string> {
   if (embeddingModelId) return embeddingModelId;
+  if (embeddingPromise) return embeddingPromise;
 
-  embeddingModelId = await loadModel({
+  useModelStore.getState().setModelState('embedding', { status: 'loading', progress: 0 });
+
+  embeddingPromise = loadModel({
     modelSrc: EMBEDDINGGEMMA_300M_Q8_0,
-    modelType: "embed",
-    onProgress: ({ progress }) => {
-      if (onProgress && typeof progress === "number") {
-        onProgress(Math.round(progress * 100));
-      }
+    modelType: "llamacpp-embedding",
+    onProgress: ({ percentage }) => {
+      const pct = typeof percentage === "number" ? Math.round(percentage) : 0;
+      useModelStore.getState().setModelState('embedding', { status: 'loading', progress: pct });
+      onProgress?.(pct);
     },
+  }).then((id) => {
+    embeddingModelId = id;
+    embeddingPromise = null;
+    useModelStore.getState().setModelState('embedding', { status: 'ready', id });
+    return id;
+  }).catch((err) => {
+    embeddingPromise = null;
+    useModelStore.getState().setModelState('embedding', { status: 'error' });
+    throw err;
   });
 
-  return embeddingModelId;
+  return embeddingPromise;
 }
 
 // ── TTS Supertonic — read-aloud ───────────────────────────────────────────
@@ -90,18 +133,34 @@ export async function loadTTSModel(
   onProgress?: (pct: number) => void
 ): Promise<string> {
   if (ttsModelId) return ttsModelId;
+  if (ttsPromise) return ttsPromise;
 
-  ttsModelId = await loadModel({
+  useModelStore.getState().setModelState('tts', { status: 'loading', progress: 0 });
+
+  ttsPromise = loadModel({
     modelSrc: TTS_EN_SUPERTONIC_Q4_0,
-    modelType: "tts",
-    onProgress: ({ progress }) => {
-      if (onProgress && typeof progress === "number") {
-        onProgress(Math.round(progress * 100));
-      }
+    modelType: "tts-ggml",
+    modelConfig: {
+      ttsEngine: "supertonic",
+      language: "en",
     },
+    onProgress: ({ percentage }) => {
+      const pct = typeof percentage === "number" ? Math.round(percentage) : 0;
+      useModelStore.getState().setModelState('tts', { status: 'loading', progress: pct });
+      onProgress?.(pct);
+    },
+  }).then((id) => {
+    ttsModelId = id;
+    ttsPromise = null;
+    useModelStore.getState().setModelState('tts', { status: 'ready', id });
+    return id;
+  }).catch((err) => {
+    ttsPromise = null;
+    useModelStore.getState().setModelState('tts', { status: 'error' });
+    throw err;
   });
 
-  return ttsModelId;
+  return ttsPromise;
 }
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────

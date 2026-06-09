@@ -1,20 +1,31 @@
 import { create } from "zustand";
+import { insertEntry, loadAllEntries, deleteEntry } from "@/lib/db";
 import type { HealthEntry, InsightStat } from "@/types/health";
 
 type HealthStore = {
   entries: HealthEntry[];
-  addEntry: (entry: HealthEntry) => void;
-  removeEntry: (id: string) => void;
+  addEntry: (entry: HealthEntry) => Promise<void>;
+  removeEntry: (id: string) => Promise<void>;
+  loadFromDb: () => Promise<void>;
 };
 
-export const useHealthStore = create<HealthStore>((set) => ({
+export const useHealthStore = create<HealthStore>((set, get) => ({
   entries: [],
 
-  addEntry: (entry) =>
-    set((state) => ({ entries: [entry, ...state.entries] })),
+  addEntry: async (entry) => {
+    await insertEntry(entry);
+    set((state) => ({ entries: [entry, ...state.entries] }));
+  },
 
-  removeEntry: (id) =>
-    set((state) => ({ entries: state.entries.filter((e) => e.id !== id) })),
+  removeEntry: async (id) => {
+    await deleteEntry(id);
+    set((state) => ({ entries: state.entries.filter((e) => e.id !== id) }));
+  },
+
+  loadFromDb: async () => {
+    const entries = await loadAllEntries();
+    set({ entries });
+  },
 }));
 
 // Derived selector — compute insight stats from entries
@@ -51,12 +62,10 @@ export function computeInsightStats(entries: HealthEntry[]): InsightStat[] {
     ];
   }
 
-  // Count joint/knee-tagged entries this month
   const kneePainCount = recentEntries.filter((e) =>
     e.tags.some((t) => /knee|joint/i.test(t))
   ).length;
 
-  // Count sleep-tagged entries linked to fatigue
   const sleepFatigueCount = recentEntries.filter((e) =>
     e.tags.some((t) => /sleep|fatigue/i.test(t))
   ).length;

@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
+import { useUserStore } from "@/store/useUserStore";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
 import { FeatureRow } from "@/components/FeatureRow";
 
@@ -12,7 +14,48 @@ const FEATURES = [
 ] as const;
 
 export default function WelcomeScreen() {
+  const colors = useTheme();
   const router = useRouter();
+  const onboardingComplete = useUserStore((s) => s.onboardingComplete);
+
+  useEffect(() => {
+    if (onboardingComplete) router.replace("/(tabs)" as any);
+  }, [onboardingComplete]);
+
+  const styles = StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bgPrimary,
+    },
+    scroll: {
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      paddingBottom: 20,
+    },
+    heartCircle: {
+      width: 120,
+      height: 120,
+      borderRadius: 60,
+      backgroundColor: colors.bgCard,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: colors.accentBlue,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.5,
+      shadowRadius: 28,
+      elevation: 14,
+    },
+    heartEmoji: {
+      fontSize: 52,
+    },
+    getStartedBtn: {
+      backgroundColor: colors.accentBlue,
+      borderRadius: 14,
+      height: 54,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  });
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
@@ -29,16 +72,13 @@ export default function WelcomeScreen() {
           <Text style={styles.heartEmoji}>❤️</Text>
         </View>
 
-        <Text className="font-georgia text-[32px] font-bold text-white text-center mb-2">
+        <Text style={{ fontFamily: 'Georgia', fontSize: 32, fontWeight: '700', color: colors.textPrimary, textAlign: 'center', marginBottom: 8 }}>
           MedVoice
         </Text>
-        <Text className="font-georgia text-[18px] italic text-brand text-center mb-4">
+        <Text style={{ fontFamily: 'Georgia', fontSize: 18, fontStyle: 'italic', color: colors.accentBlue, textAlign: 'center', marginBottom: 16 }}>
           Your Private Health Companion
         </Text>
-        <Text
-          className="font-georgia text-[14px] text-dim text-center mb-7 self-center"
-          style={{ lineHeight: 22, maxWidth: 280 }}
-        >
+        <Text style={{ fontFamily: 'Georgia', fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: 28, lineHeight: 22, maxWidth: 280, alignSelf: 'center' }}>
           AI-powered health insights that live entirely on your phone. Your data
           never leaves your device. Ever.
         </Text>
@@ -65,37 +105,3 @@ export default function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bgPrimary,
-  },
-  scroll: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  heartCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.bgCard,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: colors.accentBlue,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 28,
-    elevation: 14,
-  },
-  heartEmoji: {
-    fontSize: 52,
-  },
-  getStartedBtn: {
-    backgroundColor: colors.accentBlue,
-    borderRadius: 14,
-    height: 54,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

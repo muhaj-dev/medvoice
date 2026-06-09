@@ -1,23 +1,37 @@
 import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  insertFamilyMember,
+  loadAllFamilyMembers,
+  deleteFamilyMember,
+} from '@/lib/db';
 import type { FamilyMember, ConnectionStatus } from '@/types/family';
-
-const FAMILY_KEY = '@medvoice:v2:family';
+import type { HealthEntry } from '@/types/health';
 
 type FamilyStore = {
   members: FamilyMember[];
+  // Health entries synced from a connected family member via P2P
+  syncedEntries: HealthEntry[];
   addMember: (member: FamilyMember) => Promise<void>;
+  removeMember: (id: string) => Promise<void>;
   updateMemberStatus: (id: string, status: ConnectionStatus) => void;
-  loadFromStorage: () => Promise<void>;
+  setSyncedEntries: (entries: HealthEntry[]) => void;
+  loadFromDb: () => Promise<void>;
 };
 
 export const useFamilyStore = create<FamilyStore>((set, get) => ({
   members: [],
+  syncedEntries: [],
+
+  setSyncedEntries: (entries) => set({ syncedEntries: entries }),
 
   addMember: async (member) => {
-    const next = [...get().members, member];
-    set({ members: next });
-    await AsyncStorage.setItem(FAMILY_KEY, JSON.stringify(next));
+    await insertFamilyMember(member);
+    set((state) => ({ members: [...state.members, member] }));
+  },
+
+  removeMember: async (id) => {
+    await deleteFamilyMember(id);
+    set((state) => ({ members: state.members.filter((m) => m.id !== id) }));
   },
 
   updateMemberStatus: (id, status) => {
@@ -28,8 +42,8 @@ export const useFamilyStore = create<FamilyStore>((set, get) => ({
     }));
   },
 
-  loadFromStorage: async () => {
-    const raw = await AsyncStorage.getItem(FAMILY_KEY);
-    if (raw) set({ members: JSON.parse(raw) as FamilyMember[] });
+  loadFromDb: async () => {
+    const members = await loadAllFamilyMembers();
+    set({ members });
   },
 }));

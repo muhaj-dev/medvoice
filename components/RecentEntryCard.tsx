@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
+import type { ColorTokens } from "@/constants/colors";
 import type { HealthEntry } from "@/types/health";
 
 type Props = {
@@ -23,43 +24,61 @@ function formatTimestamp(iso: string): string {
   return `${d.toLocaleDateString("en-US", { weekday: "short" })} · ${time}`;
 }
 
-function severityColor(severity: HealthEntry["severity"]): string {
+function severityColor(severity: HealthEntry["severity"], colors: ColorTokens): string {
   if (severity === "moderate") return colors.warningRed;
   if (severity === "mild") return colors.warningAmber;
   return colors.successGreen;
 }
 
 export function RecentEntryCard({ entry, isLatest }: Props) {
+  const colors = useTheme();
+
   return (
-    <View className="bg-card border border-edge rounded-2xl px-4 py-3.5 gap-2 mb-2.5">
-      {/* Top row */}
+    <View
+      style={{
+        backgroundColor: colors.bgCard,
+        borderColor: colors.border,
+        borderWidth: 1,
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        gap: 8,
+        marginBottom: 10,
+      }}
+    >
       <View className="flex-row items-center gap-2">
-        {/* StyleSheet for severity dot: dynamic color cannot be a NativeWind class */}
-        <View style={[styles.dot, { backgroundColor: severityColor(entry.severity) }]} />
-        <Text className="font-code text-[11px] text-dim flex-1">
+        <View style={[styles.dot, { backgroundColor: severityColor(entry.severity, colors) }]} />
+        <Text style={{ fontFamily: "monospace", fontSize: 11, color: colors.textMuted, flex: 1 }}>
           {formatTimestamp(entry.timestamp)}
         </Text>
         {isLatest && (
-          <Text className="font-code text-[10px] text-brand tracking-[0.6px]">
+          <Text style={{ fontFamily: "monospace", fontSize: 10, color: colors.accentBlue, letterSpacing: 0.6 }}>
             LATEST
           </Text>
         )}
       </View>
 
-      {/* Transcript */}
       <Text
-        className="font-georgia text-[14px] text-dim italic leading-5.25"
+        style={{ fontFamily: "Georgia", fontSize: 14, color: colors.textSecondary, fontStyle: "italic", lineHeight: 21 }}
         numberOfLines={2}
       >
-        "{entry.transcript}"
+        {`"${entry.transcript}"`}
       </Text>
 
-      {/* Tag pills */}
       {entry.tags.length > 0 && (
         <View className="flex-row flex-wrap gap-1.5">
           {entry.tags.slice(0, 4).map((tag) => (
-            <View key={tag} className="medv-tag">
-              <Text className="font-code text-[10px] text-dim">{tag}</Text>
+            <View
+              key={tag}
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 99,
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+              }}
+            >
+              <Text style={{ fontFamily: "monospace", fontSize: 10, color: colors.textSecondary }}>{tag}</Text>
             </View>
           ))}
         </View>
@@ -69,11 +88,5 @@ export function RecentEntryCard({ entry, isLatest }: Props) {
 }
 
 const styles = StyleSheet.create({
-  // StyleSheet for dot: backgroundColor is runtime-dynamic (severity value),
-  // so it cannot be expressed as a static NativeWind class.
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
+  dot: { width: 8, height: 8, borderRadius: 4 },
 });

@@ -1,11 +1,15 @@
-import { ScrollView, View, Text } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
+import { useThemeStore } from "@/store/useThemeStore";
 import { useUserStore } from "@/store/useUserStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { ProfileCard } from "@/components/ProfileCard";
 import { SettingsSection } from "@/components/SettingsSection";
 import { SettingsRow } from "@/components/SettingsRow";
+import type { ThemePreference } from "@/types/theme";
+import type { ModelSize } from "@/store/useSettingsStore";
 
 const ICON_PINK   = "rgba(236,72,153,0.20)";
 const ICON_GRAY   = "rgba(100,116,139,0.22)";
@@ -13,9 +17,23 @@ const ICON_ORANGE = "rgba(249,115,22,0.20)";
 const ICON_RED    = "rgba(239,68,68,0.20)";
 const ICON_AMBER  = "rgba(251,191,36,0.20)";
 
+const THEME_OPTIONS: { value: ThemePreference; label: string; icon: string }[] = [
+  { value: "light", label: "Light", icon: "☀️" },
+  { value: "dark",  label: "Dark",  icon: "🌙" },
+  { value: "system",label: "System",icon: "📱" },
+];
+
+const MODEL_OPTIONS: { value: ModelSize; label: string; description: string }[] = [
+  { value: "1.7b", label: "1.7B", description: "Faster · Less RAM" },
+  { value: "4b",   label: "4B",   description: "Accurate · More RAM" },
+];
+
 export default function SettingsScreen() {
   const router = useRouter();
+  const colors = useTheme();
   const profile = useUserStore((s) => s.profile);
+  const { preference, setPreference } = useThemeStore();
+  const { modelSize, ttsEnabled, setModelSize, setTtsEnabled } = useSettingsStore();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }} edges={["top"]}>
@@ -23,7 +41,7 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="font-georgia text-[28px] font-bold text-white mb-6">
+        <Text style={{ fontFamily: "Georgia", fontSize: 28, fontWeight: "700", color: colors.textPrimary, marginBottom: 24 }}>
           Settings
         </Text>
 
@@ -34,20 +52,106 @@ export default function SettingsScreen() {
           />
         )}
 
+        {/* Display / Theme */}
+        <SettingsSection title="DISPLAY">
+          <View style={{ paddingVertical: 14, paddingHorizontal: 16 }}>
+            <Text style={{ fontFamily: "Georgia", fontSize: 15, color: colors.textPrimary, marginBottom: 12 }}>
+              Theme
+            </Text>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {THEME_OPTIONS.map((opt) => {
+                const active = preference === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => setPreference(opt.value)}
+                    activeOpacity={0.75}
+                    style={{
+                      flex: 1,
+                      alignItems: "center",
+                      paddingVertical: 10,
+                      borderRadius: 12,
+                      borderWidth: 1.5,
+                      borderColor: active ? colors.accentBlue : colors.border,
+                      backgroundColor: active ? `${colors.accentBlue}18` : colors.bgDeep,
+                      gap: 4,
+                    }}
+                  >
+                    <Text style={{ fontSize: 20 }}>{opt.icon}</Text>
+                    <Text style={{
+                      fontFamily: "monospace",
+                      fontSize: 10,
+                      letterSpacing: 0.5,
+                      color: active ? colors.accentBlue : colors.textSecondary,
+                      fontWeight: active ? "700" : "400",
+                    }}>
+                      {opt.label.toUpperCase()}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </SettingsSection>
+
         <SettingsSection title="AI MODEL">
+          <View style={{ paddingVertical: 14, paddingHorizontal: 16 }}>
+            <Text style={{ fontFamily: "Georgia", fontSize: 15, color: colors.textPrimary, marginBottom: 12 }}>
+              MedPsy Model Size
+            </Text>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {MODEL_OPTIONS.map((opt) => {
+                const active = modelSize === opt.value;
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => setModelSize(opt.value)}
+                    activeOpacity={0.75}
+                    style={{
+                      flex: 1,
+                      alignItems: "center",
+                      paddingVertical: 10,
+                      borderRadius: 12,
+                      borderWidth: 1.5,
+                      borderColor: active ? colors.accentBlue : colors.border,
+                      backgroundColor: active ? `${colors.accentBlue}18` : colors.bgCard,
+                      gap: 2,
+                    }}
+                  >
+                    <Text style={{
+                      fontFamily: "monospace",
+                      fontSize: 14,
+                      fontWeight: "700",
+                      color: active ? colors.accentBlue : colors.textPrimary,
+                    }}>
+                      {opt.label}
+                    </Text>
+                    <Text style={{
+                      fontFamily: "monospace",
+                      fontSize: 9,
+                      letterSpacing: 0.3,
+                      color: active ? colors.accentBlue : colors.textSecondary,
+                    }}>
+                      {opt.description.toUpperCase()}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
           <SettingsRow
-            icon="🧠"
+            icon="🔊"
             iconBg={ICON_PINK}
-            label="MedPsy Model"
-            value="4B · "
-            valueSuffix="Active"
-            valueSuffixColor={colors.successGreen}
+            label="Read aloud (TTS)"
+            value={ttsEnabled ? "Enabled" : "Disabled"}
+            valueColor={ttsEnabled ? colors.success : colors.textMuted}
+            onPress={() => setTtsEnabled(!ttsEnabled)}
           />
           <SettingsRow
             icon="💾"
             iconBg={ICON_GRAY}
             label="Storage used"
-            value="2.6 GB"
+            value={modelSize === "4b" ? "2.6 GB" : "1.1 GB"}
           />
           <SettingsRow
             icon="📡"

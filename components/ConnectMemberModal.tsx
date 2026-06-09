@@ -9,7 +9,7 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 
 const RELATIONSHIPS = ['Daughter', 'Son', 'Parent', 'Sibling', 'Partner', 'Other'];
 
@@ -20,6 +20,7 @@ type Props = {
 };
 
 export function ConnectMemberModal({ visible, onConfirm, onDismiss }: Props) {
+  const colors = useTheme();
   const [name, setName] = useState('');
   const [relationship, setRelationship] = useState('');
 
@@ -29,6 +30,89 @@ export function ConnectMemberModal({ visible, onConfirm, onDismiss }: Props) {
     setName('');
     setRelationship('');
   };
+
+  const styles = StyleSheet.create({
+    backdrop: { flex: 1 },
+    sheet: {
+      backgroundColor: colors.bgCard,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 24,
+      paddingBottom: 40,
+    },
+    handle: {
+      width: 40,
+      height: 4,
+      backgroundColor: colors.border,
+      borderRadius: 2,
+      alignSelf: 'center',
+      marginBottom: 20,
+    },
+    title: {
+      fontFamily: 'Georgia',
+      fontSize: 22,
+      fontWeight: '600',
+      color: colors.textPrimary,
+      marginBottom: 20,
+    },
+    input: {
+      backgroundColor: colors.bgDeep,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontFamily: 'Georgia',
+      fontSize: 16,
+      color: colors.textPrimary,
+      marginBottom: 20,
+    },
+    sectionLabel: {
+      fontFamily: 'monospace',
+      fontSize: 11,
+      fontWeight: '600',
+      letterSpacing: 1.2,
+      color: colors.textSecondary,
+      marginBottom: 12,
+    },
+    chips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 24,
+    },
+    chip: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 99,
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+    },
+    chipActive: {
+      borderColor: colors.accentBlue,
+      backgroundColor: 'rgba(59,130,246,0.12)',
+    },
+    chipText: {
+      fontFamily: 'Georgia',
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+    chipTextActive: { color: colors.accentBlue },
+    btn: {
+      backgroundColor: colors.accentBlue,
+      borderRadius: 14,
+      paddingVertical: 16,
+      alignItems: 'center',
+    },
+    btnDisabled: { opacity: 0.4 },
+    btnText: {
+      fontFamily: 'monospace',
+      fontSize: 13,
+      fontWeight: '600',
+      letterSpacing: 1.2,
+      color: '#ffffff',
+    },
+  });
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onDismiss}>
@@ -71,86 +155,3 @@ export function ConnectMemberModal({ visible, onConfirm, onDismiss }: Props) {
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: { flex: 1 },
-  sheet: {
-    backgroundColor: colors.bgCard,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    paddingBottom: 40,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    backgroundColor: colors.border,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontFamily: 'Georgia',
-    fontSize: 22,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 20,
-  },
-  input: {
-    backgroundColor: colors.bgDeep,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontFamily: 'Georgia',
-    fontSize: 16,
-    color: colors.textPrimary,
-    marginBottom: 20,
-  },
-  sectionLabel: {
-    fontFamily: 'monospace',
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1.2,
-    color: colors.textSecondary,
-    marginBottom: 12,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 24,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 99,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
-  chipActive: {
-    borderColor: colors.accentBlue,
-    backgroundColor: 'rgba(59,130,246,0.12)',
-  },
-  chipText: {
-    fontFamily: 'Georgia',
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  chipTextActive: { color: colors.accentBlue },
-  btn: {
-    backgroundColor: colors.accentBlue,
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  btnDisabled: { opacity: 0.4 },
-  btnText: {
-    fontFamily: 'monospace',
-    fontSize: 13,
-    fontWeight: '600',
-    letterSpacing: 1.2,
-    color: '#ffffff',
-  },
-});

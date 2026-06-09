@@ -1,25 +1,22 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, Animated, StyleSheet } from "react-native";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 
 const BAR_COUNT = 18;
-
-type BarSpec = { minH: number; maxH: number; color: string };
-
-// Alternate tall/short bars so the waveform has visual rhythm
-const BARS: BarSpec[] = Array.from({ length: BAR_COUNT }, (_, i) => {
-  const tall = i % 2 === 0;
-  return {
-    minH: tall ? 10 : 6,
-    maxH: tall ? 32 : 14,
-    color: tall ? colors.accentBlue : colors.accentBlueLight,
-  };
-});
 
 type Props = { isActive: boolean };
 
 export function WaveformAnimation({ isActive }: Props) {
-  const heights = useRef(BARS.map((b) => new Animated.Value(b.minH))).current;
+  const colors = useTheme();
+
+  // Alternate tall/short bars for visual rhythm; colors come from theme
+  const bars = Array.from({ length: BAR_COUNT }, (_, i) => ({
+    minH: i % 2 === 0 ? 10 : 6,
+    maxH: i % 2 === 0 ? 32 : 14,
+    color: i % 2 === 0 ? colors.accentBlue : colors.accentBlueLight,
+  }));
+
+  const [heights] = useState(() => bars.map((b) => new Animated.Value(b.minH)));
   const loops = useRef<Animated.CompositeAnimation[]>([]);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -29,12 +26,12 @@ export function WaveformAnimation({ isActive }: Props) {
         Animated.loop(
           Animated.sequence([
             Animated.timing(h, {
-              toValue: BARS[i].maxH,
+              toValue: bars[i].maxH,
               duration: 280 + (i % 6) * 60,
               useNativeDriver: false,
             }),
             Animated.timing(h, {
-              toValue: BARS[i].minH,
+              toValue: bars[i].minH,
               duration: 280 + (i % 6) * 60,
               useNativeDriver: false,
             }),
@@ -49,7 +46,7 @@ export function WaveformAnimation({ isActive }: Props) {
       loops.current.forEach((l) => l.stop());
       heights.forEach((h, i) => {
         Animated.timing(h, {
-          toValue: BARS[i].minH,
+          toValue: bars[i].minH,
           duration: 200,
           useNativeDriver: false,
         }).start();
@@ -60,14 +57,15 @@ export function WaveformAnimation({ isActive }: Props) {
       timers.current.forEach(clearTimeout);
       loops.current.forEach((l) => l.stop());
     };
-  }, [isActive]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive, heights]);
 
   return (
     <View style={styles.row}>
       {heights.map((h, i) => (
         <Animated.View
           key={i}
-          style={[styles.bar, { height: h, backgroundColor: BARS[i].color }]}
+          style={[styles.bar, { height: h, backgroundColor: bars[i].color }]}
         />
       ))}
     </View>

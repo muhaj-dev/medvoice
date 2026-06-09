@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
+import type { ColorTokens } from "@/constants/colors";
 import type { HealthEntry } from "@/types/health";
 
 type Props = {
@@ -7,7 +9,7 @@ type Props = {
   isLast: boolean;
 };
 
-function severityColor(severity: HealthEntry["severity"]): string {
+function severityColor(severity: HealthEntry["severity"], colors: ColorTokens): string {
   if (severity === "moderate") return colors.warningRed;
   if (severity === "mild") return colors.warningAmber;
   return colors.successGreen;
@@ -26,74 +28,52 @@ function formatTimestamp(iso: string): string {
 }
 
 export function CareViewEntryRow({ entry, isLast }: Props) {
-  const sc = severityColor(entry.severity);
+  const colors = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const sc = severityColor(entry.severity, colors);
 
   return (
     <View style={styles.row}>
-      {/* Left column: dot + connecting line */}
       <View style={styles.leftCol}>
         <View style={[styles.dot, { backgroundColor: sc }]} />
         {!isLast && <View style={[styles.line, { backgroundColor: sc }]} />}
       </View>
 
-      {/* Content card */}
       <View style={[styles.content, isLast && styles.contentLast]}>
         <Text style={styles.timestamp}>{formatTimestamp(entry.timestamp)}</Text>
         <Text style={styles.transcript} numberOfLines={2}>
-          "{entry.transcript}"
+          {`"${entry.transcript}"`}
         </Text>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    gap: 14,
-  },
-  leftCol: {
-    alignItems: "center",
-    width: 10,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginTop: 15,
-    flexShrink: 0,
-  },
-  line: {
-    flex: 1,
-    width: 2,
-    marginTop: 5,
-    borderRadius: 1,
-    opacity: 0.5,
-  },
-  content: {
-    flex: 1,
-    backgroundColor: colors.bgCard,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 10,
-    gap: 5,
-  },
-  contentLast: {
-    marginBottom: 0,
-  },
-  timestamp: {
-    fontFamily: "Georgia",
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  transcript: {
-    fontFamily: "Georgia",
-    fontSize: 13,
-    fontStyle: "italic",
-    color: colors.textSecondary,
-    lineHeight: 19,
-  },
-});
+function makeStyles(colors: ColorTokens) {
+  return StyleSheet.create({
+    row: { flexDirection: "row", gap: 14 },
+    leftCol: { alignItems: "center", width: 10 },
+    dot: { width: 10, height: 10, borderRadius: 5, marginTop: 15, flexShrink: 0 },
+    line: { flex: 1, width: 2, marginTop: 5, borderRadius: 1, opacity: 0.5 },
+    content: {
+      flex: 1,
+      backgroundColor: colors.bgCard,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      marginBottom: 10,
+      gap: 5,
+    },
+    contentLast: { marginBottom: 0 },
+    timestamp: { fontFamily: "Georgia", fontSize: 12, color: colors.textSecondary },
+    transcript: {
+      fontFamily: "Georgia",
+      fontSize: 13,
+      fontStyle: "italic",
+      color: colors.textSecondary,
+      lineHeight: 19,
+    },
+  });
+}

@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -35,8 +35,13 @@ type CustomTabBarProps = {
 };
 
 function CustomTabBar({ state, navigation }: CustomTabBarProps) {
+  const colors = useTheme();
+
   return (
-    <View className="flex-row bg-surface border-t border-edge h-18 pt-2 pb-2.5">
+    <View
+      className="flex-row h-18 pt-2 pb-2.5"
+      style={{ backgroundColor: colors.bgCard, borderTopWidth: 1, borderTopColor: colors.border }}
+    >
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
         const config = TAB_CONFIG[route.name] ?? {
@@ -66,19 +71,25 @@ function CustomTabBar({ state, navigation }: CustomTabBarProps) {
             <Ionicons
               name={isFocused ? config.iconActive : config.icon}
               size={22}
-              color={isFocused ? colors.textPrimary : colors.textMuted}
+              color={isFocused ? colors.tabActive : colors.tabInactive}
             />
             <Text
-              className={`font-code text-[10px] tracking-[0.5px] ${
-                isFocused ? "text-white" : "text-ghost"
-              }`}
+              style={{
+                fontFamily: "monospace",
+                fontSize: 10,
+                letterSpacing: 0.5,
+                color: isFocused ? colors.tabActive : colors.tabInactive,
+              }}
             >
               {config.label}
             </Text>
             <View
-              className={`w-1 h-1 rounded-full ${
-                isFocused ? "bg-brand" : "bg-transparent"
-              }`}
+              style={{
+                width: 4,
+                height: 4,
+                borderRadius: 2,
+                backgroundColor: isFocused ? colors.tabDot : "transparent",
+              }}
             />
           </TouchableOpacity>
         );

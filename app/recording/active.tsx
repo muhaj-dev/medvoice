@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useAudioRecorder, AudioModule, RecordingPresets } from "expo-audio";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { WaveformAnimation } from "@/components/WaveformAnimation";
 import { LiveTranscriptCard } from "@/components/LiveTranscriptCard";
@@ -17,27 +17,13 @@ const DEMO_WORDS = [
 ];
 
 export default function RecordingActiveScreen() {
+  const colors = useTheme();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const { transcript, appendTranscript, setIsRecording, setAudioUri, setFinalTranscript, resetRecording } =
     useRecordingStore();
   const [waveActive, setWaveActive] = useState(true);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wordIdxRef = useRef(0);
-
-  useEffect(() => {
-    startRecording();
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, []);
-
-  const startRecording = async () => {
-    try {
-      await AudioModule.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      await audioRecorder.prepareToRecordAsync();
-      audioRecorder.record();
-    } catch {}
-    setIsRecording(true);
-    scheduleNextWord();
-  };
 
   const scheduleNextWord = () => {
     timerRef.current = setTimeout(() => {
@@ -49,6 +35,22 @@ export default function RecordingActiveScreen() {
     }, 420);
   };
 
+  const startRecording = async () => {
+    try {
+      await AudioModule.setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+      await audioRecorder.prepareToRecordAsync();
+      audioRecorder.record();
+    } catch {}
+    setIsRecording(true);
+    scheduleNextWord();
+  };
+
+  useEffect(() => {
+    startRecording();
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleStop = async () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     setWaveActive(false);
@@ -56,7 +58,9 @@ export default function RecordingActiveScreen() {
     const uri = audioRecorder.uri ?? null;
     setIsRecording(false);
     if (uri) setAudioUri(uri);
-    setFinalTranscript(transcript);
+    // Do NOT persist demo words as finalTranscript — processing.tsx will call
+    // transcribeAudioFile(audioUri) to produce the real transcript.
+    setFinalTranscript("");
     router.replace("/analysis/processing" as any);
   };
 
@@ -66,6 +70,43 @@ export default function RecordingActiveScreen() {
     resetRecording();
     router.replace("/(tabs)" as any);
   };
+
+  const styles = StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.bgPrimary },
+    backBtn: {
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 4,
+      alignSelf: "flex-start",
+    },
+    backText: {
+      fontFamily: "monospace",
+      fontSize: 12,
+      color: colors.textSecondary,
+      letterSpacing: 0.5,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: 20,
+      paddingTop: 24,
+    },
+    listeningLabel: {
+      fontFamily: "monospace",
+      fontSize: 11,
+      color: colors.textSecondary,
+      letterSpacing: 1.54,
+      textAlign: "center",
+      marginBottom: 32,
+    },
+    waveformWrap: {
+      alignItems: "center",
+      marginBottom: 32,
+    },
+    stopArea: {
+      alignItems: "center",
+      paddingBottom: 52,
+    },
+  });
 
   return (
     <SafeAreaView style={styles.root}>
@@ -94,40 +135,3 @@ export default function RecordingActiveScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bgPrimary },
-  backBtn: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 4,
-    alignSelf: "flex-start",
-  },
-  backText: {
-    fontFamily: "monospace",
-    fontSize: 12,
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 24,
-  },
-  listeningLabel: {
-    fontFamily: "monospace",
-    fontSize: 11,
-    color: colors.textSecondary,
-    letterSpacing: 1.54,
-    textAlign: "center",
-    marginBottom: 32,
-  },
-  waveformWrap: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  stopArea: {
-    alignItems: "center",
-    paddingBottom: 52,
-  },
-});
