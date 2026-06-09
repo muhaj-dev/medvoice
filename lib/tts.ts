@@ -6,11 +6,11 @@
 
 import { textToSpeech } from "@qvac/sdk";
 import * as FileSystem from "expo-file-system";
-import { Audio } from "expo-av";
+import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import { loadTTSModel } from "./qvac";
 
 const SAMPLE_RATE = 44100;
-let currentSound: Audio.Sound | null = null;
+let currentPlayer: ReturnType<typeof createAudioPlayer> | null = null;
 
 function buildWav(samples: number[]): Uint8Array {
   const dataSize = samples.length * 2; // int16 = 2 bytes per sample
@@ -62,26 +62,29 @@ export async function speakResponse(text: string): Promise<void> {
     encoding: FileSystem.EncodingType.Base64,
   });
 
-  await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
-  const { sound } = await Audio.Sound.createAsync({ uri: filePath });
-  currentSound = sound;
-  await sound.playAsync();
+  await setAudioModeAsync({ playsInSilentMode: true });
+  const player = createAudioPlayer({ uri: filePath });
+  currentPlayer = player;
+  player.play();
 
   await new Promise<void>((resolve) => {
-    sound.setOnPlaybackStatusUpdate((status) => {
-      if (status.isLoaded && status.didJustFinish) resolve();
+    const subscription = player.addListener("playbackStatusUpdate", (status) => {
+      if (status.didJustFinish) {
+        subscription.remove();
+        resolve();
+      }
     });
   });
 
-  await sound.unloadAsync();
-  currentSound = null;
+  player.remove();
+  currentPlayer = null;
 }
 
 export async function stopSpeaking(): Promise<void> {
-  if (!currentSound) return;
+  if (!currentPlayer) return;
   try {
-    await currentSound.stopAsync();
-    await currentSound.unloadAsync();
+    currentPlayer.pause();
+    currentPlayer.remove();
   } catch {}
-  currentSound = null;
+  currentPlayer = null;
 }
