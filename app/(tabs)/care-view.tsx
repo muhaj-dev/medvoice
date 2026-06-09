@@ -51,7 +51,7 @@ export default function CareViewScreen() {
         {/* Name heading */}
         <View className="mb-5">
           <Text style={{ fontFamily: 'Georgia', fontSize: 32, fontWeight: '700', color: colors.textPrimary, lineHeight: 38 }}>
-            {connectedMember.name}'s
+            {connectedMember.name}&apos;s
           </Text>
           <Text style={{ fontFamily: 'Georgia', fontSize: 32, fontWeight: '700', fontStyle: 'italic', color: colors.successGreen, lineHeight: 38 }}>
             Health

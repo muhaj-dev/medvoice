@@ -6,6 +6,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useFamilyStore } from "@/store/useFamilyStore";
 import { YouSaidCard } from "@/components/YouSaidCard";
 import { ConcernBanner } from "@/components/ConcernBanner";
 import { PatternCard } from "@/components/PatternCard";
@@ -58,6 +59,8 @@ export default function AnalysisResultScreen() {
         embedding: entryEmbedding ?? undefined,
       };
       await addEntry(entry);
+      // Share the summary (JSON only — no audio/embeddings) with connected family.
+      void useFamilyStore.getState().broadcastEntry(entry);
       await Promise.all(
         (result.patterns ?? []).map((p, i) =>
           insertPattern({

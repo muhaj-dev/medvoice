@@ -163,6 +163,27 @@ export async function loadTTSModel(
   return ttsPromise;
 }
 
+// ── Sequential preload ────────────────────────────────────────────────────
+// Download/load models ONE AT A TIME. Loading all four in parallel pulls
+// ~3.7 GB into memory at once and the OS OOM-killer terminates the app
+// (the "crash at ~50%"). Sequential loading caps peak memory to one model.
+//
+// Order is by importance to the core record→analyze flow:
+//   parakeet (voice) → medgemma (analysis) → embedding (search) → tts (read-aloud)
+let preloadStarted = false;
+
+export async function preloadAllModels(): Promise<void> {
+  if (preloadStarted) return;
+  preloadStarted = true;
+
+  // Each load is awaited so only one model downloads/initializes at a time.
+  // Failures are swallowed per-model so one bad load doesn't block the rest.
+  try { await loadParakeetModel(); } catch {}
+  try { await loadMedGemmaModel(); } catch {}
+  try { await loadEmbeddingModel(); } catch {}
+  try { await loadTTSModel(); } catch {}
+}
+
 // ── Lifecycle ─────────────────────────────────────────────────────────────
 
 export async function unloadAllModels(): Promise<void> {

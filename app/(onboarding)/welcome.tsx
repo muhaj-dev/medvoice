@@ -20,7 +20,7 @@ export default function WelcomeScreen() {
 
   useEffect(() => {
     if (onboardingComplete) router.replace("/(tabs)" as any);
-  }, [onboardingComplete]);
+  }, [onboardingComplete, router]);
 
   const styles = StyleSheet.create({
     safe: {

@@ -1,11 +1,11 @@
 /**
  * QVAC TTS wrapper — on-device text-to-speech via TTS Supertonic Q4.
- * Collects int16 PCM samples, writes a WAV file, and plays via expo-av.
+ * Collects int16 PCM samples, writes a WAV file, and plays via expo-audio.
  * No audio or text is sent to any server.
  */
 
 import { textToSpeech } from "@qvac/sdk";
-import * as FileSystem from "expo-file-system";
+import { File, Paths } from "expo-file-system";
 import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import { loadTTSModel } from "./qvac";
 
@@ -38,15 +38,6 @@ function buildWav(samples: number[]): Uint8Array {
   return new Uint8Array(buf);
 }
 
-function toBase64(bytes: Uint8Array): string {
-  const CHUNK = 8192;
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK) as unknown as number[]);
-  }
-  return btoa(binary);
-}
-
 export async function speakResponse(text: string): Promise<void> {
   await stopSpeaking();
 
@@ -57,18 +48,24 @@ export async function speakResponse(text: string): Promise<void> {
   if (!samples || samples.length === 0) return;
 
   const wav = buildWav(samples);
-  const filePath = FileSystem.cacheDirectory + "tts_output.wav";
-  await FileSystem.writeAsStringAsync(filePath, toBase64(wav), {
-    encoding: FileSystem.EncodingType.Base64,
-  });
+  const file = new File(Paths.cache, "tts_output.wav");
+  if (file.exists) file.delete();
+  file.create();
+  file.write(wav);
 
   await setAudioModeAsync({ playsInSilentMode: true });
-  const player = createAudioPlayer({ uri: filePath });
+  const player = createAudioPlayer({ uri: file.uri });
   currentPlayer = player;
   player.play();
 
   await new Promise<void>((resolve) => {
-    const subscription = player.addListener("playbackStatusUpdate", (status) => {
+    const emitter = player as unknown as {
+      addListener: (
+        event: "playbackStatusUpdate",
+        listener: (status: { didJustFinish: boolean }) => void
+      ) => { remove: () => void };
+    };
+    const subscription = emitter.addListener("playbackStatusUpdate", (status) => {
       if (status.didJustFinish) {
         subscription.remove();
         resolve();

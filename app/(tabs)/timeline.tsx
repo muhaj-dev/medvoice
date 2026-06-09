@@ -17,40 +17,41 @@ export default function TimelineScreen() {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    if (!query.trim()) {
-      setSearchResults(null);
-      setIsSearching(false);
-      return;
-    }
+    // Empty query shows all entries (see `displayed` below) — nothing to search.
+    if (!query.trim()) return;
     let cancelled = false;
-    setIsSearching(true);
-    semanticSearch(query, entries)
-      .then((results) => {
-        if (!cancelled) {
-          setSearchResults(results);
-          setIsSearching(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          // Keyword fallback if embedding model not ready
-          const q = query.toLowerCase();
-          setSearchResults(
-            entries.filter(
-              (e) =>
-                e.transcript.toLowerCase().includes(q) ||
-                e.tags.some((t) => t.toLowerCase().includes(q))
-            )
-          );
-          setIsSearching(false);
-        }
-      });
+
+    // All state updates live inside this async fn so none run synchronously
+    // in the effect body (avoids cascading-render lint + keeps loading UX).
+    const run = async () => {
+      setIsSearching(true);
+      try {
+        const results = await semanticSearch(query, entries);
+        if (!cancelled) setSearchResults(results);
+      } catch {
+        // Keyword fallback if the embedding model isn't ready yet.
+        const q = query.toLowerCase();
+        const fallback = entries.filter(
+          (e) =>
+            e.transcript.toLowerCase().includes(q) ||
+            e.tags.some((t) => t.toLowerCase().includes(q))
+        );
+        if (!cancelled) setSearchResults(fallback);
+      } finally {
+        if (!cancelled) setIsSearching(false);
+      }
+    };
+    run();
+
     return () => {
       cancelled = true;
     };
   }, [query, entries]);
 
-  const displayed = query.trim() ? (searchResults ?? []) : entries;
+  const trimmed = query.trim();
+  const displayed = trimmed ? (searchResults ?? []) : entries;
+  // Only show the spinner while actively searching a non-empty query.
+  const showSearching = !!trimmed && isSearching;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
@@ -76,7 +77,7 @@ export default function TimelineScreen() {
         </View>
 
         {/* Searching indicator */}
-        {isSearching && (
+        {showSearching && (
           <View className="items-center pt-6 pb-2">
             <ActivityIndicator size="small" color={colors.accentBlue} />
             <Text style={{ fontFamily: "monospace", fontSize: 11, color: colors.textSecondary, letterSpacing: 1, marginTop: 8 }}>
@@ -86,7 +87,7 @@ export default function TimelineScreen() {
         )}
 
         {/* Entries */}
-        {!isSearching && displayed.length === 0 ? (
+        {!showSearching && displayed.length === 0 ? (
           <View className="items-center pt-[60px] px-10 gap-3">
             <Text className="text-[36px]">🔍</Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 15, color: colors.textSecondary, textAlign: 'center' }}>
@@ -98,7 +99,7 @@ export default function TimelineScreen() {
                 : "Record your first health entry to get started"}
             </Text>
           </View>
-        ) : !isSearching ? (
+        ) : !showSearching ? (
           <View className="px-5 relative">
             <TimelineVerticalLine />
             {displayed.map((entry) => (

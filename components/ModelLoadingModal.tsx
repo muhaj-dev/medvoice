@@ -41,17 +41,17 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
     header:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
                   paddingHorizontal: 20, marginBottom: 20 },
     title:      { fontFamily: 'monospace', fontSize: 12, letterSpacing: 1.2, color: colors.textSecondary },
-    closeBtn:   { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.bgCardInner,
+    closeBtn:   { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.bgDeep,
                   borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
     body:       { paddingHorizontal: 20 },
     trackBg:    { height: 4, borderRadius: 2, backgroundColor: colors.border, marginBottom: 4, overflow: 'hidden' },
-    trackFill:  { height: 4, borderRadius: 2, backgroundColor: ready ? colors.success : colors.accentBlue },
+    trackFill:  { height: 4, borderRadius: 2, backgroundColor: ready ? colors.successGreen : colors.accentBlue },
     pctRow:     { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
     pctLabel:   { fontFamily: 'monospace', fontSize: 10, color: colors.textMuted, letterSpacing: 0.8 },
-    pctValue:   { fontFamily: 'monospace', fontSize: 10, color: ready ? colors.success : colors.accentBlue, letterSpacing: 0.8 },
+    pctValue:   { fontFamily: 'monospace', fontSize: 10, color: ready ? colors.successGreen : colors.accentBlue, letterSpacing: 0.8 },
     divider:    { height: 1, backgroundColor: colors.border, marginBottom: 16 },
     row:        { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 12 },
-    iconBox:    { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.bgCardInner,
+    iconBox:    { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.bgDeep,
                   borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
     iconText:   { fontFamily: 'monospace', fontSize: 13 },
     rowInfo:    { flex: 1 },
@@ -95,7 +95,7 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
                 const isReady   = state.status === 'ready';
                 const isLoading = state.status === 'loading';
                 const isError   = state.status === 'error';
-                const color = isReady ? colors.success
+                const color = isReady ? colors.successGreen
                             : isError ? colors.warningRed
                             : isLoading ? colors.accentBlue
                             : colors.textMuted;

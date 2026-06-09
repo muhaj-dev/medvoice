@@ -144,7 +144,7 @@ export default function SettingsScreen() {
             iconBg={ICON_PINK}
             label="Read aloud (TTS)"
             value={ttsEnabled ? "Enabled" : "Disabled"}
-            valueColor={ttsEnabled ? colors.success : colors.textMuted}
+            valueColor={ttsEnabled ? colors.successGreen : colors.textMuted}
             onPress={() => setTtsEnabled(!ttsEnabled)}
           />
           <SettingsRow

@@ -43,7 +43,7 @@ export function AnalysisActionButtons({ isSpeaking, ttsEnabled = true, onReadAlo
       justifyContent: "center",
     },
     savedBtn: {
-      backgroundColor: colors.success,
+      backgroundColor: colors.successGreen,
     },
     saveBtnText: {
       fontFamily: "monospace",

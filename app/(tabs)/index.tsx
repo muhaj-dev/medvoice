@@ -84,21 +84,21 @@ export default function HomeScreen() {
           style={{
             flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start',
             backgroundColor: colors.bgCard, borderWidth: 1,
-            borderColor: isReady ? colors.success : isLoading ? colors.accentBlue : colors.border,
+            borderColor: isReady ? colors.successGreen : isLoading ? colors.accentBlue : colors.border,
             borderRadius: 99, paddingVertical: 6, paddingHorizontal: 12, marginBottom: 14, gap: 6,
           }}
         >
           <View style={{
             width: 6, height: 6, borderRadius: 3,
-            backgroundColor: isReady ? colors.success : isLoading ? colors.accentBlue : colors.textMuted,
+            backgroundColor: isReady ? colors.successGreen : isLoading ? colors.accentBlue : colors.textMuted,
           }} />
           <Text style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: 0.8,
-            color: isReady ? colors.success : isLoading ? colors.accentBlue : colors.textMuted,
+            color: isReady ? colors.successGreen : isLoading ? colors.accentBlue : colors.textMuted,
           }}>
             {isReady ? 'AI READY' : `AI MODELS · ${Math.round(totalProgress)}%`}
           </Text>
           <Ionicons name="chevron-forward" size={10}
-            color={isReady ? colors.success : isLoading ? colors.accentBlue : colors.textMuted} />
+            color={isReady ? colors.successGreen : isLoading ? colors.accentBlue : colors.textMuted} />
         </TouchableOpacity>
 
         <ModelLoadingModal visible={modelModalVisible} onClose={() => setModelModalVisible(false)} />
