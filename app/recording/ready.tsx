@@ -1,20 +1,12 @@
-import { useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
 import { ReadyMicDisplay } from "@/components/ReadyMicDisplay";
 import { PulsingMicButton } from "@/components/PulsingMicButton";
-import { preloadAllModels } from "@/lib/qvac";
 
 export default function RecordingReadyScreen() {
   const colors = useTheme();
-
-  // Ensure the sequential preload is running (no-op if already started).
-  // Guarantees Parakeet is downloading before the user records.
-  useEffect(() => {
-    preloadAllModels();
-  }, []);
 
   const styles = StyleSheet.create({
     root: {

@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { useHealthStore } from "@/store/useHealthStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { PipelineStepRow, StepStatus } from "@/components/PipelineStepRow";
 import { ProcessingHeader } from "@/components/ProcessingHeader";
 import { transcribeAudioFile } from "@/lib/transcription";
@@ -13,11 +14,11 @@ import { embedText, semanticSearch, buildRagContext } from "@/lib/embeddings";
 
 type Step = { id: number; icon: string; label: string; status: StepStatus };
 
-const INITIAL_STEPS: Step[] = [
+const buildSteps = (modelSize: "1.7b" | "4b"): Step[] => [
   { id: 1, icon: "🎙", label: "Transcribing voice input ...", status: "pending" },
   { id: 2, icon: "🔍", label: "Scanning health history ...", status: "pending" },
   { id: 3, icon: "📊", label: "RAG context retrieval ...", status: "pending" },
-  { id: 4, icon: "🧠", label: "MedPsy-4B analyzing health entry ...", status: "pending" },
+  { id: 4, icon: "🧠", label: `MedPsy-${modelSize === "4b" ? "4B" : "1.7B"} analyzing health entry ...`, status: "pending" },
   { id: 5, icon: "✅", label: "Analysis complete", status: "pending" },
 ];
 
@@ -25,7 +26,8 @@ const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export default function AnalysisProcessingScreen() {
   const colors = useTheme();
-  const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS);
+  const modelSize = useSettingsStore((s) => s.modelSize);
+  const [steps, setSteps] = useState<Step[]>(() => buildSteps(modelSize));
   const isRunning = useRef(false);
 
   const markStep = (id: number, status: StepStatus) =>

@@ -38,6 +38,7 @@ export default function HomeScreen() {
 
   const isReady = allReady();
   const isLoading = anyLoading();
+  // Boot progress = download progress of all four model files.
   const states = { parakeet, medgemma, embedding, tts };
   const totalProgress = ['parakeet', 'medgemma', 'embedding', 'tts'].reduce((sum, k) => {
     const s = states[k as keyof typeof states];

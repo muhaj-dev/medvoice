@@ -36,14 +36,16 @@ function send(obj) {
   IPC.write(b4a.from(JSON.stringify(obj) + "\n"));
 }
 
-// Frame newline-delimited JSON off a raw byte stream.
+// Frame newline-delimited JSON off a raw byte stream. Buffers *bytes* (not
+// decoded strings) so multibyte UTF-8 split across chunks is never corrupted —
+// each complete line is decoded only once its full byte sequence has arrived.
 function lineReader(onLine) {
-  let buf = "";
+  let buf = b4a.alloc(0);
   return (data) => {
-    buf += b4a.toString(data);
+    buf = b4a.concat([buf, data]);
     let idx;
-    while ((idx = buf.indexOf("\n")) !== -1) {
-      const line = buf.slice(0, idx);
+    while ((idx = buf.indexOf(0x0a)) !== -1) {
+      const line = b4a.toString(buf.slice(0, idx));
       buf = buf.slice(idx + 1);
       if (line) onLine(line);
     }

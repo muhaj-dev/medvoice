@@ -33,6 +33,8 @@ export const useModelStore = create<ModelStore>((set, get) => ({
 
   allReady: () => {
     const s = get();
+    // "ready" means downloaded — all four model files are cached and the app can
+    // load any of them into RAM on demand.
     return (
       s.parakeet.status === 'ready' &&
       s.medgemma.status === 'ready' &&

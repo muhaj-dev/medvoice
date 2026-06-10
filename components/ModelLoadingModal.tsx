@@ -1,14 +1,8 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
-import { useModelStore, ModelName, ModelStatus } from '@/store/useModelStore';
-
-const MODELS: { key: ModelName; label: string; size: string }[] = [
-  { key: 'parakeet',  label: 'Voice Recognition', size: '750 MB' },
-  { key: 'medgemma',  label: 'Health Analysis',   size: '2.5 GB' },
-  { key: 'embedding', label: 'Semantic Search',    size: '330 MB' },
-  { key: 'tts',       label: 'Text-to-Speech',     size: '132 MB' },
-];
+import { useModelStore, ModelStatus } from '@/store/useModelStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 function statusIcon(status: ModelStatus): string {
   if (status === 'ready')   return '✓';
@@ -23,6 +17,17 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
   const colors = useTheme();
   const { parakeet, medgemma, embedding, tts, allReady } = useModelStore();
   const states = { parakeet, medgemma, embedding, tts };
+  const modelSize = useSettingsStore((s) => s.modelSize);
+
+  // All four model files download at boot (downloading is cheap on memory; they
+  // load into RAM one at a time on demand). Health-analysis size depends on the
+  // selected model (Settings → AI Model).
+  const MODELS: { key: keyof typeof states; label: string; size: string }[] = [
+    { key: 'parakeet',  label: 'Voice Recognition', size: '750 MB' },
+    { key: 'medgemma',  label: 'Health Analysis',   size: modelSize === '4b' ? '2.5 GB' : '1.1 GB' },
+    { key: 'embedding', label: 'Semantic Search',   size: '330 MB' },
+    { key: 'tts',       label: 'Text-to-Speech',    size: '132 MB' },
+  ];
 
   const totalProgress =
     MODELS.reduce((sum, m) => {

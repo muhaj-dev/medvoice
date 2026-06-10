@@ -42,14 +42,16 @@ let available = false;
 let reqCounter = 0;
 
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
 const encode = (s: string) => encoder.encode(s);
 
 /** Frame newline-delimited JSON off a raw byte stream. */
 function makeLineReader(onLine: (line: string) => void) {
+  // Dedicated streaming decoder so multibyte UTF-8 split across chunks is
+  // preserved (decode keeps partial sequences buffered until the next chunk).
+  const decoder = new TextDecoder();
   let buf = "";
   return (data: Uint8Array) => {
-    buf += decoder.decode(data);
+    buf += decoder.decode(data, { stream: true });
     let idx: number;
     while ((idx = buf.indexOf("\n")) !== -1) {
       const line = buf.slice(0, idx);

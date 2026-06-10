@@ -6,7 +6,7 @@
 
 import { textToSpeech } from "@qvac/sdk";
 import { File, Paths } from "expo-file-system";
-import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
+import { createAudioPlayer, setAudioModeAsync, type AudioStatus } from "expo-audio";
 import { loadTTSModel } from "./qvac";
 
 const SAMPLE_RATE = 44100;
@@ -42,16 +42,31 @@ export async function speakResponse(text: string): Promise<void> {
   await stopSpeaking();
 
   const modelId = await loadTTSModel();
-  const result = textToSpeech({ modelId, text, stream: false });
-  const samples = await result.buffer;
+
+  // textToSpeech rejects with "Stale job replaced by new run" if another run
+  // (or a model eviction) replaces this one mid-generation. Catch it so it
+  // doesn't surface as an uncaught promise rejection.
+  let samples: number[] | undefined;
+  try {
+    const result = textToSpeech({ modelId, text, stream: false });
+    samples = await result.buffer;
+  } catch (e) {
+    console.error("TTS: generation failed", e);
+    return;
+  }
 
   if (!samples || samples.length === 0) return;
 
   const wav = buildWav(samples);
   const file = new File(Paths.cache, "tts_output.wav");
-  if (file.exists) file.delete();
-  file.create();
-  file.write(wav);
+  try {
+    if (file.exists) file.delete();
+    file.create();
+    file.write(wav);
+  } catch (e) {
+    console.error("TTS: failed to write WAV file", e);
+    return;
+  }
 
   await setAudioModeAsync({ playsInSilentMode: true });
   const player = createAudioPlayer({ uri: file.uri });
@@ -59,10 +74,12 @@ export async function speakResponse(text: string): Promise<void> {
   player.play();
 
   await new Promise<void>((resolve) => {
+    // addListener isn't surfaced on AudioPlayer's public type in this project's
+    // expo-modules-core resolution, but the event/status types are real.
     const emitter = player as unknown as {
       addListener: (
         event: "playbackStatusUpdate",
-        listener: (status: { didJustFinish: boolean }) => void
+        listener: (status: AudioStatus) => void
       ) => { remove: () => void };
     };
     const subscription = emitter.addListener("playbackStatusUpdate", (status) => {

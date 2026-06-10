@@ -1,49 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import { useAudioRecorder, AudioModule, RecordingPresets } from "expo-audio";
+import { router, type Href } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
 import { useRecordingStore } from "@/store/useRecordingStore";
+import { useVoiceTranscription } from "@/hooks/useVoiceTranscription";
 import { WaveformAnimation } from "@/components/WaveformAnimation";
 import { LiveTranscriptCard } from "@/components/LiveTranscriptCard";
 import { StopRecordingButton } from "@/components/StopRecordingButton";
 
 export default function RecordingActiveScreen() {
   const colors = useTheme();
-  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const { setIsRecording, setAudioUri, setFinalTranscript, resetRecording } = useRecordingStore();
-  const [waveActive, setWaveActive] = useState(true);
-
-  const startRecording = async () => {
-    try {
-      await AudioModule.setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
-      await audioRecorder.prepareToRecordAsync();
-      audioRecorder.record();
-    } catch {}
-    setIsRecording(true);
-  };
+  const { setIsRecording, setFinalTranscript, resetRecording } = useRecordingStore();
+  const { transcript, start, stop } = useVoiceTranscription();
 
   useEffect(() => {
-    startRecording();
+    setIsRecording(true);
+    start();
+    // Stop transcription if the screen unmounts without an explicit stop.
+    return () => {
+      stop().catch(() => {});
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleStop = async () => {
-    setWaveActive(false);
-    try { await audioRecorder.stop(); } catch {}
-    const uri = audioRecorder.uri ?? null;
+    const text = await stop();
     setIsRecording(false);
-    if (uri) setAudioUri(uri);
-    // Clear any stale transcript — processing.tsx runs real transcription via Parakeet.
-    setFinalTranscript("");
-    router.replace("/analysis/processing" as any);
+    setFinalTranscript(text);
+    router.replace("/analysis/processing" as Href);
   };
 
   const handleBack = async () => {
-    try { await audioRecorder.stop(); } catch {}
+    await stop();
+    setIsRecording(false);
     resetRecording();
-    router.replace("/(tabs)" as any);
+    router.replace("/(tabs)" as Href);
   };
 
   const styles = StyleSheet.create({
@@ -98,10 +90,10 @@ export default function RecordingActiveScreen() {
         <Text style={styles.listeningLabel}>LISTENING • ON DEVICE</Text>
 
         <View style={styles.waveformWrap}>
-          <WaveformAnimation isActive={waveActive} />
+          <WaveformAnimation isActive={true} />
         </View>
 
-        <LiveTranscriptCard transcript="" />
+        <LiveTranscriptCard transcript={transcript} />
       </View>
 
       <View style={styles.stopArea}>

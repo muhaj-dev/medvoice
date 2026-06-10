@@ -1,7 +1,10 @@
 /**
- * MedGemma health analysis helper.
- * Uses MEDGEMMA_4B_IT_Q4_1 — Google's medical Gemma model, on-device.
- * No health data ever leaves the phone.
+ * Health analysis helper ("MedPsy").
+ * Runs the on-device analysis model selected in Settings → AI Model:
+ *   "1.7B" (default, ~1.1 GB) → Qwen3 1.7B
+ *   "4B"   (~2.5 GB)          → MedGemma 4B (Google's medical Gemma)
+ * Model selection is handled by loadMedGemmaModel(); no health data ever
+ * leaves the phone.
  */
 
 import { completion } from "@qvac/sdk";
@@ -59,18 +62,20 @@ export async function analyzeHealthEntry(
     ],
   });
 
-  if (onToken) {
-    (async () => {
-      for await (const event of run.events) {
-        if (event.type === "contentDelta") {
-          onToken(event.text);
-        }
-      }
-    })();
+  // IMPORTANT: with stream:true, `run.final` only resolves once the event stream
+  // is consumed. We MUST drain run.events here — even when no onToken is given —
+  // or the completion hangs forever ("analyzing… no response"). We also keep the
+  // streamed text as a fallback in case final.contentText comes back empty.
+  let streamed = "";
+  for await (const event of run.events) {
+    if (event.type === "contentDelta") {
+      streamed += event.text;
+      onToken?.(event.text);
+    }
   }
 
   const result = await run.final;
-  const fullText = result.contentText;
+  const fullText = result.contentText || streamed;
 
   return {
     summary: fullText,

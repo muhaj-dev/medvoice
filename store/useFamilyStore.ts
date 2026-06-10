@@ -22,6 +22,20 @@ function toSummary(entry: HealthEntry): HealthEntry {
 
 let receiverStarted = false;
 
+// A peer can send arbitrary bytes — runtime-validate the shape of an incoming
+// summary before trusting it as a HealthEntry.
+function isValidSummary(value: unknown): value is HealthEntry {
+  if (!value || typeof value !== 'object') return false;
+  const e = value as Record<string, unknown>;
+  return (
+    typeof e.id === 'string' &&
+    typeof e.timestamp === 'string' &&
+    typeof e.transcript === 'string' &&
+    typeof e.analysis === 'string' &&
+    Array.isArray(e.tags)
+  );
+}
+
 type FamilyStore = {
   members: FamilyMember[];
   // Health entries synced from a connected family member via P2P
@@ -78,19 +92,30 @@ export const useFamilyStore = create<FamilyStore>((set, get) => ({
   startReceiving: () => {
     if (receiverStarted) return;
     receiverStarted = true;
-    onIncomingSummary((_from, summaryJson) => {
-      try {
-        const entry = JSON.parse(summaryJson) as HealthEntry;
-        set((state) => {
-          const exists = state.syncedEntries.some((e) => e.id === entry.id);
-          const syncedEntries = exists
-            ? state.syncedEntries.map((e) => (e.id === entry.id ? entry : e))
-            : [entry, ...state.syncedEntries];
-          return { syncedEntries };
-        });
-      } catch {
-        /* ignore malformed summary */
+    onIncomingSummary((from, summaryJson) => {
+      // Only accept summaries from a recognized family member.
+      if (!get().members.some((m) => m.publicKey === from)) {
+        console.warn('Ignoring summary from unknown peer');
+        return;
       }
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(summaryJson);
+      } catch {
+        return; // malformed JSON
+      }
+      if (!isValidSummary(parsed)) {
+        console.warn('Ignoring malformed summary payload');
+        return;
+      }
+      const entry = parsed;
+      set((state) => {
+        const exists = state.syncedEntries.some((e) => e.id === entry.id);
+        const syncedEntries = exists
+          ? state.syncedEntries.map((e) => (e.id === entry.id ? entry : e))
+          : [entry, ...state.syncedEntries];
+        return { syncedEntries };
+      });
     });
   },
 }));
