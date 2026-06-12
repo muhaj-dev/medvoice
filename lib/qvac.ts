@@ -40,6 +40,7 @@ import {
 } from "@qvac/sdk";
 import { useModelStore, type ModelName } from "@/store/useModelStore";
 import { useSettingsStore, type ModelSize } from "@/store/useSettingsStore";
+import { supportsLlamaCppModels } from "@/lib/device";
 
 type AssetSrc = Parameters<typeof downloadAsset>[0]["assetSrc"];
 
@@ -120,12 +121,21 @@ export function loadParakeetModel(
 export function loadMedGemmaModel(
   onProgress?: (pct: number) => void
 ): Promise<string> {
+  // Hard guard: on Android < 12 the llama.cpp engine crashes the whole app
+  // natively at init. Throwing here instead routes callers to their JS
+  // fallbacks (local analysis summary, keyword search).
+  if (!supportsLlamaCppModels())
+    return Promise.reject(new Error("Analysis model requires Android 12+"));
+
   const size = useSettingsStore.getState().modelSize;
 
   if (medgemmaModelId && medgemmaLoadedSize === size)
     return Promise.resolve(medgemmaModelId);
   if (medgemmaPromise && medgemmaLoadedSize === size) return medgemmaPromise;
 
+  // A load for a DIFFERENT size may be in flight — serialize behind it so two
+  // analysis models never load concurrently (they'd fight over memory/eviction).
+  const prevLoad = medgemmaPromise;
   medgemmaLoadedSize = size;
   const isQwen = size !== "4b";
 
@@ -140,6 +150,9 @@ export function loadMedGemmaModel(
   if (isQwen) modelConfig.reasoning_budget = 0;
 
   medgemmaPromise = (async () => {
+    if (prevLoad) {
+      try { await prevLoad; } catch {}
+    }
     await evictExcept("medgemma");
     // A different-size analysis model may still be resident — unload it too.
     if (medgemmaModelId) {
@@ -173,6 +186,10 @@ export function loadMedGemmaModel(
 export function loadEmbeddingModel(
   onProgress?: (pct: number) => void
 ): Promise<string> {
+  // Same native-crash guard as the analysis model — see loadMedGemmaModel.
+  if (!supportsLlamaCppModels())
+    return Promise.reject(new Error("Embedding model requires Android 12+"));
+
   if (embeddingModelId) return Promise.resolve(embeddingModelId);
   if (embeddingPromise) return embeddingPromise;
 
@@ -253,16 +270,63 @@ async function downloadOne(name: ModelName, src: AssetSrc): Promise<void> {
   }
 }
 
+// Re-download only the models that failed (store status === "error"). Used by
+// the launch gate's RETRY button. Reuses the same sequential, low-RAM strategy.
+export async function retryModelDownloads(): Promise<void> {
+  const store = useModelStore.getState();
+  const size = useSettingsStore.getState().modelSize;
+  const srcByName: Record<ModelName, AssetSrc> = {
+    parakeet: PARAKEET_TDT_0_6B_V3_Q8_0,
+    medgemma: analysisSrc(size),
+    embedding: EMBEDDINGGEMMA_300M_Q8_0,
+    tts: TTS_EN_SUPERTONIC_Q4_0,
+  };
+  // Never re-download llama.cpp models on devices where they can't load.
+  const llamaOk = supportsLlamaCppModels();
+  const names: ModelName[] = ["parakeet", "medgemma", "embedding", "tts"];
+  for (const name of names) {
+    if (!llamaOk && (name === "medgemma" || name === "embedding")) continue;
+    if (store[name].status === "error") {
+      await downloadOne(name, srcByName[name]);
+    }
+  }
+}
+
 export async function preloadAllModels(): Promise<void> {
   if (preloadStarted) return;
   preloadStarted = true;
 
+  // Load the saved model-size preference BEFORE choosing the analysis model to
+  // download — otherwise a rehydrated "4b" preference is missed and we'd
+  // download the default 1.7B at startup (the right model still loads on demand,
+  // but the pre-download would be wasted).
+  try {
+    await useSettingsStore.getState().loadFromStorage();
+  } catch {}
+
+  // On Android < 12 the llama.cpp models can never load (native crash), so
+  // don't waste ~1.4 GB downloading them. Marking them "error" sends the gate
+  // straight to the "CONTINUE WITHOUT AI" degraded path.
+  const llamaOk = supportsLlamaCppModels();
+  const skipUnsupported = (name: ModelName) =>
+    useModelStore.getState().setModelState(name, { status: "error", progress: 0 });
+
   // Sequential downloads, low memory. One bad download doesn't block the rest.
+  // CORE models first — voice + analysis are all the record→analyze loop needs,
+  // so the launch gate opens after ~1.85 GB instead of ~2.3 GB.
   const size = useSettingsStore.getState().modelSize;
   await downloadOne("parakeet", PARAKEET_TDT_0_6B_V3_Q8_0);
-  await downloadOne("medgemma", analysisSrc(size));
-  await downloadOne("embedding", EMBEDDINGGEMMA_300M_Q8_0);
-  await downloadOne("tts", TTS_EN_SUPERTONIC_Q4_0);
+  if (llamaOk) await downloadOne("medgemma", analysisSrc(size));
+  else skipUnsupported("medgemma");
+
+  // Search (embedding) and read-aloud (TTS) finish in the BACKGROUND after the
+  // user is already in the app. Both features degrade gracefully until then:
+  // search falls back to keywords, TTS load fails quietly.
+  void (async () => {
+    if (llamaOk) await downloadOne("embedding", EMBEDDINGGEMMA_300M_Q8_0);
+    else skipUnsupported("embedding");
+    await downloadOne("tts", TTS_EN_SUPERTONIC_Q4_0);
+  })();
 }
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────

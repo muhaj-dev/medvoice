@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ScrollView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -5,13 +6,31 @@ import { useTheme } from '@/hooks/useTheme';
 import { useFamilyStore } from '@/store/useFamilyStore';
 import { P2PMeshBanner } from '@/components/P2PMeshBanner';
 import { FamilyMemberCard } from '@/components/FamilyMemberCard';
+import { EditMemberModal } from '@/components/EditMemberModal';
 import { AddFamilyMemberSection } from '@/components/AddFamilyMemberSection';
 import { HowP2PWorksCard } from '@/components/HowP2PWorksCard';
 
 export default function FamilyScreen() {
   const colors = useTheme();
-  const { members } = useFamilyStore();
+  const { members, updateMember, removeMember, syncHistoryTo } = useFamilyStore();
+  const [editingId, setEditingId] = useState<string | null>(null);
   const onlineCount = members.filter((m) => m.connectionStatus === 'online').length;
+  const editingMember = members.find((m) => m.id === editingId) ?? null;
+
+  const handleSave = async (name: string, relationship: string, shareEnabled: boolean) => {
+    if (editingMember) {
+      const startedSharing = shareEnabled && !editingMember.shareEnabled;
+      await updateMember(editingMember.id, { name, relationship, shareEnabled });
+      // Sharing just turned on — send them the full history now.
+      if (startedSharing) void syncHistoryTo(editingMember.publicKey);
+    }
+    setEditingId(null);
+  };
+
+  const handleRemove = async () => {
+    if (editingId) await removeMember(editingId);
+    setEditingId(null);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
@@ -25,7 +44,7 @@ export default function FamilyScreen() {
             <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontWeight: '700', color: colors.textPrimary, lineHeight: 40 }}>
               Family
             </Text>
-            <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontStyle: 'italic', color: colors.accentBlueLight, lineHeight: 16 }}>
+            <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontStyle: 'italic', color: colors.accentBlueLight, lineHeight: 30 }}>
               Connection
             </Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textSecondary, marginTop: 6 }}>
@@ -47,7 +66,7 @@ export default function FamilyScreen() {
               CONNECTED
             </Text>
             {members.map((m) => (
-              <FamilyMemberCard key={m.id} member={m} />
+              <FamilyMemberCard key={m.id} member={m} onPress={() => setEditingId(m.id)} />
             ))}
           </View>
         ) : (
@@ -72,6 +91,13 @@ export default function FamilyScreen() {
         {/* How P2P works */}
         <HowP2PWorksCard />
       </ScrollView>
+
+      <EditMemberModal
+        member={editingMember}
+        onSave={handleSave}
+        onRemove={handleRemove}
+        onDismiss={() => setEditingId(null)}
+      />
     </SafeAreaView>
   );
 }

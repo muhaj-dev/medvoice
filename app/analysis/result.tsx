@@ -9,6 +9,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { useFamilyStore } from "@/store/useFamilyStore";
 import { YouSaidCard } from "@/components/YouSaidCard";
 import { ConcernBanner } from "@/components/ConcernBanner";
+import { MedPsySummaryCard } from "@/components/MedPsySummaryCard";
 import { PatternCard } from "@/components/PatternCard";
 import { AnalysisActionButtons } from "@/components/AnalysisActionButtons";
 import { speakResponse, stopSpeaking } from "@/lib/tts";
@@ -146,6 +147,8 @@ export default function AnalysisResultScreen() {
             severity={result.severity}
             patternCount={result.patterns?.length ?? 0}
           />
+
+          <MedPsySummaryCard summary={result.summary} />
 
           {result.patterns?.map((pattern, i) => (
             <PatternCard key={i} pattern={pattern} />

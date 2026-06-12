@@ -6,6 +6,7 @@ import { useCameraPermissions } from "expo-camera";
 import { useTheme } from "@/hooks/useTheme";
 import { ScanCodeBody } from "@/components/ScanCodeBody";
 import { ScanConnectModal } from "@/components/ScanConnectModal";
+import { ManualCodeModal } from "@/components/ManualCodeModal";
 import { CameraPermissionError } from "@/components/CameraPermissionError";
 import { connectFamilyMember } from "@/lib/p2p";
 import { useFamilyStore } from "@/store/useFamilyStore";
@@ -18,6 +19,7 @@ export default function ScanCodeScreen() {
   const [paused, setPaused] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showManual, setShowManual] = useState(false);
   const [pendingKey, setPendingKey] = useState("");
 
   useEffect(() => {
@@ -38,6 +40,12 @@ export default function ScanCodeScreen() {
     [paused]
   );
 
+  const handleManualSubmit = useCallback((code: string) => {
+    setPendingKey(code);
+    setShowManual(false);
+    setShowModal(true);
+  }, []);
+
   const handleConfirm = useCallback(
     async (name: string, relationship: string) => {
       const member: FamilyMember = {
@@ -47,6 +55,10 @@ export default function ScanCodeScreen() {
         publicKey: pendingKey,
         connectionStatus: "pending",
         lastSynced: null,
+        // The scanner is the viewer. Only the device whose code was scanned
+        // gets the "share your data?" consent prompt; sharing from this
+        // device can still be enabled later from the member's card.
+        shareEnabled: false,
       };
       await addMember(member);
       setShowModal(false);
@@ -90,6 +102,13 @@ export default function ScanCodeScreen() {
         showSuccess={showSuccess}
         onBack={() => router.back()}
         onCodeDetected={handleCodeDetected}
+        onEnterManually={() => setShowManual(true)}
+      />
+
+      <ManualCodeModal
+        visible={showManual}
+        onSubmit={handleManualSubmit}
+        onDismiss={() => setShowManual(false)}
       />
 
       <ScanConnectModal

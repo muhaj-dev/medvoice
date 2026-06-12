@@ -16,10 +16,11 @@
  *   { type:'sync',    peerKey:hex, summary:string, id:string } -> reply 'result'
  *
  * Protocol (worklet -> RN), one JSON object per line:
- *   { type:'ready',    publicKey:hex, seed:hex }
- *   { type:'result',   id:string, ok:boolean, error?:string }
- *   { type:'peer',     from:hex }                     // a peer dialed us
- *   { type:'incoming', from:hex, summary:string }     // a peer sent a summary
+ *   { type:'ready',      publicKey:hex, seed:hex }
+ *   { type:'result',     id:string, ok:boolean, error?:string }
+ *   { type:'peer',       from:hex }                   // a peer dialed us
+ *   { type:'peer-close', from:hex }                   // a peer's socket dropped
+ *   { type:'incoming',   from:hex, summary:string }   // a peer sent a summary
  */
 import DHT from "hyperdht";
 import crypto from "hypercore-crypto";
@@ -67,7 +68,10 @@ function track(socket, peerHex) {
       }
     })
   );
-  socket.on("close", () => connections.delete(peerHex));
+  socket.on("close", () => {
+    connections.delete(peerHex);
+    send({ type: "peer-close", from: peerHex });
+  });
   socket.on("error", () => connections.delete(peerHex));
 }
 

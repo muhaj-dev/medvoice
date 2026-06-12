@@ -46,7 +46,7 @@ Use the following stack:
 - QVAC Fabric for on-device inference
 - QVAC Holepunch P2P for family device connection
 - SQLite (via expo-sqlite) for local health entry storage
-- expo-av for audio recording
+- expo-audio for audio recording and real-time PCM mic capture (`useAudioStream`)
 - react-native-qrcode-svg for QR code generation
 - expo-camera for QR code scanning
 

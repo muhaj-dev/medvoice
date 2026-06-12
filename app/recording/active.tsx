@@ -11,22 +11,27 @@ import { StopRecordingButton } from "@/components/StopRecordingButton";
 
 export default function RecordingActiveScreen() {
   const colors = useTheme();
-  const { setIsRecording, setFinalTranscript, resetRecording } = useRecordingStore();
-  const { transcript, start, stop } = useVoiceTranscription();
+  const { setIsRecording, setAudioUri, setFinalTranscript, resetRecording } =
+    useRecordingStore();
+  const transcript = useRecordingStore((s) => s.transcript);
+  const { start, stop } = useVoiceTranscription();
 
   useEffect(() => {
     setIsRecording(true);
     start();
-    // Stop transcription if the screen unmounts without an explicit stop.
+    // Stop capturing if the screen unmounts without an explicit stop.
     return () => {
       stop().catch(() => {});
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setIsRecording, start, stop]);
 
   const handleStop = async () => {
-    const text = await stop();
+    const { text, wavUri } = await stop();
     setIsRecording(false);
+    setAudioUri(wavUri);
+    // Use the live streamed transcript as the final result. If streaming yielded
+    // nothing, finalTranscript stays empty and the pipeline batch-transcribes the
+    // WAV fallback instead.
     setFinalTranscript(text);
     router.replace("/analysis/processing" as Href);
   };

@@ -71,7 +71,6 @@ export async function speakResponse(text: string): Promise<void> {
   await setAudioModeAsync({ playsInSilentMode: true });
   const player = createAudioPlayer({ uri: file.uri });
   currentPlayer = player;
-  player.play();
 
   await new Promise<void>((resolve) => {
     // addListener isn't surfaced on AudioPlayer's public type in this project's
@@ -82,12 +81,15 @@ export async function speakResponse(text: string): Promise<void> {
         listener: (status: AudioStatus) => void
       ) => { remove: () => void };
     };
+    // Register the completion listener BEFORE play() so a fast didJustFinish
+    // isn't missed (which would hang this promise).
     const subscription = emitter.addListener("playbackStatusUpdate", (status) => {
       if (status.didJustFinish) {
         subscription.remove();
         resolve();
       }
     });
+    player.play();
   });
 
   player.remove();

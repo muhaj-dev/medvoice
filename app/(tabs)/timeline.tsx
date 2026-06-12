@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { useHealthStore } from "@/store/useHealthStore";
@@ -55,59 +55,61 @@ export default function TimelineScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-      <ScrollView
-        className="flex-1"
+      {/* FlatList renders entries lazily — a long history doesn't mount every
+          card up front the way ScrollView + map did. */}
+      <FlatList
+        data={showSearching ? [] : displayed}
+        keyExtractor={(entry) => entry.id}
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-      >
-        {/* Heading */}
-        <View className="px-5 pt-4 pb-6">
-          <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontWeight: '700', color: colors.textPrimary, lineHeight: 44 }}>
-            Health
-          </Text>
-          <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontWeight: '700', fontStyle: 'italic', color: colors.accentBlue, lineHeight: 44 }}>
-            Timeline
-          </Text>
-        </View>
-
-        {/* Search */}
-        <View className="px-5 mb-6">
-          <TimelineSearchBar onSearch={setQuery} />
-        </View>
-
-        {/* Searching indicator */}
-        {showSearching && (
-          <View className="items-center pt-6 pb-2">
-            <ActivityIndicator size="small" color={colors.accentBlue} />
-            <Text style={{ fontFamily: "monospace", fontSize: 11, color: colors.textSecondary, letterSpacing: 1, marginTop: 8 }}>
-              SEARCHING...
-            </Text>
-          </View>
-        )}
-
-        {/* Entries */}
-        {!showSearching && displayed.length === 0 ? (
-          <View className="items-center pt-[60px] px-10 gap-3">
-            <Text className="text-[36px]">🔍</Text>
-            <Text style={{ fontFamily: 'Georgia', fontSize: 15, color: colors.textSecondary, textAlign: 'center' }}>
-              No entries found
-            </Text>
-            <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 20 }}>
-              {query
-                ? "Try a different search term"
-                : "Record your first health entry to get started"}
-            </Text>
-          </View>
-        ) : !showSearching ? (
+        renderItem={({ item }) => (
+          // Each cell carries its own slice of the vertical line; cells stack
+          // edge to edge so the segments read as one continuous line.
           <View className="px-5 relative">
             <TimelineVerticalLine />
-            {displayed.map((entry) => (
-              <TimelineEntryCard key={entry.id} entry={entry} />
-            ))}
+            <TimelineEntryCard entry={item} />
           </View>
-        ) : null}
-      </ScrollView>
+        )}
+        ListHeaderComponent={
+          <>
+            <View className="px-5 pt-4 pb-6">
+              <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontWeight: '700', color: colors.textPrimary, lineHeight: 44 }}>
+                Health
+              </Text>
+              <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontWeight: '700', fontStyle: 'italic', color: colors.accentBlue, lineHeight: 44 }}>
+                Timeline
+              </Text>
+            </View>
+            <View className="px-5 mb-6">
+              <TimelineSearchBar onSearch={setQuery} />
+            </View>
+            {showSearching && (
+              <View className="items-center pt-6 pb-2">
+                <ActivityIndicator size="small" color={colors.accentBlue} />
+                <Text style={{ fontFamily: "monospace", fontSize: 11, color: colors.textSecondary, letterSpacing: 1, marginTop: 8 }}>
+                  SEARCHING...
+                </Text>
+              </View>
+            )}
+          </>
+        }
+        ListEmptyComponent={
+          showSearching ? null : (
+            <View className="items-center pt-[60px] px-10 gap-3">
+              <Text className="text-[36px]">🔍</Text>
+              <Text style={{ fontFamily: 'Georgia', fontSize: 15, color: colors.textSecondary, textAlign: 'center' }}>
+                No entries found
+              </Text>
+              <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 20 }}>
+                {query
+                  ? "Try a different search term"
+                  : "Record your first health entry to get started"}
+              </Text>
+            </View>
+          )
+        }
+      />
     </SafeAreaView>
   );
 }

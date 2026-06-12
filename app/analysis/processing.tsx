@@ -9,7 +9,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { PipelineStepRow, StepStatus } from "@/components/PipelineStepRow";
 import { ProcessingHeader } from "@/components/ProcessingHeader";
 import { transcribeAudioFile } from "@/lib/transcription";
-import { analyzeHealthEntry } from "@/lib/medpsy";
+import { analyzeHealthEntry, analyzeHealthEntryLocally } from "@/lib/medpsy";
 import { embedText, semanticSearch, buildRagContext } from "@/lib/embeddings";
 
 type Step = { id: number; icon: string; label: string; status: StepStatus };
@@ -38,7 +38,9 @@ export default function AnalysisProcessingScreen() {
       useRecordingStore.getState();
     const { entries } = useHealthStore.getState();
 
-    // Step 1 — Transcription
+    // Step 1 — Transcription. Usually already done live during recording
+    // (finalTranscript is set), so this resolves instantly. Only the rare empty
+    // streamed result falls back to a batch transcription of the WAV.
     markStep(1, "running");
     let transcript = finalTranscript;
     if (audioUri && !transcript) {
@@ -47,50 +49,45 @@ export default function AnalysisProcessingScreen() {
         setFinalTranscript(transcript);
       } catch {}
     }
-    await wait(200);
     markStep(1, "done");
 
     // Step 2 — Embed transcript + scan stored history
-    await wait(200);
     markStep(2, "running");
     let embedding: number[] = [];
     try {
       embedding = await embedText(transcript || "Health update recorded.");
       setEntryEmbedding(embedding);
     } catch {}
-    await wait(200);
     markStep(2, "done");
 
     // Step 3 — RAG: cosine similarity over stored embeddings, build context
-    await wait(200);
     markStep(3, "running");
     let ragContext = "";
     try {
       const similar = await semanticSearch(transcript || "", entries, 5);
       ragContext = buildRagContext(similar);
     } catch {}
-    await wait(200);
     markStep(3, "done");
 
     // Step 4 — MedPsy analysis with RAG context
-    await wait(200);
     markStep(4, "running");
     try {
       const result = await analyzeHealthEntry(transcript || "Health update recorded.", ragContext);
       setAnalysisResult(result);
     } catch {
-      setAnalysisResult({ summary: "Analysis completed.", tags: [], severity: "good", patterns: [] });
+      // Model failed to load or run (low-RAM device, failed download). Fall
+      // back to local regex-derived tags/severity/patterns with an honest
+      // summary — never pretend the AI analysis succeeded.
+      setAnalysisResult(analyzeHealthEntryLocally(transcript || "Health update recorded."));
     }
-    await wait(200);
     markStep(4, "done");
 
     // Step 5 — Complete
-    await wait(200);
     markStep(5, "running");
-    await wait(500);
+    await wait(400);
     markStep(5, "done");
 
-    await wait(800);
+    await wait(500);
     router.replace("/analysis/result" as any);
   };
 

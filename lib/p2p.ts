@@ -33,6 +33,7 @@ type WorkletInstance = {
 type Bridge = { ipc: IPCStream; publicKey: string };
 
 const peerListeners = new Set<PeerListener>();
+const peerCloseListeners = new Set<PeerListener>();
 const summaryListeners = new Set<SummaryListener>();
 const pending = new Map<string, { resolve: () => void; reject: (e: Error) => void }>();
 
@@ -89,6 +90,9 @@ function handleLine(line: string) {
     }
     case "peer":
       peerListeners.forEach((l) => l(String(msg.from ?? "")));
+      break;
+    case "peer-close":
+      peerCloseListeners.forEach((l) => l(String(msg.from ?? "")));
       break;
     case "incoming":
       summaryListeners.forEach((l) =>
@@ -175,6 +179,13 @@ export function onPeerConnected(callback: PeerListener): () => void {
   peerListeners.add(callback);
   void getBridge(); // ensure the node is listening
   return () => peerListeners.delete(callback);
+}
+
+/** Register a callback fired when a connected peer's socket drops. */
+export function onPeerDisconnected(callback: PeerListener): () => void {
+  peerCloseListeners.add(callback);
+  void getBridge();
+  return () => peerCloseListeners.delete(callback);
 }
 
 /** Register a callback fired when a peer pushes a health summary to us. */

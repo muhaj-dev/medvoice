@@ -7,10 +7,12 @@ import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 
 import { useTheme } from "@/hooks/useTheme";
+import { ModelDownloadGate } from "@/components/ModelDownloadGate";
 import { useThemeStore } from "@/store/useThemeStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { useFamilyStore } from "@/store/useFamilyStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useRecordingStore } from "@/store/useRecordingStore";
 import { preloadAllModels, suspendQvac, resumeQvac } from "@/lib/qvac";
 
 // Splash stays visible until app/index.tsx resolves the route
@@ -37,8 +39,12 @@ export default function RootLayout() {
     preloadAllModels();
 
     // Free GPU/CPU when the app moves to background; reclaim on foreground.
+    // Skip suspend WHILE RECORDING — the mic-permission dialog briefly
+    // backgrounds the app, and suspending mid-capture blocks transcribeStream.
     const sub = AppState.addEventListener("change", (state) => {
-      if (state === "background") suspendQvac().catch(() => {});
+      if (state === "background") {
+        if (!useRecordingStore.getState().isRecording) suspendQvac().catch(() => {});
+      }
       if (state === "active") resumeQvac().catch(() => {});
     });
 
@@ -59,6 +65,8 @@ export default function RootLayout() {
           animation: "slide_from_right",
         }}
       />
+      {/* Blocks the app at launch until all on-device AI models are downloaded */}
+      <ModelDownloadGate />
     </>
   );
 }

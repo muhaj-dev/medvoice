@@ -17,6 +17,7 @@ type ModelStore = {
   tts: ModelState;
   setModelState: (model: ModelName, patch: Partial<ModelState>) => void;
   allReady: () => boolean;
+  coreReady: () => boolean;
   anyLoading: () => boolean;
 };
 
@@ -41,6 +42,14 @@ export const useModelStore = create<ModelStore>((set, get) => ({
       s.embedding.status === 'ready' &&
       s.tts.status === 'ready'
     );
+  },
+
+  coreReady: () => {
+    const s = get();
+    // The record→analyze loop only needs voice (parakeet) + analysis (medgemma).
+    // Embedding (search) and TTS (read-aloud) download in the background and
+    // should not block first use of the app.
+    return s.parakeet.status === 'ready' && s.medgemma.status === 'ready';
   },
 
   anyLoading: () => {

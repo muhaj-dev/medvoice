@@ -7,4 +7,6 @@ export type FamilyMember = {
   publicKey: string;
   connectionStatus: ConnectionStatus;
   lastSynced: string | null;
+  // User consent: only when true do we send this member our health entries.
+  shareEnabled: boolean;
 };

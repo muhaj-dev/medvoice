@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import type { FamilyMember } from '@/types/family';
 
@@ -14,16 +14,20 @@ function timeAgo(iso: string | null): string {
 
 type Props = {
   member: FamilyMember;
+  onPress?: () => void;
 };
 
-export function FamilyMemberCard({ member }: Props) {
+export function FamilyMemberCard({ member, onPress }: Props) {
   const colors = useTheme();
   const isOnline = member.connectionStatus === 'online';
   const ringColor = isOnline ? colors.successGreen : colors.textMuted;
   const initial = member.name.charAt(0).toUpperCase();
 
   return (
-    <View
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={!onPress}
+      activeOpacity={0.8}
       style={{
         backgroundColor: colors.bgCard,
         borderRadius: 16,
@@ -107,6 +111,6 @@ export function FamilyMemberCard({ member }: Props) {
           {isOnline ? 'ONLINE' : 'OFFLINE'}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

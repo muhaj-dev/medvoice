@@ -77,7 +77,12 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
 
             <View style={s.header}>
               <Text style={s.title}>AI MODELS</Text>
-              <TouchableOpacity style={s.closeBtn} onPress={onClose} activeOpacity={0.7}>
+              <TouchableOpacity
+                style={s.closeBtn}
+                onPress={onClose}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
                 <Ionicons name="close" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>

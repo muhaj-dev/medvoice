@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as Clipboard from "expo-clipboard";
@@ -57,10 +57,26 @@ export default function ShowCodeScreen() {
         publicKey: pendingPeerKey,
         connectionStatus: "online",
         lastSynced: new Date().toISOString(),
+        shareEnabled: false, // nothing is shared until the user agrees below
       };
       await addMember(member);
       setShowModal(false);
       router.back();
+      Alert.alert(
+        "Share your health data?",
+        `Allow ${name} to see your health history and future updates? You can change this anytime from their card on the Family tab.`,
+        [
+          { text: "Not now", style: "cancel" },
+          {
+            text: "Share",
+            onPress: () => {
+              const store = useFamilyStore.getState();
+              void store.updateMember(member.id, { shareEnabled: true });
+              void store.syncHistoryTo(pendingPeerKey);
+            },
+          },
+        ]
+      );
     },
     [addMember, pendingPeerKey]
   );

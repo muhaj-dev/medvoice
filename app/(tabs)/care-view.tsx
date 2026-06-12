@@ -19,8 +19,11 @@ export default function CareViewScreen() {
   const members = useFamilyStore((s) => s.members);
   const syncedEntries = useFamilyStore((s) => s.syncedEntries);
 
+  // Prefer a live member, but keep showing the saved history of an offline
+  // one — the badge reflects whether they're reachable right now.
   const connectedMember =
-    members.find((m) => m.connectionStatus === "online") ?? null;
+    members.find((m) => m.connectionStatus === "online") ?? members[0] ?? null;
+  const isLive = connectedMember?.connectionStatus === "online";
 
   if (!connectedMember) {
     return (
@@ -31,7 +34,8 @@ export default function CareViewScreen() {
   }
 
   const latestEntry = syncedEntries[0] ?? null;
-  const recentEntries = syncedEntries.slice(1, 4);
+  // Full synced history (backfilled on connect), newest first.
+  const recentEntries = syncedEntries.slice(1);
   const count = deriveConcernCount(latestEntry?.severity ?? null);
 
   return (
@@ -45,7 +49,7 @@ export default function CareViewScreen() {
           <Text style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: '600', color: colors.textSecondary, letterSpacing: 1.2 }}>
             MONITORING
           </Text>
-          <LiveMonitoringBadge />
+          <LiveMonitoringBadge online={isLive} />
         </View>
 
         {/* Name heading */}
@@ -78,7 +82,7 @@ export default function CareViewScreen() {
 
         {/* Recent entries label */}
         <Text style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: '600', color: colors.textSecondary, letterSpacing: 1.2, marginBottom: 14 }}>
-          RECENT ENTRIES · READ ONLY
+          ENTRY HISTORY · READ ONLY
         </Text>
 
         {recentEntries.length > 0 ? (

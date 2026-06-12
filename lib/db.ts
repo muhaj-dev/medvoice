@@ -46,9 +46,30 @@ async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
       relationship      TEXT,
       public_key        TEXT NOT NULL,
       connection_status TEXT,
-      last_synced       TEXT
+      last_synced       TEXT,
+      share_enabled     INTEGER DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS synced_entries (
+      id         TEXT PRIMARY KEY,
+      from_key   TEXT NOT NULL,
+      timestamp  TEXT NOT NULL,
+      transcript TEXT NOT NULL,
+      analysis   TEXT NOT NULL,
+      tags       TEXT,
+      severity   TEXT
     );
   `);
+
+  // Migration: installs that predate share_enabled get the column in place.
+  // Default 1 — those members were connected under the old always-share flow.
+  try {
+    await database.execAsync(
+      'ALTER TABLE family_members ADD COLUMN share_enabled INTEGER DEFAULT 1',
+    );
+  } catch {
+    // Column already exists.
+  }
 }
 
 // ── Health Entries ────────────────────────────────────────────────────────────
@@ -152,8 +173,8 @@ export async function insertFamilyMember(member: FamilyMember): Promise<void> {
   const database = await getDb();
   await database.runAsync(
     `INSERT OR REPLACE INTO family_members
-       (id, name, relationship, public_key, connection_status, last_synced)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+       (id, name, relationship, public_key, connection_status, last_synced, share_enabled)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       member.id,
       member.name,
@@ -161,6 +182,7 @@ export async function insertFamilyMember(member: FamilyMember): Promise<void> {
       member.publicKey,
       member.connectionStatus,
       member.lastSynced ?? null,
+      member.shareEnabled ? 1 : 0,
     ],
   );
 }
@@ -174,6 +196,7 @@ export async function loadAllFamilyMembers(): Promise<FamilyMember[]> {
     public_key: string;
     connection_status: string | null;
     last_synced: string | null;
+    share_enabled: number | null;
   }>('SELECT * FROM family_members');
 
   return rows.map((row) => ({
@@ -183,10 +206,55 @@ export async function loadAllFamilyMembers(): Promise<FamilyMember[]> {
     publicKey: row.public_key,
     connectionStatus: (row.connection_status as FamilyMember['connectionStatus']) ?? 'offline',
     lastSynced: row.last_synced,
+    shareEnabled: row.share_enabled !== 0,
   }));
 }
 
 export async function deleteFamilyMember(id: string): Promise<void> {
   const database = await getDb();
   await database.runAsync('DELETE FROM family_members WHERE id = ?', [id]);
+}
+
+// ── Synced Entries (health summaries received from family via P2P) ───────────
+
+export async function insertSyncedEntry(
+  fromKey: string,
+  entry: HealthEntry,
+): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `INSERT OR REPLACE INTO synced_entries
+       (id, from_key, timestamp, transcript, analysis, tags, severity)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      entry.id,
+      fromKey,
+      entry.timestamp,
+      entry.transcript,
+      entry.analysis,
+      JSON.stringify(entry.tags),
+      entry.severity ?? null,
+    ],
+  );
+}
+
+export async function loadAllSyncedEntries(): Promise<HealthEntry[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<{
+    id: string;
+    timestamp: string;
+    transcript: string;
+    analysis: string;
+    tags: string | null;
+    severity: string | null;
+  }>('SELECT * FROM synced_entries ORDER BY timestamp DESC');
+
+  return rows.map((row) => ({
+    id: row.id,
+    timestamp: row.timestamp,
+    transcript: row.transcript,
+    analysis: row.analysis,
+    tags: row.tags ? (JSON.parse(row.tags) as string[]) : [],
+    severity: (row.severity as HealthEntry['severity']) ?? null,
+  }));
 }
