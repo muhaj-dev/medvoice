@@ -65,12 +65,14 @@ async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
   // Migrate pre-existing synced_entries from PRIMARY KEY(id) to (from_key, id).
   // With id alone as the key, two family members whose entries share an id
   // overwrote each other — so Care View showed one person's data under both.
-  // Safe to drop: synced summaries are a cache that re-syncs on reconnect.
+  // Copy rows forward into a table with the correct PK and atomically swap,
+  // so existing synced summaries survive the upgrade instead of being dropped.
+  // INSERT OR IGNORE resolves any (from_key, id) collisions left by the old PK.
   const ver = await database.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
   if ((ver?.user_version ?? 0) < 1) {
     await database.execAsync(`
-      DROP TABLE IF EXISTS synced_entries;
-      CREATE TABLE synced_entries (
+      BEGIN TRANSACTION;
+      CREATE TABLE IF NOT EXISTS synced_entries_new (
         id         TEXT NOT NULL,
         from_key   TEXT NOT NULL,
         timestamp  TEXT NOT NULL,
@@ -80,8 +82,14 @@ async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
         severity   TEXT,
         PRIMARY KEY (from_key, id)
       );
+      INSERT OR IGNORE INTO synced_entries_new
+        SELECT id, COALESCE(from_key, ''), timestamp, transcript, analysis, tags, severity
+        FROM synced_entries;
+      DROP TABLE IF EXISTS synced_entries;
+      ALTER TABLE synced_entries_new RENAME TO synced_entries;
+      PRAGMA user_version = 1;
+      COMMIT;
     `);
-    await database.execAsync('PRAGMA user_version = 1');
   }
 
   // Migration: installs that predate share_enabled get the column in place.
