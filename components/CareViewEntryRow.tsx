@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { ReadAloudButton } from "@/components/ReadAloudButton";
+import { SpokenText } from "@/components/SpokenText";
 import type { ColorTokens } from "@/constants/colors";
 import type { HealthEntry } from "@/types/health";
 
@@ -56,7 +58,8 @@ export function CareViewEntryRow({ entry, isLast }: Props) {
         {expanded && !!entry.analysis && (
           <View style={styles.summaryBox}>
             <Text style={styles.summaryLabel}>MEDPSY SUMMARY</Text>
-            <Text style={styles.summaryText}>{entry.analysis}</Text>
+            <SpokenText id={`cv-${entry.id}`} text={entry.analysis} style={styles.summaryText} />
+            <ReadAloudButton id={`cv-${entry.id}`} text={entry.analysis} />
           </View>
         )}
       </TouchableOpacity>

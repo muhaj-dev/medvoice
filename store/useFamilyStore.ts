@@ -14,7 +14,7 @@ import {
   connectFamilyMember,
 } from '@/lib/p2p';
 import { useHealthStore } from '@/store/useHealthStore';
-import type { FamilyMember, ConnectionStatus } from '@/types/family';
+import type { FamilyMember, ConnectionStatus, SyncedEntry } from '@/types/family';
 import type { HealthEntry } from '@/types/health';
 
 // Strip everything except the summary fields — never send audio or embeddings.
@@ -55,10 +55,20 @@ function isValidSummary(value: unknown): value is HealthEntry {
 const byNewest = (a: HealthEntry, b: HealthEntry) =>
   b.timestamp.localeCompare(a.timestamp);
 
+// Public keys can drift in case/whitespace between a scanned or typed code and
+// the key on the wire. Match on a normalized form everywhere so an incoming
+// summary is never dropped just because its key isn't byte-identical.
+const normKey = (k: string | undefined) => (k ?? '').trim().toLowerCase();
+
+// Outcome of pushing local history to a peer — surfaced to the UI so a failed
+// or empty sync is visible instead of silent.
+export type SyncResult = { sent: number; total: number; ok: boolean };
+
 type FamilyStore = {
   members: FamilyMember[];
-  // Health entries synced from a connected family member via P2P
-  syncedEntries: HealthEntry[];
+  // Health entries synced from connected family members via P2P. Each carries
+  // `fromKey` so Care View can show one member's entries at a time.
+  syncedEntries: SyncedEntry[];
   addMember: (member: FamilyMember) => Promise<void>;
   // Edit a connected member's details (name, relationship, sharing) — persisted.
   updateMember: (
@@ -67,13 +77,14 @@ type FamilyStore = {
   ) => Promise<void>;
   removeMember: (id: string) => Promise<void>;
   updateMemberStatus: (id: string, status: ConnectionStatus) => void;
-  setSyncedEntries: (entries: HealthEntry[]) => void;
+  setSyncedEntries: (entries: SyncedEntry[]) => void;
   loadFromDb: () => Promise<void>;
   // Push a saved entry's summary to every connected member (patient side).
   broadcastEntry: (entry: HealthEntry) => Promise<void>;
   // Push the full local history to one peer (after connect/reconnect) so
-  // entries recorded before the connection are also shared.
-  syncHistoryTo: (peerPublicKey: string) => Promise<void>;
+  // entries recorded before the connection are also shared. Reports how many
+  // of the local entries were delivered and whether the peer was reachable.
+  syncHistoryTo: (peerPublicKey: string) => Promise<SyncResult>;
   // Dial every known member to learn who is actually reachable right now.
   refreshConnections: () => Promise<void>;
   // Start listening for summaries pushed by family members (caregiver side).
@@ -81,13 +92,16 @@ type FamilyStore = {
 };
 
 export const useFamilyStore = create<FamilyStore>((set, get) => {
-  // Persist + merge received entries, newest first, deduped by id.
+  // Persist + merge received entries, newest first. Tagged with the sender's
+  // key and deduped by (sender, id) — NOT id alone — so two different members
+  // whose entries share an id don't overwrite each other (which would make Care
+  // View show one person's history under both names).
   const acceptEntries = (fromKey: string, entries: HealthEntry[]) => {
     entries.forEach((entry) => void insertSyncedEntry(fromKey, entry));
     set((state) => {
-      const byId = new Map(state.syncedEntries.map((e) => [e.id, e]));
-      entries.forEach((e) => byId.set(e.id, e));
-      return { syncedEntries: [...byId.values()].sort(byNewest) };
+      const byKey = new Map(state.syncedEntries.map((e) => [`${e.fromKey}|${e.id}`, e]));
+      entries.forEach((e) => byKey.set(`${fromKey}|${e.id}`, { ...e, fromKey }));
+      return { syncedEntries: [...byKey.values()].sort(byNewest) };
     });
   };
 
@@ -101,9 +115,10 @@ export const useFamilyStore = create<FamilyStore>((set, get) => {
       await insertFamilyMember(member);
       set((state) => ({ members: [...state.members, member] }));
       // Flush any summaries this peer pushed while the confirm modal was open.
-      const held = pendingUnknown.get(member.publicKey);
+      const nk = normKey(member.publicKey);
+      const held = pendingUnknown.get(nk);
       if (held) {
-        pendingUnknown.delete(member.publicKey);
+        pendingUnknown.delete(nk);
         acceptEntries(member.publicKey, held);
       }
     },
@@ -178,13 +193,19 @@ export const useFamilyStore = create<FamilyStore>((set, get) => {
       const entries = [...useHealthStore.getState().entries].sort(
         (a, b) => a.timestamp.localeCompare(b.timestamp)
       );
+      let sent = 0;
       for (const entry of entries) {
         try {
           await syncHealthSummary(peerPublicKey, JSON.stringify(toSummary(entry)));
-        } catch {
-          return; // Peer dropped mid-backfill — the next reconnect retries.
+          sent += 1;
+        } catch (e) {
+          // Peer dropped mid-backfill — the next reconnect retries the rest.
+          console.warn(`[p2p] syncHistoryTo: sent ${sent}/${entries.length} then failed:`, e);
+          return { sent, total: entries.length, ok: false };
         }
       }
+      console.log(`[p2p] syncHistoryTo: delivered ${sent}/${entries.length} to ${peerPublicKey.slice(0, 12)}…`);
+      return { sent, total: entries.length, ok: true };
     },
 
     startReceiving: () => {
@@ -203,29 +224,34 @@ export const useFamilyStore = create<FamilyStore>((set, get) => {
           return;
         }
         const entry = parsed;
-        if (!get().members.some((m) => m.publicKey === from)) {
+        const member = get().members.find((m) => normKey(m.publicKey) === normKey(from));
+        if (!member) {
           // Unknown peer: hold until the user confirms them as a member.
-          const held = pendingUnknown.get(from) ?? [];
+          const nk = normKey(from);
+          const held = pendingUnknown.get(nk) ?? [];
           if (held.length < MAX_PENDING_PER_PEER) {
-            pendingUnknown.set(from, [...held, entry]);
+            pendingUnknown.set(nk, [...held, entry]);
           }
+          console.log(`[p2p] incoming from unknown peer ${from.slice(0, 12)}… — held (${held.length + 1})`);
           return;
         }
-        acceptEntries(from, [entry]);
+        // Tag with the member's stored key so Care View's filter matches.
+        console.log(`[p2p] incoming accepted from ${member.name} (${from.slice(0, 12)}…)`);
+        acceptEntries(member.publicKey, [entry]);
       });
 
       // A known member reconnected: mark them online and — if the user agreed
       // to share with them — backfill anything recorded while apart.
       onPeerConnected((from) => {
-        const member = get().members.find((m) => m.publicKey === from);
+        const member = get().members.find((m) => normKey(m.publicKey) === normKey(from));
         if (!member) return; // first-time connect — Show Code screen handles it
         get().updateMemberStatus(member.id, 'online');
-        if (member.shareEnabled) void get().syncHistoryTo(from);
+        if (member.shareEnabled) void get().syncHistoryTo(member.publicKey);
       });
 
       // Their socket dropped (app closed, network lost) — show offline.
       onPeerDisconnected((from) => {
-        const member = get().members.find((m) => m.publicKey === from);
+        const member = get().members.find((m) => normKey(m.publicKey) === normKey(from));
         if (member) get().updateMemberStatus(member.id, 'offline');
       });
     },

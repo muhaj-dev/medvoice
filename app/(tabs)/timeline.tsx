@@ -3,18 +3,28 @@ import { View, Text, FlatList, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { useHealthStore } from "@/store/useHealthStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { TimelineSearchBar } from "@/components/TimelineSearchBar";
 import { TimelineEntryCard } from "@/components/TimelineEntryCard";
 import { TimelineVerticalLine } from "@/components/TimelineVerticalLine";
 import { semanticSearch } from "@/lib/embeddings";
+import { prewarmTTS } from "@/lib/tts";
 import type { HealthEntry } from "@/types/health";
 
 export default function TimelineScreen() {
   const colors = useTheme();
   const { entries } = useHealthStore();
+  const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<HealthEntry[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Warm the TTS model so Read Aloud on the cards is fast. (This evicts the
+  // search model; the next semantic search reloads it once — keyword search
+  // covers the gap.)
+  useEffect(() => {
+    if (ttsEnabled) prewarmTTS();
+  }, [ttsEnabled]);
 
   useEffect(() => {
     // Empty query shows all entries (see `displayed` below) — nothing to search.

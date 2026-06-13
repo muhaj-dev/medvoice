@@ -1,7 +1,21 @@
 /**
  * QVAC TTS wrapper — on-device text-to-speech via TTS Supertonic Q4.
- * Collects int16 PCM samples, writes a WAV file, and plays via expo-audio.
- * No audio or text is sent to any server.
+ * No audio or text ever leaves the device.
+ *
+ * Strategy: synthesize EVERY sentence up front (behind the button's loading
+ * state), then play the small per-sentence clips back to back. This avoids both
+ * failure modes we hit:
+ *   - One big clip → the device audio decoder underruns on the long WAV, then
+ *     speeds up to catch up (an audible "speed-up" glitch mid-reading).
+ *   - Streaming one sentence at a time → multi-second dead air while the NEXT
+ *     sentence is still synthesizing (on-device TTS is slower than real time).
+ * Pre-synthesizing all clips first means playback never waits on the model, and
+ * small clips never trigger the decoder glitch. The only pauses are the short,
+ * natural ones at sentence boundaries — which help an older listener keep up.
+ *
+ * Call prewarmTTS() when a screen with a Read Aloud button mounts so the model
+ * is already resident in RAM by the time the user taps — that keeps the upfront
+ * loading wait to just synthesis time, not synthesis + model load.
  */
 
 import { textToSpeech } from "@qvac/sdk";
@@ -9,8 +23,14 @@ import { File, Paths } from "expo-file-system";
 import { createAudioPlayer, setAudioModeAsync, type AudioStatus } from "expo-audio";
 import { loadTTSModel } from "./qvac";
 
+// Playback rate of the synthesized PCM (set per user preference). Higher plays
+// faster/higher-pitched, lower plays slower/drawled.
 const SAMPLE_RATE = 44100;
+
 let currentPlayer: ReturnType<typeof createAudioPlayer> | null = null;
+// Bumped by stopSpeaking() (and the start of each speakResponse) to invalidate
+// any sentence loop still in flight — its samples are dropped, its audio stops.
+let activeRun = 0;
 
 function buildWav(samples: number[]): Uint8Array {
   const dataSize = samples.length * 2; // int16 = 2 bytes per sample
@@ -38,27 +58,44 @@ function buildWav(samples: number[]): Uint8Array {
   return new Uint8Array(buf);
 }
 
-export async function speakResponse(text: string): Promise<void> {
-  await stopSpeaking();
+// Split into sentence-sized chunks. Each is synthesized and played as its own
+// small clip, so no single WAV is large enough to trip the decoder speed-up
+// glitch. Falls back to the whole string if there's no sentence punctuation.
+// Exported so on-screen text can be split the SAME way for read-along
+// highlighting (the indices line up with the spoken clips).
+export function splitSentences(text: string): string[] {
+  const parts = text
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts : [text.trim()].filter(Boolean);
+}
 
-  const modelId = await loadTTSModel();
-
-  // textToSpeech rejects with "Stale job replaced by new run" if another run
-  // (or a model eviction) replaces this one mid-generation. Catch it so it
-  // doesn't surface as an uncaught promise rejection.
-  let samples: number[] | undefined;
+// Synthesize one chunk of text to PCM samples. Returns undefined on failure
+// (e.g. "Stale job replaced by new run" if a newer run evicted this one).
+async function synthesize(modelId: string, chunk: string): Promise<number[] | undefined> {
   try {
-    const result = textToSpeech({ modelId, text, stream: false });
-    samples = await result.buffer;
+    const result = textToSpeech({ modelId, text: chunk, stream: false });
+    return await result.buffer;
   } catch (e) {
     console.error("TTS: generation failed", e);
-    return;
+    return undefined;
   }
+}
 
-  if (!samples || samples.length === 0) return;
-
+// Write samples to a WAV file and play it to completion. Resolves when the clip
+// finishes (or immediately if this run was invalidated mid-write). `onStart`
+// fires once, the first time audio actually begins playing.
+async function playClip(
+  samples: number[],
+  runId: number,
+  index: number,
+  onStart?: () => void
+): Promise<void> {
   const wav = buildWav(samples);
-  const file = new File(Paths.cache, "tts_output.wav");
+  const file = new File(Paths.cache, `tts_${index}.wav`);
   try {
     if (file.exists) file.delete();
     file.create();
@@ -68,7 +105,8 @@ export async function speakResponse(text: string): Promise<void> {
     return;
   }
 
-  await setAudioModeAsync({ playsInSilentMode: true });
+  if (runId !== activeRun) return;
+
   const player = createAudioPlayer({ uri: file.uri });
   currentPlayer = player;
 
@@ -81,9 +119,15 @@ export async function speakResponse(text: string): Promise<void> {
         listener: (status: AudioStatus) => void
       ) => { remove: () => void };
     };
+    let startFired = false;
     // Register the completion listener BEFORE play() so a fast didJustFinish
     // isn't missed (which would hang this promise).
     const subscription = emitter.addListener("playbackStatusUpdate", (status) => {
+      // First frame where audio is actually playing — flip the UI to "STOP".
+      if (!startFired && status.playing) {
+        startFired = true;
+        onStart?.();
+      }
       if (status.didJustFinish) {
         subscription.remove();
         resolve();
@@ -93,10 +137,69 @@ export async function speakResponse(text: string): Promise<void> {
   });
 
   player.remove();
-  currentPlayer = null;
+  if (currentPlayer === player) currentPlayer = null;
+}
+
+/**
+ * Load the TTS model into RAM ahead of time (no speech). Safe to call on screen
+ * mount — failures are swallowed so it never blocks the UI.
+ */
+export function prewarmTTS(): void {
+  void loadTTSModel().catch(() => {});
+}
+
+// `onStart` fires once, when the first sentence actually begins playing (switch
+// a Read Aloud button from loading to "STOP"). `onSentence` fires as each
+// sentence begins, with its index in splitSentences(text) — drive read-along
+// highlighting from it.
+export async function speakResponse(
+  text: string,
+  opts?: { onStart?: () => void; onSentence?: (index: number) => void }
+): Promise<void> {
+  await stopSpeaking();
+  const runId = activeRun; // stopSpeaking() bumped this; capture our token
+
+  const sentences = splitSentences(text);
+  if (sentences.length === 0) return;
+
+  const modelId = await loadTTSModel();
+  if (runId !== activeRun) return;
+
+  // Pre-synthesize every sentence FIRST (the loading state covers this wait),
+  // so playback never has to wait on the model — no mid-reading dead air. Keep
+  // each clip's sentence index so highlighting stays aligned even if a sentence
+  // failed to synthesize and was skipped.
+  const clips: { index: number; samples: number[] }[] = [];
+  for (let j = 0; j < sentences.length; j++) {
+    const samples = await synthesize(modelId, sentences[j]);
+    if (runId !== activeRun) return;
+    if (samples && samples.length > 0) clips.push({ index: j, samples });
+  }
+  if (clips.length === 0) return;
+
+  await setAudioModeAsync({ playsInSilentMode: true });
+
+  let started = false;
+  const fireStart = () => {
+    if (!started) {
+      started = true;
+      opts?.onStart?.();
+    }
+  };
+
+  // Play the small clips back to back — gapless apart from the brief, natural
+  // pause at each sentence boundary.
+  for (const clip of clips) {
+    await playClip(clip.samples, runId, clip.index % 2, () => {
+      fireStart();
+      opts?.onSentence?.(clip.index);
+    });
+    if (runId !== activeRun) return;
+  }
 }
 
 export async function stopSpeaking(): Promise<void> {
+  activeRun++; // invalidate any in-flight sentence loop
   if (!currentPlayer) return;
   try {
     currentPlayer.pause();

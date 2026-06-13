@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import type { HealthEntry, HealthPattern } from '@/types/health';
-import type { FamilyMember } from '@/types/family';
+import type { FamilyMember, SyncedEntry } from '@/types/family';
 
 let db: SQLite.SQLiteDatabase | null = null;
 let dbInitPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -51,15 +51,38 @@ async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
     );
 
     CREATE TABLE IF NOT EXISTS synced_entries (
-      id         TEXT PRIMARY KEY,
+      id         TEXT NOT NULL,
       from_key   TEXT NOT NULL,
       timestamp  TEXT NOT NULL,
       transcript TEXT NOT NULL,
       analysis   TEXT NOT NULL,
       tags       TEXT,
-      severity   TEXT
+      severity   TEXT,
+      PRIMARY KEY (from_key, id)
     );
   `);
+
+  // Migrate pre-existing synced_entries from PRIMARY KEY(id) to (from_key, id).
+  // With id alone as the key, two family members whose entries share an id
+  // overwrote each other — so Care View showed one person's data under both.
+  // Safe to drop: synced summaries are a cache that re-syncs on reconnect.
+  const ver = await database.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
+  if ((ver?.user_version ?? 0) < 1) {
+    await database.execAsync(`
+      DROP TABLE IF EXISTS synced_entries;
+      CREATE TABLE synced_entries (
+        id         TEXT NOT NULL,
+        from_key   TEXT NOT NULL,
+        timestamp  TEXT NOT NULL,
+        transcript TEXT NOT NULL,
+        analysis   TEXT NOT NULL,
+        tags       TEXT,
+        severity   TEXT,
+        PRIMARY KEY (from_key, id)
+      );
+    `);
+    await database.execAsync('PRAGMA user_version = 1');
+  }
 
   // Migration: installs that predate share_enabled get the column in place.
   // Default 1 — those members were connected under the old always-share flow.
@@ -238,10 +261,11 @@ export async function insertSyncedEntry(
   );
 }
 
-export async function loadAllSyncedEntries(): Promise<HealthEntry[]> {
+export async function loadAllSyncedEntries(): Promise<SyncedEntry[]> {
   const database = await getDb();
   const rows = await database.getAllAsync<{
     id: string;
+    from_key: string;
     timestamp: string;
     transcript: string;
     analysis: string;
@@ -251,6 +275,7 @@ export async function loadAllSyncedEntries(): Promise<HealthEntry[]> {
 
   return rows.map((row) => ({
     id: row.id,
+    fromKey: row.from_key,
     timestamp: row.timestamp,
     transcript: row.transcript,
     analysis: row.analysis,

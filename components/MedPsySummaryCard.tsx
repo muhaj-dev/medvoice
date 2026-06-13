@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { SpokenText } from "@/components/SpokenText";
 import type { ColorTokens } from "@/constants/colors";
 
 type Props = { summary: string };
@@ -18,7 +19,7 @@ export function MedPsySummaryCard({ summary }: Props) {
   return (
     <View style={styles.card}>
       <Text style={styles.label}>MEDPSY SUMMARY</Text>
-      <Text style={styles.text}>{summary}</Text>
+      <SpokenText id="result" text={summary} style={styles.text} />
     </View>
   );
 }

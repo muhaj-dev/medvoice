@@ -69,10 +69,22 @@ export default function ShowCodeScreen() {
           { text: "Not now", style: "cancel" },
           {
             text: "Share",
-            onPress: () => {
+            onPress: async () => {
               const store = useFamilyStore.getState();
-              void store.updateMember(member.id, { shareEnabled: true });
-              void store.syncHistoryTo(pendingPeerKey);
+              await store.updateMember(member.id, { shareEnabled: true });
+              const r = await store.syncHistoryTo(pendingPeerKey);
+              Alert.alert(
+                r.total === 0
+                  ? "Nothing to share yet"
+                  : r.ok
+                  ? "Health data shared"
+                  : "Sync incomplete",
+                r.total === 0
+                  ? `You have no saved entries yet. New entries will sync to ${name} automatically.`
+                  : r.ok
+                  ? `Sent ${r.sent} ${r.sent === 1 ? "entry" : "entries"} to ${name}.`
+                  : `Sent ${r.sent} of ${r.total}. ${name} may be offline — the rest will sync when you reconnect.`
+              );
             },
           },
         ]

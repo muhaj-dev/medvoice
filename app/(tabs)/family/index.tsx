@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, View, Text } from 'react-native';
+import { ScrollView, View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
@@ -21,8 +21,22 @@ export default function FamilyScreen() {
     if (editingMember) {
       const startedSharing = shareEnabled && !editingMember.shareEnabled;
       await updateMember(editingMember.id, { name, relationship, shareEnabled });
-      // Sharing just turned on — send them the full history now.
-      if (startedSharing) void syncHistoryTo(editingMember.publicKey);
+      // Sharing just turned on — send them the full history now and report it.
+      if (startedSharing) {
+        const r = await syncHistoryTo(editingMember.publicKey);
+        Alert.alert(
+          r.total === 0
+            ? "Nothing to share yet"
+            : r.ok
+            ? "Health data shared"
+            : "Sync incomplete",
+          r.total === 0
+            ? `You have no saved entries yet. New entries will sync to ${name} automatically.`
+            : r.ok
+            ? `Sent ${r.sent} ${r.sent === 1 ? "entry" : "entries"} to ${name}.`
+            : `Sent ${r.sent} of ${r.total}. ${name} may be offline — the rest will sync when you reconnect.`
+        );
+      }
     }
     setEditingId(null);
   };

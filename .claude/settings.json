@@ -90,7 +90,12 @@
       "Bash(xargs cat)",
       "Bash(echo \"ESLINT_EXIT: $?\")",
       "PowerShell(npm run lint)",
-      "PowerShell(npm run typecheck)"
+      "PowerShell(npm run typecheck)",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120.0 Safari/537.36\" \"https://dorahacks.io/hackathon/qvac-unleach-edge-ai-i/detail\")",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 Chrome/120.0 Safari/537.36\" \"https://dorahacks.io/hackathon/qvac-unleach-edge-ai-i/detail\" -o /tmp/qvac.html)",
+      "Read(//tmp/**)",
+      "Bash(grep -o -i -E '.{80}\\(platform|mobile app|web app|desktop|browser|eligib|judging criteria|deliverable|must build|track\\).{120}' /tmp/qvac.html | head -40)",
+      "Bash(grep -o -E 'Our Psy models.{600}' /tmp/qvac.html | head -1 *)"
     ]
   },
   "enabledPlugins": {
