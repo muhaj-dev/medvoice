@@ -31,6 +31,10 @@ let currentPlayer: ReturnType<typeof createAudioPlayer> | null = null;
 // Bumped by stopSpeaking() (and the start of each speakResponse) to invalidate
 // any sentence loop still in flight — its samples are dropped, its audio stops.
 let activeRun = 0;
+// Resolver for the clip currently awaiting playback completion. stopSpeaking()
+// calls it so tearing the player down mid-clip doesn't leave that promise (and
+// the speak loop awaiting it) hanging when no didJustFinish ever arrives.
+let currentPlayResolve: (() => void) | null = null;
 
 function buildWav(samples: number[]): Uint8Array {
   const dataSize = samples.length * 2; // int16 = 2 bytes per sample
@@ -120,18 +124,27 @@ async function playClip(
       ) => { remove: () => void };
     };
     let startFired = false;
+    let settled = false;
+    let subscription: { remove: () => void } | undefined;
+    // Resolve exactly once, whether playback finished naturally or stopSpeaking()
+    // cut it short. Clears the shared resolver so a later stop is a no-op.
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      subscription?.remove();
+      currentPlayResolve = null;
+      resolve();
+    };
+    currentPlayResolve = finish;
     // Register the completion listener BEFORE play() so a fast didJustFinish
     // isn't missed (which would hang this promise).
-    const subscription = emitter.addListener("playbackStatusUpdate", (status) => {
+    subscription = emitter.addListener("playbackStatusUpdate", (status) => {
       // First frame where audio is actually playing — flip the UI to "STOP".
       if (!startFired && status.playing) {
         startFired = true;
         onStart?.();
       }
-      if (status.didJustFinish) {
-        subscription.remove();
-        resolve();
-      }
+      if (status.didJustFinish) finish();
     });
     player.play();
   });
@@ -200,6 +213,9 @@ export async function speakResponse(
 
 export async function stopSpeaking(): Promise<void> {
   activeRun++; // invalidate any in-flight sentence loop
+  // Unblock a clip awaiting playback before we tear its player down, so its
+  // promise (and the speak loop) doesn't hang on a didJustFinish that never comes.
+  currentPlayResolve?.();
   if (!currentPlayer) return;
   try {
     currentPlayer.pause();

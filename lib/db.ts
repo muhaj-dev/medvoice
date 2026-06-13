@@ -98,8 +98,12 @@ async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
     await database.execAsync(
       'ALTER TABLE family_members ADD COLUMN share_enabled INTEGER DEFAULT 1',
     );
-  } catch {
-    // Column already exists.
+  } catch (err) {
+    // Re-running this migration on an install that already has the column is the
+    // expected, benign case — SQLite reports "duplicate column name". Anything
+    // else is a real failure and must surface rather than be silently swallowed.
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!/duplicate column name/i.test(msg)) throw err;
   }
 }
 

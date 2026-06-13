@@ -3,10 +3,12 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useAnalysisProgress } from "@/hooks/useAnalysisProgress";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { PipelineStepRow, StepStatus } from "@/components/PipelineStepRow";
+import { AnalysisProgressBar } from "@/components/AnalysisProgressBar";
 import { ProcessingHeader } from "@/components/ProcessingHeader";
 import { transcribeAudioFile } from "@/lib/transcription";
 import { analyzeHealthEntry, analyzeHealthEntryLocally } from "@/lib/medpsy";
@@ -28,10 +30,13 @@ export default function AnalysisProcessingScreen() {
   const colors = useTheme();
   const modelSize = useSettingsStore((s) => s.modelSize);
   const [steps, setSteps] = useState<Step[]>(() => buildSteps(modelSize));
+  const { progress, pct, done, advance, finish } = useAnalysisProgress();
   const isRunning = useRef(false);
 
-  const markStep = (id: number, status: StepStatus) =>
+  const markStep = (id: number, status: StepStatus) => {
     setSteps((prev) => prev.map((s) => (s.id === id ? { ...s, status } : s)));
+    advance(id, status);
+  };
 
   const runPipeline = async () => {
     const { audioUri, finalTranscript, setFinalTranscript, setAnalysisResult, setEntryEmbedding } =
@@ -86,6 +91,7 @@ export default function AnalysisProcessingScreen() {
     markStep(5, "running");
     await wait(400);
     markStep(5, "done");
+    finish();
 
     await wait(500);
     router.replace("/analysis/result" as any);
@@ -115,6 +121,8 @@ export default function AnalysisProcessingScreen() {
         showsVerticalScrollIndicator={false}
       >
         <ProcessingHeader />
+
+        <AnalysisProgressBar anim={progress} pct={pct} done={done} />
 
         <View style={styles.stepsList}>
           {steps.map((step) => (

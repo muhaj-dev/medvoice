@@ -70,21 +70,28 @@ export default function ShowCodeScreen() {
           {
             text: "Share",
             onPress: async () => {
-              const store = useFamilyStore.getState();
-              await store.updateMember(member.id, { shareEnabled: true });
-              const r = await store.syncHistoryTo(pendingPeerKey);
-              Alert.alert(
-                r.total === 0
-                  ? "Nothing to share yet"
-                  : r.ok
-                  ? "Health data shared"
-                  : "Sync incomplete",
-                r.total === 0
-                  ? `You have no saved entries yet. New entries will sync to ${name} automatically.`
-                  : r.ok
-                  ? `Sent ${r.sent} ${r.sent === 1 ? "entry" : "entries"} to ${name}.`
-                  : `Sent ${r.sent} of ${r.total}. ${name} may be offline — the rest will sync when you reconnect.`
-              );
+              try {
+                const store = useFamilyStore.getState();
+                await store.updateMember(member.id, { shareEnabled: true });
+                const r = await store.syncHistoryTo(pendingPeerKey);
+                Alert.alert(
+                  r.total === 0
+                    ? "Nothing to share yet"
+                    : r.ok
+                    ? "Health data shared"
+                    : "Sync incomplete",
+                  r.total === 0
+                    ? `You have no saved entries yet. New entries will sync to ${name} automatically.`
+                    : r.ok
+                    ? `Sent ${r.sent} ${r.sent === 1 ? "entry" : "entries"} to ${name}.`
+                    : `Sent ${r.sent} of ${r.total}. ${name} may be offline — the rest will sync when you reconnect.`
+                );
+              } catch (e) {
+                Alert.alert(
+                  "Unable to share",
+                  e instanceof Error ? e.message : "Something went wrong. Please try again."
+                );
+              }
             },
           },
         ]
