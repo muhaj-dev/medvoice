@@ -1,14 +1,8 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
-import { useModelStore, ModelName, ModelStatus } from '@/store/useModelStore';
-
-const MODELS: { key: ModelName; label: string; size: string }[] = [
-  { key: 'parakeet',  label: 'Voice Recognition', size: '750 MB' },
-  { key: 'medgemma',  label: 'Health Analysis',   size: '2.5 GB' },
-  { key: 'embedding', label: 'Semantic Search',    size: '330 MB' },
-  { key: 'tts',       label: 'Text-to-Speech',     size: '132 MB' },
-];
+import { useModelStore, ModelStatus } from '@/store/useModelStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 function statusIcon(status: ModelStatus): string {
   if (status === 'ready')   return '✓';
@@ -23,6 +17,17 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
   const colors = useTheme();
   const { parakeet, medgemma, embedding, tts, allReady } = useModelStore();
   const states = { parakeet, medgemma, embedding, tts };
+  const modelSize = useSettingsStore((s) => s.modelSize);
+
+  // All four model files download at boot (downloading is cheap on memory; they
+  // load into RAM one at a time on demand). Health-analysis size depends on the
+  // selected model (Settings → AI Model).
+  const MODELS: { key: keyof typeof states; label: string; size: string }[] = [
+    { key: 'parakeet',  label: 'Voice Recognition', size: '750 MB' },
+    { key: 'medgemma',  label: 'Health Analysis',   size: modelSize === '4b' ? '2.5 GB' : '1.1 GB' },
+    { key: 'embedding', label: 'Semantic Search',   size: '330 MB' },
+    { key: 'tts',       label: 'Text-to-Speech',    size: '132 MB' },
+  ];
 
   const totalProgress =
     MODELS.reduce((sum, m) => {
@@ -41,17 +46,17 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
     header:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
                   paddingHorizontal: 20, marginBottom: 20 },
     title:      { fontFamily: 'monospace', fontSize: 12, letterSpacing: 1.2, color: colors.textSecondary },
-    closeBtn:   { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.bgCardInner,
+    closeBtn:   { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.bgDeep,
                   borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
     body:       { paddingHorizontal: 20 },
     trackBg:    { height: 4, borderRadius: 2, backgroundColor: colors.border, marginBottom: 4, overflow: 'hidden' },
-    trackFill:  { height: 4, borderRadius: 2, backgroundColor: ready ? colors.success : colors.accentBlue },
+    trackFill:  { height: 4, borderRadius: 2, backgroundColor: ready ? colors.successGreen : colors.accentBlue },
     pctRow:     { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
     pctLabel:   { fontFamily: 'monospace', fontSize: 10, color: colors.textMuted, letterSpacing: 0.8 },
-    pctValue:   { fontFamily: 'monospace', fontSize: 10, color: ready ? colors.success : colors.accentBlue, letterSpacing: 0.8 },
+    pctValue:   { fontFamily: 'monospace', fontSize: 10, color: ready ? colors.successGreen : colors.accentBlue, letterSpacing: 0.8 },
     divider:    { height: 1, backgroundColor: colors.border, marginBottom: 16 },
     row:        { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 12 },
-    iconBox:    { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.bgCardInner,
+    iconBox:    { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.bgDeep,
                   borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
     iconText:   { fontFamily: 'monospace', fontSize: 13 },
     rowInfo:    { flex: 1 },
@@ -72,7 +77,12 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
 
             <View style={s.header}>
               <Text style={s.title}>AI MODELS</Text>
-              <TouchableOpacity style={s.closeBtn} onPress={onClose} activeOpacity={0.7}>
+              <TouchableOpacity
+                style={s.closeBtn}
+                onPress={onClose}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
                 <Ionicons name="close" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -95,7 +105,7 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
                 const isReady   = state.status === 'ready';
                 const isLoading = state.status === 'loading';
                 const isError   = state.status === 'error';
-                const color = isReady ? colors.success
+                const color = isReady ? colors.successGreen
                             : isError ? colors.warningRed
                             : isLoading ? colors.accentBlue
                             : colors.textMuted;

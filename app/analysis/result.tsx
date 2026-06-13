@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -6,11 +6,14 @@ import { useTheme } from "@/hooks/useTheme";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useFamilyStore } from "@/store/useFamilyStore";
 import { YouSaidCard } from "@/components/YouSaidCard";
 import { ConcernBanner } from "@/components/ConcernBanner";
+import { MedPsySummaryCard } from "@/components/MedPsySummaryCard";
 import { PatternCard } from "@/components/PatternCard";
 import { AnalysisActionButtons } from "@/components/AnalysisActionButtons";
-import { speakResponse, stopSpeaking } from "@/lib/tts";
+import { prewarmTTS } from "@/lib/tts";
+import { useTtsStore } from "@/store/useTtsStore";
 import { insertPattern } from "@/lib/db";
 import type { HealthEntry } from "@/types/health";
 
@@ -21,7 +24,28 @@ export default function AnalysisResultScreen() {
   const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Read-aloud goes through the shared TTS store (id "result") so the summary
+  // card can highlight the sentence being spoken.
+  const ttsToggle = useTtsStore((s) => s.toggle);
+  const activeId = useTtsStore((s) => s.activeId);
+  const ttsStatus = useTtsStore((s) => s.status);
+  const isSpeaking = activeId === "result" && ttsStatus === "playing";
+  const isLoading = activeId === "result" && ttsStatus === "loading";
+
+  // Warm the TTS model in the background so the first Read Aloud tap is fast
+  // (otherwise it must evict the analysis model and load TTS on the spot).
+  useEffect(() => {
+    if (ttsEnabled) prewarmTTS();
+  }, [ttsEnabled]);
+
+  // Stop reading when leaving this screen.
+  useEffect(
+    () => () => {
+      if (useTtsStore.getState().activeId === "result") useTtsStore.getState().stop();
+    },
+    []
+  );
 
   const result = analysisResult ?? {
     summary: "Your health update has been recorded.",
@@ -30,19 +54,7 @@ export default function AnalysisResultScreen() {
     patterns: [],
   };
 
-  const handleReadAloud = async () => {
-    if (isSpeaking) {
-      stopSpeaking();
-      setIsSpeaking(false);
-    } else {
-      setIsSpeaking(true);
-      try {
-        await speakResponse(result.summary);
-      } finally {
-        setIsSpeaking(false);
-      }
-    }
-  };
+  const handleReadAloud = () => ttsToggle("result", result.summary);
 
   const handleSave = async () => {
     if (saved || isSaving) return;
@@ -58,6 +70,8 @@ export default function AnalysisResultScreen() {
         embedding: entryEmbedding ?? undefined,
       };
       await addEntry(entry);
+      // Share the summary (JSON only — no audio/embeddings) with connected family.
+      void useFamilyStore.getState().broadcastEntry(entry);
       await Promise.all(
         (result.patterns ?? []).map((p, i) =>
           insertPattern({
@@ -144,6 +158,8 @@ export default function AnalysisResultScreen() {
             patternCount={result.patterns?.length ?? 0}
           />
 
+          <MedPsySummaryCard summary={result.summary} />
+
           {result.patterns?.map((pattern, i) => (
             <PatternCard key={i} pattern={pattern} />
           ))}
@@ -153,6 +169,7 @@ export default function AnalysisResultScreen() {
       <View style={styles.bottomBar}>
         <AnalysisActionButtons
           isSpeaking={isSpeaking}
+          isLoading={isLoading}
           ttsEnabled={ttsEnabled}
           onReadAloud={handleReadAloud}
           onSave={handleSave}

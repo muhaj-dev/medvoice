@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as Clipboard from "expo-clipboard";
@@ -57,10 +57,45 @@ export default function ShowCodeScreen() {
         publicKey: pendingPeerKey,
         connectionStatus: "online",
         lastSynced: new Date().toISOString(),
+        shareEnabled: false, // nothing is shared until the user agrees below
       };
       await addMember(member);
       setShowModal(false);
       router.back();
+      Alert.alert(
+        "Share your health data?",
+        `Allow ${name} to see your health history and future updates? You can change this anytime from their card on the Family tab.`,
+        [
+          { text: "Not now", style: "cancel" },
+          {
+            text: "Share",
+            onPress: async () => {
+              try {
+                const store = useFamilyStore.getState();
+                await store.updateMember(member.id, { shareEnabled: true });
+                const r = await store.syncHistoryTo(pendingPeerKey);
+                Alert.alert(
+                  r.total === 0
+                    ? "Nothing to share yet"
+                    : r.ok
+                    ? "Health data shared"
+                    : "Sync incomplete",
+                  r.total === 0
+                    ? `You have no saved entries yet. New entries will sync to ${name} automatically.`
+                    : r.ok
+                    ? `Sent ${r.sent} ${r.sent === 1 ? "entry" : "entries"} to ${name}.`
+                    : `Sent ${r.sent} of ${r.total}. ${name} may be offline — the rest will sync when you reconnect.`
+                );
+              } catch (e) {
+                Alert.alert(
+                  "Unable to share",
+                  e instanceof Error ? e.message : "Something went wrong. Please try again."
+                );
+              }
+            },
+          },
+        ]
+      );
     },
     [addMember, pendingPeerKey]
   );

@@ -9,6 +9,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { ReadAloudButton } from "@/components/ReadAloudButton";
+import { SpokenText } from "@/components/SpokenText";
 import type { ColorTokens } from "@/constants/colors";
 import type { HealthEntry, Severity } from "@/types/health";
 
@@ -66,6 +68,14 @@ export function TimelineEntryCard({ entry }: Props) {
               {'"'}{entry.transcript}{'"'}
             </Text>
 
+            {!!entry.analysis && (
+              <View style={styles.summaryBox}>
+                <Text style={styles.summaryLabel}>MEDPSY SUMMARY</Text>
+                <SpokenText id={`tl-${entry.id}`} text={entry.analysis} style={styles.summaryText} />
+                <ReadAloudButton id={`tl-${entry.id}`} text={entry.analysis} />
+              </View>
+            )}
+
             <View style={styles.footer}>
               <View style={styles.tags}>
                 {entry.tags.map((tag) => (
@@ -117,6 +127,27 @@ function makeStyles(colors: ColorTokens) {
       fontStyle: "italic",
       color: colors.textSecondary,
       lineHeight: 24,
+    },
+    summaryBox: {
+      backgroundColor: colors.bgDeep,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      padding: 12,
+      gap: 6,
+    },
+    summaryLabel: {
+      fontFamily: "monospace",
+      fontSize: 10,
+      fontWeight: "600",
+      color: colors.accentBlue,
+      letterSpacing: 1.0,
+    },
+    summaryText: {
+      fontFamily: "Georgia",
+      fontSize: 13,
+      color: colors.textPrimary,
+      lineHeight: 20,
     },
     footer: {
       flexDirection: "row",

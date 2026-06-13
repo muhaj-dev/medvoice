@@ -1,7 +1,10 @@
 /**
- * MedGemma health analysis helper.
- * Uses MEDGEMMA_4B_IT_Q4_1 — Google's medical Gemma model, on-device.
- * No health data ever leaves the phone.
+ * Health analysis helper ("MedPsy").
+ * Runs the on-device analysis model selected in Settings → AI Model:
+ *   "1.7B" (default, ~1.1 GB) → Qwen3 1.7B
+ *   "4B"   (~2.5 GB)          → MedGemma 4B (Google's medical Gemma)
+ * Model selection is handled by loadMedGemmaModel(); no health data ever
+ * leaves the phone.
  */
 
 import { completion } from "@qvac/sdk";
@@ -38,6 +41,12 @@ export type MedPsyAnalysis = {
  * @param onToken     - Called with each streaming token for live display
  * @param onProgress  - Model download progress 0–100 (first run only)
  */
+// Cap what we send to the LLM. On a low-end CPU, time-to-first-token grows
+// roughly linearly with prompt length, so an unbounded transcript makes the
+// analysis step crawl. Tags/severity/patterns still derive from the FULL
+// transcript locally — only the LLM prompt is trimmed.
+const MAX_PROMPT_TRANSCRIPT_CHARS = 1500;
+
 export async function analyzeHealthEntry(
   transcript: string,
   pastContext: string = "",
@@ -46,9 +55,14 @@ export async function analyzeHealthEntry(
 ): Promise<MedPsyAnalysis> {
   const modelId = await loadMedGemmaModel(onProgress);
 
+  const promptTranscript =
+    transcript.length > MAX_PROMPT_TRANSCRIPT_CHARS
+      ? transcript.slice(0, MAX_PROMPT_TRANSCRIPT_CHARS) + "…"
+      : transcript;
+
   const userMessage = pastContext
-    ? `Relevant context from past entries:\n${pastContext}\n\nToday's health update:\n"${transcript}"`
-    : `Today's health update:\n"${transcript}"`;
+    ? `Relevant context from past entries:\n${pastContext}\n\nToday's health update:\n"${promptTranscript}"`
+    : `Today's health update:\n"${promptTranscript}"`;
 
   const run = completion({
     modelId,
@@ -59,23 +73,44 @@ export async function analyzeHealthEntry(
     ],
   });
 
-  if (onToken) {
-    (async () => {
-      for await (const event of run.events) {
-        if (event.type === "contentDelta") {
-          onToken(event.text);
-        }
-      }
-    })();
+  // IMPORTANT: with stream:true, `run.final` only resolves once the event stream
+  // is consumed. We MUST drain run.events here — even when no onToken is given —
+  // or the completion hangs forever ("analyzing… no response"). We also keep the
+  // streamed text as a fallback in case final.contentText comes back empty.
+  let streamed = "";
+  for await (const event of run.events) {
+    if (event.type === "contentDelta") {
+      streamed += event.text;
+      onToken?.(event.text);
+    }
   }
 
   const result = await run.final;
-  const fullText = result.contentText;
+  const fullText = result.contentText || streamed;
 
   return {
     summary: fullText,
     tags: deriveTags(transcript),
     severity: deriveSeverity(transcript, fullText),
+    patterns: derivePatterns(transcript),
+  };
+}
+
+/**
+ * Local-only fallback when the analysis model can't run (failed download, or
+ * the llama.cpp engine doesn't work on this device). Tags, severity, and
+ * patterns are all derived locally by regex — no model required — so the entry
+ * still gets useful structure. The summary is honest about what happened.
+ */
+export function analyzeHealthEntryLocally(transcript: string): MedPsyAnalysis {
+  return {
+    summary:
+      "Your health update was saved privately on this device. " +
+      "The AI analysis model couldn't run on this phone, so this entry has a basic summary instead. " +
+      "Voice notes, tags, and your timeline all still work normally. " +
+      "If anything feels serious, please talk to your doctor.",
+    tags: deriveTags(transcript),
+    severity: deriveSeverity(transcript, ""),
     patterns: derivePatterns(transcript),
   };
 }

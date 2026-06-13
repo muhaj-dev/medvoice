@@ -14,14 +14,9 @@ export async function embedText(
   onProgress?: (pct: number) => void
 ): Promise<number[]> {
   const modelId = await loadEmbeddingModel(onProgress);
-  const raw = await embed({ modelId, content: text });
-  // QVAC embed may return Float32Array or number[] — normalise to number[]
-  if (raw instanceof Float32Array || Array.isArray(raw)) {
-    return Array.from(raw as ArrayLike<number>);
-  }
-  // Fallback: SDK might wrap result in an object
-  const arr = (raw as { embedding?: ArrayLike<number> }).embedding ?? (raw as ArrayLike<number>);
-  return Array.from(arr);
+  // QVAC embed returns { embedding: number[] } for a single text input.
+  const { embedding } = await embed({ modelId, text });
+  return embedding ?? [];
 }
 
 // ── Cosine similarity ──────────────────────────────────────────────────────

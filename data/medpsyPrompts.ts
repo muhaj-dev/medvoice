@@ -25,6 +25,6 @@ export const ANALYSIS_PIPELINE_STEPS = [
   { id: 1, icon: "🎙", label: "Transcribing voice input ..." },
   { id: 2, icon: "🔍", label: "Scanning health history ..." },
   { id: 3, icon: "📊", label: "RAG context retrieval ..." },
-  { id: 4, icon: "🧠", label: "MedPsy-4B analyzing health entry ..." },
+  { id: 4, icon: "🧠", label: "MedPsy analyzing health entry ..." },
   { id: 5, icon: "✅", label: "Analysis complete" },
 ] as const;

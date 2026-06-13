@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import type { HealthEntry, HealthPattern } from '@/types/health';
-import type { FamilyMember } from '@/types/family';
+import type { FamilyMember, SyncedEntry } from '@/types/family';
 
 let db: SQLite.SQLiteDatabase | null = null;
 let dbInitPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -46,9 +46,65 @@ async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
       relationship      TEXT,
       public_key        TEXT NOT NULL,
       connection_status TEXT,
-      last_synced       TEXT
+      last_synced       TEXT,
+      share_enabled     INTEGER DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS synced_entries (
+      id         TEXT NOT NULL,
+      from_key   TEXT NOT NULL,
+      timestamp  TEXT NOT NULL,
+      transcript TEXT NOT NULL,
+      analysis   TEXT NOT NULL,
+      tags       TEXT,
+      severity   TEXT,
+      PRIMARY KEY (from_key, id)
     );
   `);
+
+  // Migrate pre-existing synced_entries from PRIMARY KEY(id) to (from_key, id).
+  // With id alone as the key, two family members whose entries share an id
+  // overwrote each other — so Care View showed one person's data under both.
+  // Copy rows forward into a table with the correct PK and atomically swap,
+  // so existing synced summaries survive the upgrade instead of being dropped.
+  // INSERT OR IGNORE resolves any (from_key, id) collisions left by the old PK.
+  const ver = await database.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
+  if ((ver?.user_version ?? 0) < 1) {
+    await database.execAsync(`
+      BEGIN TRANSACTION;
+      CREATE TABLE IF NOT EXISTS synced_entries_new (
+        id         TEXT NOT NULL,
+        from_key   TEXT NOT NULL,
+        timestamp  TEXT NOT NULL,
+        transcript TEXT NOT NULL,
+        analysis   TEXT NOT NULL,
+        tags       TEXT,
+        severity   TEXT,
+        PRIMARY KEY (from_key, id)
+      );
+      INSERT OR IGNORE INTO synced_entries_new
+        SELECT id, COALESCE(from_key, ''), timestamp, transcript, analysis, tags, severity
+        FROM synced_entries;
+      DROP TABLE IF EXISTS synced_entries;
+      ALTER TABLE synced_entries_new RENAME TO synced_entries;
+      PRAGMA user_version = 1;
+      COMMIT;
+    `);
+  }
+
+  // Migration: installs that predate share_enabled get the column in place.
+  // Default 1 — those members were connected under the old always-share flow.
+  try {
+    await database.execAsync(
+      'ALTER TABLE family_members ADD COLUMN share_enabled INTEGER DEFAULT 1',
+    );
+  } catch (err) {
+    // Re-running this migration on an install that already has the column is the
+    // expected, benign case — SQLite reports "duplicate column name". Anything
+    // else is a real failure and must surface rather than be silently swallowed.
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!/duplicate column name/i.test(msg)) throw err;
+  }
 }
 
 // ── Health Entries ────────────────────────────────────────────────────────────
@@ -152,8 +208,8 @@ export async function insertFamilyMember(member: FamilyMember): Promise<void> {
   const database = await getDb();
   await database.runAsync(
     `INSERT OR REPLACE INTO family_members
-       (id, name, relationship, public_key, connection_status, last_synced)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+       (id, name, relationship, public_key, connection_status, last_synced, share_enabled)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       member.id,
       member.name,
@@ -161,6 +217,7 @@ export async function insertFamilyMember(member: FamilyMember): Promise<void> {
       member.publicKey,
       member.connectionStatus,
       member.lastSynced ?? null,
+      member.shareEnabled ? 1 : 0,
     ],
   );
 }
@@ -174,6 +231,7 @@ export async function loadAllFamilyMembers(): Promise<FamilyMember[]> {
     public_key: string;
     connection_status: string | null;
     last_synced: string | null;
+    share_enabled: number | null;
   }>('SELECT * FROM family_members');
 
   return rows.map((row) => ({
@@ -183,10 +241,57 @@ export async function loadAllFamilyMembers(): Promise<FamilyMember[]> {
     publicKey: row.public_key,
     connectionStatus: (row.connection_status as FamilyMember['connectionStatus']) ?? 'offline',
     lastSynced: row.last_synced,
+    shareEnabled: row.share_enabled !== 0,
   }));
 }
 
 export async function deleteFamilyMember(id: string): Promise<void> {
   const database = await getDb();
   await database.runAsync('DELETE FROM family_members WHERE id = ?', [id]);
+}
+
+// ── Synced Entries (health summaries received from family via P2P) ───────────
+
+export async function insertSyncedEntry(
+  fromKey: string,
+  entry: HealthEntry,
+): Promise<void> {
+  const database = await getDb();
+  await database.runAsync(
+    `INSERT OR REPLACE INTO synced_entries
+       (id, from_key, timestamp, transcript, analysis, tags, severity)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      entry.id,
+      fromKey,
+      entry.timestamp,
+      entry.transcript,
+      entry.analysis,
+      JSON.stringify(entry.tags),
+      entry.severity ?? null,
+    ],
+  );
+}
+
+export async function loadAllSyncedEntries(): Promise<SyncedEntry[]> {
+  const database = await getDb();
+  const rows = await database.getAllAsync<{
+    id: string;
+    from_key: string;
+    timestamp: string;
+    transcript: string;
+    analysis: string;
+    tags: string | null;
+    severity: string | null;
+  }>('SELECT * FROM synced_entries ORDER BY timestamp DESC');
+
+  return rows.map((row) => ({
+    id: row.id,
+    fromKey: row.from_key,
+    timestamp: row.timestamp,
+    transcript: row.transcript,
+    analysis: row.analysis,
+    tags: row.tags ? (JSON.parse(row.tags) as string[]) : [],
+    severity: (row.severity as HealthEntry['severity']) ?? null,
+  }));
 }

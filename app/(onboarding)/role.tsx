@@ -34,7 +34,7 @@ export default function RoleScreen() {
 
   useEffect(() => {
     if (onboardingComplete) router.replace("/(tabs)" as any);
-  }, [onboardingComplete]);
+  }, [onboardingComplete, router]);
 
   const handleContinue = () => {
     if (!selectedRole) return;

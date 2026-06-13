@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
 
 type Props = {
   isSpeaking: boolean;
+  isLoading?: boolean;
   ttsEnabled?: boolean;
   onReadAloud: () => void;
   onSave: () => void;
@@ -10,7 +11,7 @@ type Props = {
   isSaving?: boolean;
 };
 
-export function AnalysisActionButtons({ isSpeaking, ttsEnabled = true, onReadAloud, onSave, saved, isSaving }: Props) {
+export function AnalysisActionButtons({ isSpeaking, isLoading = false, ttsEnabled = true, onReadAloud, onSave, saved, isSaving }: Props) {
   const colors = useTheme();
 
   const styles = StyleSheet.create({
@@ -25,6 +26,7 @@ export function AnalysisActionButtons({ isSpeaking, ttsEnabled = true, onReadAlo
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 12,
+      flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
     },
@@ -43,7 +45,7 @@ export function AnalysisActionButtons({ isSpeaking, ttsEnabled = true, onReadAlo
       justifyContent: "center",
     },
     savedBtn: {
-      backgroundColor: colors.success,
+      backgroundColor: colors.successGreen,
     },
     saveBtnText: {
       fontFamily: "monospace",
@@ -62,8 +64,15 @@ export function AnalysisActionButtons({ isSpeaking, ttsEnabled = true, onReadAlo
         activeOpacity={0.75}
         disabled={!ttsEnabled}
       >
+        {isLoading && <ActivityIndicator size="small" color={colors.accentBlue} style={{ marginRight: 7 }} />}
         <Text style={styles.readAloudText}>
-          {!ttsEnabled ? "🔇  TTS OFF" : isSpeaking ? "⏹  STOP" : "🔊  READ ALOUD"}
+          {!ttsEnabled
+            ? "🔇  TTS OFF"
+            : isLoading
+            ? "LOADING…"
+            : isSpeaking
+            ? "⏹  STOP"
+            : "🔊  READ ALOUD"}
         </Text>
       </TouchableOpacity>
 

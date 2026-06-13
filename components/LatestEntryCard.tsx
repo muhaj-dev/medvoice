@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { ReadAloudButton } from "@/components/ReadAloudButton";
+import { SpokenText } from "@/components/SpokenText";
 import type { ColorTokens } from "@/constants/colors";
 import type { HealthEntry } from "@/types/health";
 
@@ -40,7 +42,11 @@ export function LatestEntryCard({ entry }: Props) {
       <View style={styles.divider} />
 
       <Text style={styles.summaryLabel}>MEDPSY SUMMARY</Text>
-      <Text style={styles.summaryText}>{entry.analysis}</Text>
+      <SpokenText id={`cv-latest-${entry.id}`} text={entry.analysis} style={styles.summaryText} />
+
+      <View style={styles.readAloud}>
+        <ReadAloudButton id={`cv-latest-${entry.id}`} text={entry.analysis} />
+      </View>
 
       {entry.tags.length > 0 && (
         <View style={styles.tagsRow}>
@@ -99,6 +105,7 @@ function makeStyles(colors: ColorTokens) {
       marginBottom: 8,
     },
     summaryText: { fontFamily: "Georgia", fontSize: 14, color: colors.textSecondary, lineHeight: 22 },
+    readAloud: { marginTop: 12 },
     tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
     tagPill: { borderWidth: 1, borderRadius: 99, paddingHorizontal: 12, paddingVertical: 5 },
     tagText: { fontFamily: "Georgia", fontSize: 12, fontWeight: "500" },

@@ -25,7 +25,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     if (onboardingComplete) router.replace("/(tabs)" as any);
-  }, [onboardingComplete]);
+  }, [onboardingComplete, router]);
 
   const [name, setName] = useState(profile?.name ?? "");
   const [age, setAge] = useState(profile?.age?.toString() ?? "");

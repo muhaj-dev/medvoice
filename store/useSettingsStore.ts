@@ -17,7 +17,7 @@ type SettingsStore = Settings & {
 };
 
 const DEFAULT: Settings = {
-  modelSize: "4b",
+  modelSize: "1.7b", // smaller ~1.1 GB Qwen3 1.7B by default; "4b" loads MedGemma 4B (~2.5 GB)
   ttsEnabled: true,
 };
 

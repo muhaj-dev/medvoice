@@ -59,14 +59,14 @@ export const ShowCodeContent = ({
             onPress={onCopy}
             style={[
               styles.pill,
-              { borderColor: copied ? colors.success : colors.accentBlue },
+              { borderColor: copied ? colors.successGreen : colors.accentBlue },
             ]}
             activeOpacity={0.75}
           >
             <Text
               style={[
                 styles.pillText,
-                { color: copied ? colors.success : colors.accentBlue },
+                { color: copied ? colors.successGreen : colors.accentBlue },
               ]}
             >
               {copied ? "✓  COPIED" : "COPY CODE"}

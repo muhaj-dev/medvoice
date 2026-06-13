@@ -8,7 +8,9 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "bundle:p2p": "bare-pack --linked --host android-arm64 --host android-arm --host android-ia32 --host android-x64 --host ios-arm64 --host ios-arm64-simulator --out p2p/p2p.bundle.mjs p2p/worklet.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -18,7 +20,6 @@
     "expo": "^56.0.9",
     "expo-asset": "~56.0.16",
     "expo-audio": "~56.0.11",
-    "expo-av": "^16.0.8",
     "expo-build-properties": "~56.0.17",
     "expo-camera": "~56.0.7",
     "expo-clipboard": "~56.0.4",
@@ -55,6 +56,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.14",
+    "bare-pack": "2.0.2",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~56.0.4",
     "typescript": "~6.0.3"
@@ -67,7 +69,6 @@
     "doctor": {
       "reactNativeDirectoryCheck": {
         "exclude": [
-          "expo-av",
           "expo-modules-jsi"
         ]
       }

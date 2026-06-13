@@ -8,6 +8,7 @@ type Props = {
   showSuccess: boolean;
   onBack: () => void;
   onCodeDetected: (data: string) => void;
+  onEnterManually: () => void;
 };
 
 export const ScanCodeBody = ({
@@ -16,6 +17,7 @@ export const ScanCodeBody = ({
   showSuccess,
   onBack,
   onCodeDetected,
+  onEnterManually,
 }: Props) => {
   const colors = useTheme();
 
@@ -52,6 +54,17 @@ export const ScanCodeBody = ({
       <Text style={[styles.hint, { color: colors.textSecondary }]}>
         {"The code will be detected automatically.\nNo need to tap anything."}
       </Text>
+
+      <TouchableOpacity
+        onPress={onEnterManually}
+        style={styles.manualBtn}
+        activeOpacity={0.7}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={[styles.manualText, { color: colors.accentBlue }]}>
+          NO QR CODE? ENTER CODE MANUALLY
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -97,5 +110,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: "center",
     lineHeight: 22,
+  },
+  manualBtn: {
+    alignSelf: "center",
+    marginTop: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    minHeight: 48,
+    justifyContent: "center",
+  },
+  manualText: {
+    fontFamily: "monospace",
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.8,
+    textAlign: "center",
   },
 });

@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import { View, Text, TouchableOpacity } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -36,11 +37,18 @@ type CustomTabBarProps = {
 
 function CustomTabBar({ state, navigation }: CustomTabBarProps) {
   const colors = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <View
-      className="flex-row h-18 pt-2 pb-2.5"
-      style={{ backgroundColor: colors.bgCard, borderTopWidth: 1, borderTopColor: colors.border }}
+      className="flex-row pt-2"
+      style={{
+        backgroundColor: colors.bgCard,
+        borderTopWidth: 1,
+        borderTopColor: colors.border,
+        // Keep the bar above the Android/iOS system navigation area.
+        paddingBottom: Math.max(insets.bottom, 10),
+      }}
     >
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;

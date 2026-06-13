@@ -1,74 +1,46 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import { useAudioRecorder, AudioModule, RecordingPresets } from "expo-audio";
+import { router, type Href } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
 import { useRecordingStore } from "@/store/useRecordingStore";
+import { useVoiceTranscription } from "@/hooks/useVoiceTranscription";
 import { WaveformAnimation } from "@/components/WaveformAnimation";
 import { LiveTranscriptCard } from "@/components/LiveTranscriptCard";
 import { StopRecordingButton } from "@/components/StopRecordingButton";
 
-// Demo words simulate word-by-word transcript while real audio records
-const DEMO_WORDS = [
-  "I've", "been", "having", "some", "knee", "pain", "today,",
-  "especially", "when", "going", "up", "stairs.", "My", "blood",
-  "glucose", "was", "a", "bit", "elevated", "this", "morning.",
-];
-
 export default function RecordingActiveScreen() {
   const colors = useTheme();
-  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const { transcript, appendTranscript, setIsRecording, setAudioUri, setFinalTranscript, resetRecording } =
+  const { setIsRecording, setAudioUri, setFinalTranscript, resetRecording } =
     useRecordingStore();
-  const [waveActive, setWaveActive] = useState(true);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wordIdxRef = useRef(0);
-
-  const scheduleNextWord = () => {
-    timerRef.current = setTimeout(() => {
-      if (wordIdxRef.current < DEMO_WORDS.length) {
-        appendTranscript(DEMO_WORDS[wordIdxRef.current]);
-        wordIdxRef.current += 1;
-        scheduleNextWord();
-      }
-    }, 420);
-  };
-
-  const startRecording = async () => {
-    try {
-      await AudioModule.setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
-      await audioRecorder.prepareToRecordAsync();
-      audioRecorder.record();
-    } catch {}
-    setIsRecording(true);
-    scheduleNextWord();
-  };
+  const transcript = useRecordingStore((s) => s.transcript);
+  const { start, stop } = useVoiceTranscription();
 
   useEffect(() => {
-    startRecording();
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setIsRecording(true);
+    start();
+    // Stop capturing if the screen unmounts without an explicit stop.
+    return () => {
+      stop().catch(() => {});
+    };
+  }, [setIsRecording, start, stop]);
 
   const handleStop = async () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setWaveActive(false);
-    try { await audioRecorder.stop(); } catch {}
-    const uri = audioRecorder.uri ?? null;
+    const { text, wavUri } = await stop();
     setIsRecording(false);
-    if (uri) setAudioUri(uri);
-    // Do NOT persist demo words as finalTranscript — processing.tsx will call
-    // transcribeAudioFile(audioUri) to produce the real transcript.
-    setFinalTranscript("");
-    router.replace("/analysis/processing" as any);
+    setAudioUri(wavUri);
+    // Use the live streamed transcript as the final result. If streaming yielded
+    // nothing, finalTranscript stays empty and the pipeline batch-transcribes the
+    // WAV fallback instead.
+    setFinalTranscript(text);
+    router.replace("/analysis/processing" as Href);
   };
 
   const handleBack = async () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    try { await audioRecorder.stop(); } catch {}
+    await stop();
+    setIsRecording(false);
     resetRecording();
-    router.replace("/(tabs)" as any);
+    router.replace("/(tabs)" as Href);
   };
 
   const styles = StyleSheet.create({
@@ -123,7 +95,7 @@ export default function RecordingActiveScreen() {
         <Text style={styles.listeningLabel}>LISTENING • ON DEVICE</Text>
 
         <View style={styles.waveformWrap}>
-          <WaveformAnimation isActive={waveActive} />
+          <WaveformAnimation isActive={true} />
         </View>
 
         <LiveTranscriptCard transcript={transcript} />

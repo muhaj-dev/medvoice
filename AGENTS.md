@@ -40,11 +40,13 @@ Use the following stack:
 - Zustand
 - AsyncStorage
 - QVAC SDK (`@qvac/sdk`) for all AI capabilities
-- QVAC MedPsy model (1.7B or 4B) for medical reasoning
+- QVAC analysis model for medical reasoning — selectable in Settings:
+  - **1.7B (default, ~1.1 GB)** — Qwen3 1.7B, smaller download, less RAM
+  - **4B (~2.5 GB)** — MedGemma 4B, Google's medical model, higher accuracy
 - QVAC Fabric for on-device inference
 - QVAC Holepunch P2P for family device connection
 - SQLite (via expo-sqlite) for local health entry storage
-- expo-av for audio recording
+- expo-audio for audio recording and real-time PCM mic capture (`useAudioStream`)
 - react-native-qrcode-svg for QR code generation
 - expo-camera for QR code scanning
 
@@ -703,7 +705,18 @@ export const loadMedPsy = async () => {
 
 ### Health Analysis
 
-Always use MedPsy. Never use a generic model for health reasoning.
+The analysis model is user-selectable in Settings → AI Model and read from
+`useSettingsStore.modelSize`:
+
+- **`"1.7b"` (default, ~1.1 GB)** — Qwen3 1.7B (`QWEN3_1_7B_INST_Q4`). Smaller
+  download and lower RAM, suitable for most devices.
+- **`"4b"` (~2.5 GB)** — MedGemma 4B (`MEDGEMMA_4B_IT_Q4_1`), Google's medical
+  Gemma. Choose for higher-fidelity medical summaries when device resources allow.
+
+`lib/qvac.ts` → `loadMedGemmaModel()` picks the model from this setting and
+hot-swaps (unload + load) when the user changes it. Never use a model that runs
+off-device. Structured fields (severity, tags, patterns) are derived locally in
+`lib/medpsy.ts`; the model produces the free-text summary.
 
 ```ts
 // lib/medpsy.ts
@@ -736,7 +749,8 @@ export const analyzeHealthUpdate = async (
 
 - All inference on device. Never send health data externally.
 - Load models once. Reuse model IDs.
-- Use MedPsy only for health. Never use general models for medical reasoning.
+- Health analysis uses the user-selected model (default Qwen3 1.7B, ~1.1 GB;
+  optional MedGemma 4B, ~2.5 GB). Both run fully on-device.
 - Use `stream: true` for better UX on slower devices.
 - Unload models when app goes to background.
 - Show friendly error if model fails to load.
