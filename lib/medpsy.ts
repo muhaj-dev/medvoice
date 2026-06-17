@@ -47,6 +47,12 @@ export type MedPsyAnalysis = {
 // transcript locally — only the LLM prompt is trimmed.
 const MAX_PROMPT_TRANSCRIPT_CHARS = 1500;
 
+// Cap how many tokens the model GENERATES (llama.cpp n_predict). CPU decode time
+// is ~linear in output length, so an unbounded, rambling summary makes the
+// analysis step drag on slow devices. ~320 tokens (≈240 words) is plenty for the
+// "1–3 caring insights" the system prompt asks for, and it bounds the worst case.
+const MAX_ANALYSIS_TOKENS = 320;
+
 export async function analyzeHealthEntry(
   transcript: string,
   pastContext: string = "",
@@ -67,6 +73,7 @@ export async function analyzeHealthEntry(
   const run = completion({
     modelId,
     stream: true,
+    generationParams: { predict: MAX_ANALYSIS_TOKENS },
     history: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: userMessage },

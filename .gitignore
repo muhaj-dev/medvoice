@@ -41,3 +41,15 @@ app-example
 # generated native folders
 /ios
 /android
+
+# internal dev / AI build artifacts (not for submission/judges)
+AGENTS.md
+CLAUDE.md
+MedVoice Screen Prompts.md
+TODO.md
+progress-tracker.md
+skills-lock.json
+DESIGN_PROMPTS.md
+prompt_material/
+.agents/
+.claude/

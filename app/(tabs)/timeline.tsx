@@ -14,10 +14,17 @@ import type { HealthEntry } from "@/types/health";
 export default function TimelineScreen() {
   const colors = useTheme();
   const { entries } = useHealthStore();
+  const backfillEmbeddings = useHealthStore((s) => s.backfillEmbeddings);
   const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<HealthEntry[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Embed any entries recorded before the model was ready, so semantic search
+  // covers the whole history. No-ops when nothing is missing.
+  useEffect(() => {
+    void backfillEmbeddings();
+  }, [backfillEmbeddings]);
 
   // Warm the TTS model so Read Aloud on the cards is fast. (This evicts the
   // search model; the next semantic search reloads it once — keyword search

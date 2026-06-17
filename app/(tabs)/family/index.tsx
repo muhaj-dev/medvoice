@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, View, Text, Alert } from 'react-native';
+import { ScrollView, View, Text, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
@@ -12,10 +12,24 @@ import { HowP2PWorksCard } from '@/components/HowP2PWorksCard';
 
 export default function FamilyScreen() {
   const colors = useTheme();
-  const { members, updateMember, removeMember, syncHistoryTo } = useFamilyStore();
+  const { members, updateMember, removeMember, syncHistoryTo, refreshConnections } = useFamilyStore();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [reconnecting, setReconnecting] = useState(false);
   const onlineCount = members.filter((m) => m.connectionStatus === 'online').length;
   const editingMember = members.find((m) => m.id === editingId) ?? null;
+
+  // Manual re-dial: a member who is actually reachable can read OFFLINE after a
+  // dropped/flaky network (the dial times out). Re-running refreshConnections
+  // proves who is really online right now instead of waiting on a stale status.
+  const handleReconnect = async () => {
+    if (reconnecting) return;
+    setReconnecting(true);
+    try {
+      await refreshConnections();
+    } finally {
+      setReconnecting(false);
+    }
+  };
 
   const handleSave = async (name: string, relationship: string, shareEnabled: boolean) => {
     if (editingMember) {
@@ -76,9 +90,27 @@ export default function FamilyScreen() {
         {/* Connected members or empty state */}
         {members.length > 0 ? (
           <View className="mb-7 gap-2.5">
-            <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 1.2, color: colors.textSecondary, marginBottom: 2 }}>
-              CONNECTED
-            </Text>
+            <View className="flex-row items-center justify-between mb-0.5">
+              <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 1.2, color: colors.textSecondary }}>
+                CONNECTED
+              </Text>
+              <TouchableOpacity
+                onPress={handleReconnect}
+                disabled={reconnecting}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                className="flex-row items-center gap-1.5"
+              >
+                {reconnecting ? (
+                  <ActivityIndicator size="small" color={colors.accentBlue} />
+                ) : (
+                  <Ionicons name="refresh" size={13} color={colors.accentBlue} />
+                )}
+                <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 1, color: colors.accentBlue }}>
+                  {reconnecting ? 'RECONNECTING' : 'RECONNECT'}
+                </Text>
+              </TouchableOpacity>
+            </View>
             {members.map((m) => (
               <FamilyMemberCard key={m.id} member={m} onPress={() => setEditingId(m.id)} />
             ))}

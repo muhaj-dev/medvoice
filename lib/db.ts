@@ -157,6 +157,21 @@ export async function deleteEntry(id: string): Promise<void> {
   await database.runAsync('DELETE FROM health_entries WHERE id = ?', [id]);
 }
 
+// Attach an embedding to an already-saved entry. Used by the backfill that
+// embeds entries which were recorded before the embedding model was ready
+// (background download still in flight, or it just became available), so they
+// become semantically searchable instead of staying keyword-only forever.
+export async function updateEntryEmbedding(
+  id: string,
+  embedding: number[],
+): Promise<void> {
+  const database = await getDb();
+  await database.runAsync('UPDATE health_entries SET embedding = ? WHERE id = ?', [
+    JSON.stringify(embedding),
+    id,
+  ]);
+}
+
 // ── Health Patterns ───────────────────────────────────────────────────────────
 
 export async function insertPattern(pattern: HealthPattern): Promise<void> {
