@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
 import { useUserStore } from "@/store/useUserStore";
+import { images } from "@/constants/images";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
 import { FeatureRow } from "@/components/FeatureRow";
 
@@ -32,11 +34,10 @@ export default function WelcomeScreen() {
       paddingTop: 20,
       paddingBottom: 20,
     },
-    heartCircle: {
+    logoTile: {
       width: 120,
       height: 120,
-      borderRadius: 60,
-      backgroundColor: colors.bgCard,
+      borderRadius: 28,
       alignItems: "center",
       justifyContent: "center",
       shadowColor: colors.accentBlue,
@@ -45,8 +46,10 @@ export default function WelcomeScreen() {
       shadowRadius: 28,
       elevation: 14,
     },
-    heartEmoji: {
-      fontSize: 52,
+    logoImage: {
+      width: 120,
+      height: 120,
+      borderRadius: 28,
     },
     getStartedBtn: {
       backgroundColor: colors.accentBlue,
@@ -67,9 +70,13 @@ export default function WelcomeScreen() {
           <OnboardingProgressDots current={1} />
         </View>
 
-        {/* Heart circle with blue glow — shadow requires StyleSheet */}
-        <View style={styles.heartCircle} className="self-center mb-6">
-          <Text style={styles.heartEmoji}>❤️</Text>
+        {/* MedVoice shield mark with blue glow — shadow requires StyleSheet */}
+        <View style={styles.logoTile} className="self-center mb-6">
+          <Image
+            source={images.logoIcon}
+            style={styles.logoImage}
+            contentFit="cover"
+          />
         </View>
 
         <Text style={{ fontFamily: 'Georgia', fontSize: 32, fontWeight: '700', color: colors.textPrimary, textAlign: 'center', marginBottom: 8 }}>

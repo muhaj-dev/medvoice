@@ -19,6 +19,33 @@ export async function embedText(
   return embedding ?? [];
 }
 
+// ── Query-vector cache ───────────────────────────────────────────────────────
+// The slow part of a semantic search isn't the cosine scan (sub-millisecond even
+// over hundreds of entries) — it's embedding the QUERY (model warm-up + inference,
+// ~1–3s). Re-typing or re-running the same search shouldn't pay that twice, so we
+// memoize query → vector. Small bounded LRU; queries are short and few.
+const QUERY_CACHE_MAX = 50;
+const queryVecCache = new Map<string, number[]>();
+
+async function embedQuery(query: string): Promise<number[]> {
+  const key = query.trim().toLowerCase();
+  const hit = queryVecCache.get(key);
+  if (hit) {
+    // Refresh recency (Map preserves insertion order → re-set moves to newest).
+    queryVecCache.delete(key);
+    queryVecCache.set(key, hit);
+    return hit;
+  }
+  const vec = await embedText(query);
+  if (vec.length > 0) {
+    queryVecCache.set(key, vec);
+    if (queryVecCache.size > QUERY_CACHE_MAX) {
+      queryVecCache.delete(queryVecCache.keys().next().value as string);
+    }
+  }
+  return vec;
+}
+
 // ── Cosine similarity ──────────────────────────────────────────────────────
 
 export function cosineSimilarity(a: number[], b: number[]): number {
@@ -56,7 +83,7 @@ export async function semanticSearch(
     return keywordFallback(query, entries, topK);
   }
 
-  const queryVec = await embedText(query);
+  const queryVec = await embedQuery(query);
 
   const scored = embeddable.map((entry) => ({
     entry,
