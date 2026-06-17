@@ -1,12 +1,4 @@
-# MedVoice 
-
-**A private, on-device AI health companion. Your voice in. Health insight out. Nothing ever leaves your phone.**
-
-Built for the **QVAC "Unleash Edge AI" Hackathon** by Tether, on DoraHacks.
-
-> Speak how you feel → MedVoice transcribes it, reasons about it with a medical LLM, reads the result back to you, builds a searchable health timeline, and lets you privately share summaries with family — **100% on-device, no cloud, no API keys, no health data ever transmitted.**
-
----
+# MedVoice
 
 ##  The Story Behind MedVoice
 
@@ -39,6 +31,14 @@ Everything happens on the device. No cloud. No API keys. No health data leaves t
 For my grandmother, MedVoice means she doesn't need to learn complicated technology. She just talks. For family members living far from home, it means peace of mind. And for millions of elderly and chronically ill people around the world, it means health support that is private, simple, accessible, and always available.
 
 MedVoice wasn't built because we wanted to create another health app. It was built because the people we care about deserve technology that cares about them too.
+
+---
+
+**A private, on-device AI health companion. Your voice in. Health insight out. Nothing ever leaves your phone.**
+
+Built for the **QVAC "Unleash Edge AI" Hackathon** by Tether, on DoraHacks.
+
+> Speak how you feel → MedVoice transcribes it, reasons about it with a medical LLM, reads the result back to you, builds a searchable health timeline, and lets you privately share summaries with family — **100% on-device, no cloud, no API keys, no health data ever transmitted.**
 
 ---
 
