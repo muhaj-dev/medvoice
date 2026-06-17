@@ -8,6 +8,40 @@ Built for the **QVAC "Unleash Edge AI" Hackathon** by Tether, on DoraHacks.
 
 ---
 
+##  The Story Behind MedVoice
+
+When I gained admission into university, it was one of the happiest moments of my life. For the first time, I was leaving home to pursue my dreams. But there was one problem I could never stop thinking about: my grandmother.
+
+She was getting older. Like many elderly people, she often forgot to mention when she wasn't feeling well. Sometimes she would have headaches for days before telling anyone. Sometimes she would feel dizzy, struggle to sleep, or have pain in her joints — and simply say, *"I'm fine."*
+
+Living hundreds of kilometers away at school, I couldn't check on her every day. Phone calls helped, but they were never enough. I worried about the things she wasn't saying.
+
+I looked at existing health apps, hoping to find something that could help. But most required typing long notes. Many sent health data to cloud servers. Some needed accounts, subscriptions, or constant internet access. None felt designed for someone like my grandmother.
+
+Then I asked a simple question:
+
+> **"What if all she had to do was talk?"**
+
+What if she could simply pick up her phone and say:
+
+- *"Today I have a headache."*
+- *"I didn't sleep well."*
+- *"My chest feels uncomfortable."*
+
+And what if an AI could listen, understand, provide health insights, keep a history of those conversations, and privately share important updates with family members? Not through the cloud. Not through a third-party server. But directly on her own device.
+
+**That idea became MedVoice.**
+
+MedVoice is a private, on-device AI health companion. Users simply speak about how they feel. MedVoice transcribes their voice, analyzes it using an on-device medical AI model, reads the response back aloud, builds a searchable health timeline, and allows trusted family members to receive private health summaries through encrypted peer-to-peer connections.
+
+Everything happens on the device. No cloud. No API keys. No health data leaves the phone. Ever. Because privacy shouldn't be a feature hidden in settings — it should be the foundation.
+
+For my grandmother, MedVoice means she doesn't need to learn complicated technology. She just talks. For family members living far from home, it means peace of mind. And for millions of elderly and chronically ill people around the world, it means health support that is private, simple, accessible, and always available.
+
+MedVoice wasn't built because we wanted to create another health app. It was built because the people we care about deserve technology that cares about them too.
+
+---
+
 ##  The Problem
 
 Most health apps send your most sensitive data — symptoms, conditions, medications — to cloud servers. Elderly and chronically ill users, who would benefit most from continuous health tracking, are often the least comfortable typing detailed logs or trusting Big Tech with their medical history.
