@@ -26,7 +26,8 @@ async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
       analysis   TEXT NOT NULL,
       tags       TEXT,
       severity   TEXT,
-      embedding  TEXT
+      embedding  TEXT,
+      image_uri  TEXT
     );
 
     CREATE TABLE IF NOT EXISTS health_patterns (
@@ -105,6 +106,17 @@ async function initDb(database: SQLite.SQLiteDatabase): Promise<void> {
     const msg = err instanceof Error ? err.message : String(err);
     if (!/duplicate column name/i.test(msg)) throw err;
   }
+
+  // Migration: installs that predate document-scan image storage get the column.
+  // Holds the persistent file:// URI of a scanned page; null for voice entries.
+  try {
+    await database.execAsync(
+      'ALTER TABLE health_entries ADD COLUMN image_uri TEXT',
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (!/duplicate column name/i.test(msg)) throw err;
+  }
 }
 
 // ── Health Entries ────────────────────────────────────────────────────────────
@@ -113,8 +125,8 @@ export async function insertEntry(entry: HealthEntry): Promise<void> {
   const database = await getDb();
   await database.runAsync(
     `INSERT OR REPLACE INTO health_entries
-       (id, timestamp, transcript, analysis, tags, severity, embedding)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       (id, timestamp, transcript, analysis, tags, severity, embedding, image_uri)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       entry.id,
       entry.timestamp,
@@ -123,6 +135,7 @@ export async function insertEntry(entry: HealthEntry): Promise<void> {
       JSON.stringify(entry.tags),
       entry.severity ?? null,
       entry.embedding ? JSON.stringify(entry.embedding) : null,
+      entry.imageUri ?? null,
     ],
   );
 }
@@ -137,6 +150,7 @@ export async function loadAllEntries(): Promise<HealthEntry[]> {
     tags: string | null;
     severity: string | null;
     embedding: string | null;
+    image_uri: string | null;
   }>('SELECT * FROM health_entries ORDER BY timestamp DESC');
 
   return rows.map((row) => ({
@@ -149,6 +163,7 @@ export async function loadAllEntries(): Promise<HealthEntry[]> {
     embedding: row.embedding
       ? (JSON.parse(row.embedding) as number[])
       : undefined,
+    imageUri: row.image_uri ?? undefined,
   }));
 }
 

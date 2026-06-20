@@ -9,6 +9,7 @@ import { useHealthStore } from "@/store/useHealthStore";
 import { useModelStore } from "@/store/useModelStore";
 import { PrivacyBadge } from "@/components/PrivacyBadge";
 import { TapToTalkCard } from "@/components/TapToTalkCard";
+import { ScanDocumentCard } from "@/components/ScanDocumentCard";
 import { RecentEntryCard } from "@/components/RecentEntryCard";
 import { ModelLoadingModal } from "@/components/ModelLoadingModal";
 
@@ -108,8 +109,13 @@ export default function HomeScreen() {
         <PrivacyBadge />
 
         {/* Tap to Talk card */}
-        <View className="mt-4.5 mb-5.5">
+        <View className="mt-4.5 mb-3">
           <TapToTalkCard />
+        </View>
+
+        {/* Scan a Document card */}
+        <View className="mb-5.5">
+          <ScanDocumentCard />
         </View>
 
         {/* Recent Entries header */}

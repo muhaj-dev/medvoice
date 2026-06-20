@@ -8,6 +8,7 @@ import {
   UIManager,
   StyleSheet,
 } from "react-native";
+import { Image } from "expo-image";
 import { useTheme } from "@/hooks/useTheme";
 import { ReadAloudButton } from "@/components/ReadAloudButton";
 import { SpokenText } from "@/components/SpokenText";
@@ -64,9 +65,18 @@ export function TimelineEntryCard({ entry }: Props) {
 
         {expanded && (
           <>
-            <Text style={styles.transcript}>
-              {'"'}{entry.transcript}{'"'}
-            </Text>
+            {entry.imageUri ? (
+              <Image
+                source={{ uri: entry.imageUri }}
+                style={styles.image}
+                contentFit="cover"
+                transition={150}
+              />
+            ) : (
+              <Text style={styles.transcript}>
+                {'"'}{entry.transcript}{'"'}
+              </Text>
+            )}
 
             {!!entry.analysis && (
               <View style={styles.summaryBox}>
@@ -121,6 +131,12 @@ function makeStyles(colors: ColorTokens) {
     },
     timestamp: { fontFamily: "Georgia", fontSize: 13, color: colors.textSecondary },
     chevron: { fontSize: 12, color: colors.textSecondary },
+    image: {
+      width: "100%",
+      aspectRatio: 3 / 4,
+      borderRadius: 12,
+      backgroundColor: colors.bgDeep,
+    },
     transcript: {
       fontFamily: "Georgia",
       fontSize: 15,

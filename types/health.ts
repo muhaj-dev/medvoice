@@ -8,6 +8,8 @@ export type HealthEntry = {
   tags: string[];
   severity: Severity | null;
   embedding?: number[];
+  /** Local file:// URI of the scanned document photo, if this entry is a scan. */
+  imageUri?: string;
 };
 
 export type HealthPattern = {

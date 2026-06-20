@@ -5,6 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useHealthStore } from "@/store/useHealthStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { TimelineSearchBar } from "@/components/TimelineSearchBar";
+import { VisitPrepCard } from "@/components/VisitPrepCard";
 import { TimelineEntryCard } from "@/components/TimelineEntryCard";
 import { TimelineVerticalLine } from "@/components/TimelineVerticalLine";
 import { semanticSearch } from "@/lib/embeddings";
@@ -98,9 +99,14 @@ export default function TimelineScreen() {
                 Timeline
               </Text>
             </View>
-            <View className="px-5 mb-6">
+            <View className="px-5 mb-4">
               <TimelineSearchBar onSearch={setQuery} />
             </View>
+            {!trimmed && entries.length > 0 && (
+              <View className="px-5 mb-6">
+                <VisitPrepCard />
+              </View>
+            )}
             {showSearching && (
               <View className="items-center pt-6 pb-2">
                 <ActivityIndicator size="small" color={colors.accentBlue} />
