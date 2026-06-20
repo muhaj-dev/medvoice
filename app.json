@@ -20,7 +20,9 @@
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
       ],
       "package": "com.anonymous.Medv"
     },
@@ -47,7 +49,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "MedVoice needs camera access to scan family member QR codes."
+          "cameraPermission": "MedVoice needs camera access to scan family member QR codes and to scan documents into text on your device."
         }
       ],
       "@qvac/sdk/expo-plugin",
@@ -65,9 +67,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "d4b37c0f-3695-42df-a90d-47293cc48bd8"
+        "projectId": "7c859762-0205-418f-926f-5a7c2d26be89"
       }
     },
-    "owner": "muhaj_dev"
+    "owner": "holawale"
   }
 }
