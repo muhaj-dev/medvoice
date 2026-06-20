@@ -41,18 +41,6 @@ The person may be deaf or unable to speak, so the scanned text below is how they
 
 Be caring, clear, and brief. The reader may be elderly or not medically trained. Do not use markdown headers.`;
 
-// Conversational Q&A variant. The user asks a question about their OWN past
-// health updates ("When did my knee pain start?"); we answer grounded ONLY in
-// the entries retrieved by semantic search (RAG). This is the "Ask MedVoice"
-// flow — voice question in, spoken answer out, all on-device.
-const QA_SYSTEM_PROMPT = `You are MedVoice, a private on-device health companion. The user is asking a question about their OWN past health updates.
-
-Answer using ONLY the past entries provided as context. Follow these rules:
-- If the context answers the question, reply warmly and specifically — mention what was logged and roughly when.
-- If the context does NOT contain enough to answer, say plainly that you don't have a record of that yet. Never guess or invent details.
-- Never diagnose. For anything concerning, gently suggest seeing a doctor.
-- Keep it short, clear, and conversational — the listener may be elderly. Plain text, no markdown headers.`;
-
 // Doctor-visit-prep variant. From the user's recent entries, produce a short
 // brief they can take to an appointment: what to mention, what to ask, and a
 // quick timeline. Grounded in their own history — never invents symptoms.
@@ -96,10 +84,6 @@ const MAX_PROMPT_TRANSCRIPT_CHARS = 1500;
 // "1–3 caring insights" the system prompt asks for, and it bounds the worst case.
 const MAX_ANALYSIS_TOKENS = 320;
 
-// A spoken Q&A answer should be brief — one or two caring sentences, not an
-// essay — so it reads aloud quickly and the listener doesn't lose the thread.
-const MAX_ANSWER_TOKENS = 256;
-
 // Visit prep has three sections, so it needs more room than a single Q&A
 // answer — but still bounded so it doesn't crawl on a slow CPU.
 const MAX_VISIT_TOKENS = 448;
@@ -141,50 +125,6 @@ export async function analyzeDocument(
     : `Scanned document text:\n"${promptText}"`;
 
   return runMedPsy(DOCUMENT_SYSTEM_PROMPT, userMessage, documentText, onToken, onProgress);
-}
-
-/**
- * Answer a user's spoken question about their own health history, grounded in
- * the entries retrieved by semantic search. Streams the answer token by token
- * (onToken) for a live, conversational feel. Returns just the answer text — no
- * tags/severity/patterns, since this is a question, not a new health entry.
- *
- * @param question - What the user asked (from Parakeet transcription or typed)
- * @param context  - Relevant past entries as plain text (from buildRagContext)
- */
-export async function answerHealthQuestion(
-  question: string,
-  context: string = "",
-  onToken?: (token: string) => void,
-  onProgress?: (pct: number) => void
-): Promise<string> {
-  const modelId = await loadMedGemmaModel(onProgress);
-
-  const userMessage = context
-    ? `My past health entries:\n${context}\n\nMy question: "${question.trim()}"`
-    : `I have no saved health entries yet.\n\nMy question: "${question.trim()}"`;
-
-  const run = completion({
-    modelId,
-    stream: true,
-    generationParams: { predict: MAX_ANSWER_TOKENS },
-    history: [
-      { role: "system", content: QA_SYSTEM_PROMPT },
-      { role: "user", content: userMessage },
-    ],
-  });
-
-  // Same streaming contract as runMedPsy: drain run.events or run.final hangs.
-  let streamed = "";
-  for await (const event of run.events) {
-    if (event.type === "contentDelta") {
-      streamed += event.text;
-      onToken?.(event.text);
-    }
-  }
-
-  const result = await run.final;
-  return (result.contentText || streamed).trim();
 }
 
 /**
