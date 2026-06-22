@@ -3,23 +3,26 @@
  */
 import { Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useThemeStore } from "@/store/useThemeStore";
 import type { ThemePreference } from "@/types/theme";
+import type { StringKey } from "@/constants/strings";
 
-const THEME_OPTIONS: { value: ThemePreference; label: string; icon: string }[] = [
-  { value: "light",  label: "Light",  icon: "☀️" },
-  { value: "dark",   label: "Dark",   icon: "🌙" },
-  { value: "system", label: "System", icon: "📱" },
+const THEME_OPTIONS: { value: ThemePreference; labelKey: StringKey; icon: string }[] = [
+  { value: "light",  labelKey: "misc.themeLight",  icon: "☀️" },
+  { value: "dark",   labelKey: "misc.themeDark",   icon: "🌙" },
+  { value: "system", labelKey: "misc.themeSystem", icon: "📱" },
 ];
 
 export function ThemeSelector() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { preference, setPreference } = useThemeStore();
 
   return (
     <View style={{ paddingVertical: 14, paddingHorizontal: 16 }}>
       <Text style={{ fontFamily: "Georgia", fontSize: 15, color: colors.textPrimary, marginBottom: 12 }}>
-        Theme
+        {t("misc.theme")}
       </Text>
       <View style={{ flexDirection: "row", gap: 8 }}>
         {THEME_OPTIONS.map((opt) => {
@@ -48,7 +51,7 @@ export function ThemeSelector() {
                 color: active ? colors.accentBlue : colors.textSecondary,
                 fontWeight: active ? "700" : "400",
               }}>
-                {opt.label.toUpperCase()}
+                {t(opt.labelKey).toUpperCase()}
               </Text>
             </TouchableOpacity>
           );

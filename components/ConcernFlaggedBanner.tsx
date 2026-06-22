@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = {
   count: number;
@@ -7,6 +8,7 @@ type Props = {
 
 export function ConcernFlaggedBanner({ count }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   if (count === 0) return null;
 
   const styles = StyleSheet.create({
@@ -49,9 +51,9 @@ export function ConcernFlaggedBanner({ count }: Props) {
     <View style={styles.banner}>
       <Text style={styles.bell}>🔔</Text>
       <View style={styles.content}>
-        <Text style={styles.title}>CONCERN FLAGGED</Text>
+        <Text style={styles.title}>{t("analysis.concernFlagged")}</Text>
         <Text style={styles.subtitle}>
-          {"MedPsy flagged"} {count} {count !== 1 ? "items" : "item"} {"in today's entry"}
+          {t("analysis.medPsyFlagged")} {count} {count !== 1 ? t("analysis.items") : t("analysis.item")} {t("analysis.inTodaysEntry")}
         </Text>
       </View>
     </View>

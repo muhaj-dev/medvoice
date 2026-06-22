@@ -12,6 +12,7 @@ import { useThemeStore } from "@/store/useThemeStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { useFamilyStore } from "@/store/useFamilyStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useLanguageStore } from "@/store/useLanguageStore";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { preloadAllModels, suspendQvac, resumeQvac } from "@/lib/qvac";
 
@@ -25,11 +26,13 @@ export default function RootLayout() {
   const loadMembers = useFamilyStore((s) => s.loadFromDb);
   const startReceiving = useFamilyStore((s) => s.startReceiving);
   const loadSettings = useSettingsStore((s) => s.loadFromStorage);
+  const loadLanguage = useLanguageStore((s) => s.loadFromStorage);
 
   useEffect(() => {
     loadEntries();
     loadMembers();
     loadSettings();
+    loadLanguage();
 
     // Listen for health summaries pushed by connected family members (P2P).
     startReceiving();
@@ -50,7 +53,7 @@ export default function RootLayout() {
 
     return () => sub.remove();
     // Store actions are stable refs, so this still runs once on mount.
-  }, [loadEntries, loadMembers, loadSettings, startReceiving]);
+  }, [loadEntries, loadMembers, loadSettings, loadLanguage, startReceiving]);
 
   // StatusBar style: "light" = white icons (for dark bg), "dark" = dark icons (for light bg)
   const statusBarStyle = preference === "light" ? "dark" : "light";

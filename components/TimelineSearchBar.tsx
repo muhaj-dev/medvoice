@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { View, TextInput, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = {
   onSearch: (query: string) => void;
@@ -8,6 +9,7 @@ type Props = {
 
 export function TimelineSearchBar({ onSearch }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [value, setValue] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -59,7 +61,7 @@ export function TimelineSearchBar({ onSearch }: Props) {
         style={styles.input}
         value={value}
         onChangeText={handleChange}
-        placeholder={'Ask anything — "When did my knee pain star...'}
+        placeholder={t("timeline.searchPlaceholder")}
         placeholderTextColor={colors.textMuted}
         returnKeyType="search"
         autoCorrect={false}

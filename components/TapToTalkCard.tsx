@@ -2,9 +2,11 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function TapToTalkCard() {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     card: {
@@ -51,10 +53,10 @@ export function TapToTalkCard() {
         </View>
 
         <Text className="font-georgia text-[22px] font-bold text-white text-center mb-1.5">
-          Tap to Talk
+          {t("recording.tapToTalk")}
         </Text>
         <Text className="font-georgia text-[14px] text-dim text-center">
-          Tell me how you feel today
+          {t("recording.tapToTalkSubtitle")}
         </Text>
       </View>
     </Pressable>

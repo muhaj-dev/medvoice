@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useAnalysisProgress } from "@/hooks/useAnalysisProgress";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { useHealthStore } from "@/store/useHealthStore";
@@ -16,20 +17,23 @@ import { embedText, semanticSearch, buildRagContext } from "@/lib/embeddings";
 
 type Step = { id: number; icon: string; label: string; status: StepStatus };
 
-const buildSteps = (modelSize: "1.7b" | "4b"): Step[] => [
-  { id: 1, icon: "🎙", label: "Transcribing voice input ...", status: "pending" },
-  { id: 2, icon: "🔍", label: "Scanning health history ...", status: "pending" },
-  { id: 3, icon: "📊", label: "RAG context retrieval ...", status: "pending" },
-  { id: 4, icon: "🧠", label: `MedPsy-${modelSize === "4b" ? "4B" : "1.7B"} analyzing health entry ...`, status: "pending" },
-  { id: 5, icon: "✅", label: "Analysis complete", status: "pending" },
+type Translate = ReturnType<typeof useTranslation>["t"];
+
+const buildSteps = (modelSize: "1.7b" | "4b", t: Translate): Step[] => [
+  { id: 1, icon: "🎙", label: t("analysis.stepTranscribing"), status: "pending" },
+  { id: 2, icon: "🔍", label: t("analysis.stepScanningHistory"), status: "pending" },
+  { id: 3, icon: "📊", label: t("analysis.stepRagRetrieval"), status: "pending" },
+  { id: 4, icon: "🧠", label: `MedPsy-${modelSize === "4b" ? "4B" : "1.7B"} ${t("analysis.stepAnalyzing")}`, status: "pending" },
+  { id: 5, icon: "✅", label: t("analysis.stepComplete"), status: "pending" },
 ];
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export default function AnalysisProcessingScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const modelSize = useSettingsStore((s) => s.modelSize);
-  const [steps, setSteps] = useState<Step[]>(() => buildSteps(modelSize));
+  const [steps, setSteps] = useState<Step[]>(() => buildSteps(modelSize, t));
   const { progress, pct, done, advance, finish } = useAnalysisProgress();
   const isRunning = useRef(false);
 
@@ -112,7 +116,7 @@ export default function AnalysisProcessingScreen() {
         activeOpacity={0.7}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Text style={[styles.backText, { color: colors.textSecondary }]}>← BACK</Text>
+        <Text style={[styles.backText, { color: colors.textSecondary }]}>{t("analysis.back")}</Text>
       </TouchableOpacity>
 
       <ScrollView

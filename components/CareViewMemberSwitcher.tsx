@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ColorTokens } from "@/constants/colors";
 import type { FamilyMember } from "@/types/family";
 
@@ -19,6 +20,7 @@ type Props = {
  */
 export function CareViewMemberSwitcher({ members, selectedId, entryCounts, onSelect }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [open, setOpen] = useState(false);
 
@@ -45,13 +47,13 @@ export function CareViewMemberSwitcher({ members, selectedId, entryCounts, onSel
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={() => setOpen(false)}>
           <View style={styles.sheet}>
-            <Text style={styles.sheetLabel}>VIEWING HEALTH FOR</Text>
+            <Text style={styles.sheetLabel}>{t("careView.viewingHealthFor")}</Text>
             {members.map((m) => {
               const active = m.id === selected.id;
               const c = entryCounts?.[m.id];
               const sub = [
                 m.relationship || null,
-                typeof c === "number" ? `${c} ${c === 1 ? "entry" : "entries"}` : null,
+                typeof c === "number" ? `${c} ${c === 1 ? t("careView.entrySingular") : t("careView.entryPlural")}` : null,
               ]
                 .filter(Boolean)
                 .join("  ·  ");

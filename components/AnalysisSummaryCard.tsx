@@ -1,10 +1,12 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = { summary: string; tags: string[] };
 
 export function AnalysisSummaryCard({ summary, tags }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     card: {
@@ -50,7 +52,7 @@ export function AnalysisSummaryCard({ summary, tags }: Props) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>MEDPSY ANALYSIS</Text>
+      <Text style={styles.label}>{t("analysis.summaryLabel")}</Text>
       <Text style={styles.summary}>{summary}</Text>
       {tags.length > 0 && (
         <View style={styles.tags}>

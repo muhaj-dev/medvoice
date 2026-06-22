@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = { uri: string };
 
@@ -11,6 +12,7 @@ type Props = { uri: string };
  */
 export function ScannedImageCard({ uri }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     card: {
@@ -38,7 +40,7 @@ export function ScannedImageCard({ uri }: Props) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>🖼 SCANNED DOCUMENT</Text>
+      <Text style={styles.label}>{t("scan.scannedDocumentLabel")}</Text>
       <Image source={{ uri }} style={styles.image} contentFit="cover" transition={150} />
     </View>
   );

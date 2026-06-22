@@ -1,9 +1,11 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function CareViewEmptyState() {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     container: {
@@ -41,13 +43,13 @@ export function CareViewEmptyState() {
   return (
     <View style={styles.container}>
       <Text style={styles.emoji}>👨‍👩‍👧</Text>
-      <Text style={styles.title}>No one connected yet</Text>
+      <Text style={styles.title}>{t("careView.emptyTitle")}</Text>
       <TouchableOpacity
         onPress={() => router.push("/(tabs)/family" as any)}
         activeOpacity={0.7}
         style={styles.btn}
       >
-        <Text style={styles.btnText}>Connect a family member →</Text>
+        <Text style={styles.btnText}>{t("careView.emptyCta")}</Text>
       </TouchableOpacity>
     </View>
   );

@@ -1,5 +1,6 @@
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = {
   onBack: () => void;
@@ -11,10 +12,12 @@ type Props = {
 export function OnboardingNavButtons({
   onBack,
   onContinue,
-  continueLabel = "CONTINUE →",
+  continueLabel,
   continueEnabled,
 }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
+  const label = continueLabel ?? t("onboarding.nav.continue");
 
   const styles = StyleSheet.create({
     row: {
@@ -62,7 +65,7 @@ export function OnboardingNavButtons({
   return (
     <View style={styles.row}>
       <TouchableOpacity onPress={onBack} activeOpacity={0.7} style={styles.backBtn}>
-        <Text style={styles.backText}>← BACK</Text>
+        <Text style={styles.backText}>{t("onboarding.nav.back")}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={onContinue}
@@ -71,7 +74,7 @@ export function OnboardingNavButtons({
         style={[styles.continueBtn, continueEnabled && styles.continueBtnActive]}
       >
         <Text style={[styles.continueText, continueEnabled && styles.continueTextActive]}>
-          {continueLabel}
+          {label}
         </Text>
       </TouchableOpacity>
     </View>

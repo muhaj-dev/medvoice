@@ -2,6 +2,7 @@ import { ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/store/useUserStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { ProfileCard } from "@/components/ProfileCard";
@@ -9,6 +10,7 @@ import { SettingsSection } from "@/components/SettingsSection";
 import { SettingsRow } from "@/components/SettingsRow";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { ModelSizeSelector } from "@/components/ModelSizeSelector";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const ICON_PINK   = "rgba(236,72,153,0.20)";
 const ICON_GRAY   = "rgba(100,116,139,0.22)";
@@ -19,6 +21,7 @@ const ICON_AMBER  = "rgba(251,191,36,0.20)";
 export default function SettingsScreen() {
   const router = useRouter();
   const colors = useTheme();
+  const { t } = useTranslation();
   const profile = useUserStore((s) => s.profile);
   const { modelSize, ttsEnabled, setTtsEnabled } = useSettingsStore();
 
@@ -29,7 +32,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={{ fontFamily: "Georgia", fontSize: 28, fontWeight: "700", color: colors.textPrimary, marginBottom: 24 }}>
-          Settings
+          {t("settings.title")}
         </Text>
 
         {profile && (
@@ -39,77 +42,81 @@ export default function SettingsScreen() {
           />
         )}
 
-        <SettingsSection title="DISPLAY">
+        <SettingsSection title={t("settings.display")}>
           <ThemeSelector />
         </SettingsSection>
 
-        <SettingsSection title="AI MODEL">
+        <SettingsSection title={t("settings.language")}>
+          <LanguageSelector />
+        </SettingsSection>
+
+        <SettingsSection title={t("settings.aiModel")}>
           <ModelSizeSelector />
           <SettingsRow
             icon="🔊"
             iconBg={ICON_PINK}
-            label="Read aloud (TTS)"
-            value={ttsEnabled ? "Enabled" : "Disabled"}
+            label={t("settings.readAloud")}
+            value={ttsEnabled ? t("settings.enabled") : t("settings.disabled")}
             valueColor={ttsEnabled ? colors.successGreen : colors.textMuted}
             onPress={() => setTtsEnabled(!ttsEnabled)}
           />
           <SettingsRow
             icon="💾"
             iconBg={ICON_GRAY}
-            label="Storage used"
+            label={t("settings.storageUsed")}
             value={modelSize === "4b" ? "2.6 GB" : "1.1 GB"}
           />
           <SettingsRow
             icon="📡"
             iconBg={ICON_GRAY}
-            label="Network mode"
-            value="Offline"
+            label={t("settings.networkMode")}
+            value={t("settings.offline")}
             isLast
           />
         </SettingsSection>
 
-        <SettingsSection title="PRIVACY">
+        <SettingsSection title={t("settings.privacy")}>
           <SettingsRow
             icon="🔒"
             iconBg={ICON_ORANGE}
-            label="Data location"
-            value="On-device only"
+            label={t("settings.dataLocation")}
+            value={t("settings.onDeviceOnly")}
             valueColor={colors.successGreen}
           />
           <SettingsRow
             icon="🛡️"
             iconBg={ICON_RED}
-            label="Cloud sync"
-            value="Disabled"
+            label={t("settings.cloudSync")}
+            value={t("settings.disabled")}
             valueColor={colors.warningRed}
           />
           <SettingsRow
             icon="🔑"
             iconBg={ICON_ORANGE}
-            label="P2P encryption"
-            value="Enabled"
+            label={t("settings.p2pEncryption")}
+            value={t("settings.enabled")}
             valueColor={colors.successGreen}
             isLast
           />
         </SettingsSection>
 
-        <SettingsSection title="ABOUT">
+        <SettingsSection title={t("settings.about")}>
           <SettingsRow
             icon="⚡"
             iconBg={ICON_AMBER}
-            label="Powered by"
+            label={t("settings.poweredBy")}
             value="QVAC SDK"
           />
           <SettingsRow
             icon="📄"
             iconBg={ICON_GRAY}
-            label="License"
+            label={t("settings.license")}
             value="Apache 2.0"
           />
           <SettingsRow
             icon="🏆"
             iconBg={ICON_AMBER}
-            label="Hackathon"
+            label={t("settings.hackathon")}
             value="QVAC Unleash Edge AI"
             valueFontSize={11}
             isLast

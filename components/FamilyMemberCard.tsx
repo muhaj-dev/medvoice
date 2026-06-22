@@ -1,11 +1,13 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { StringKey } from '@/constants/strings';
 import type { FamilyMember } from '@/types/family';
 
-function timeAgo(iso: string | null): string {
-  if (!iso) return 'Never';
+function timeAgo(iso: string | null, t: (key: StringKey) => string): string {
+  if (!iso) return t('family.timeNever');
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 1) return 'Just now';
+  if (mins < 1) return t('family.timeJustNow');
   if (mins < 60) return `${mins}m ago`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h ago`;
@@ -19,6 +21,7 @@ type Props = {
 
 export function FamilyMemberCard({ member, onPress }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const isOnline = member.connectionStatus === 'online';
   const ringColor = isOnline ? colors.successGreen : colors.textMuted;
   const initial = member.name.charAt(0).toUpperCase();
@@ -85,7 +88,7 @@ export function FamilyMemberCard({ member, onPress }: Props) {
             marginTop: 2,
           }}
         >
-          {member.relationship} · {timeAgo(member.lastSynced)}
+          {member.relationship} · {timeAgo(member.lastSynced, t)}
         </Text>
       </View>
 
@@ -108,7 +111,7 @@ export function FamilyMemberCard({ member, onPress }: Props) {
             color: isOnline ? colors.successGreen : colors.textMuted,
           }}
         >
-          {isOnline ? 'ONLINE' : 'OFFLINE'}
+          {isOnline ? t('family.online') : t('family.offline')}
         </Text>
       </View>
     </TouchableOpacity>

@@ -1,10 +1,12 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = { transcript: string };
 
 export function YouSaidCard({ transcript }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     card: {
@@ -32,9 +34,9 @@ export function YouSaidCard({ transcript }: Props) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>YOU SAID</Text>
+      <Text style={styles.label}>{t("analysis.youSaid")}</Text>
       <Text style={styles.transcript}>
-        {'"'}{transcript || "No transcript available."}{'"'}
+        {'"'}{transcript || t("analysis.noTranscript")}{'"'}
       </Text>
     </View>
   );

@@ -1,5 +1,6 @@
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { SpokenText } from "@/components/SpokenText";
 import type { ColorTokens } from "@/constants/colors";
 import type { VisitStatus } from "@/hooks/useVisitPrep";
@@ -20,23 +21,25 @@ export const VISIT_TTS_ID = "visit";
  */
 export function VisitSummaryCard({ summary, status, entryCount }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const styles = makeStyles(colors);
 
   const generating = status === "generating";
 
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>VISIT SUMMARY</Text>
+      <Text style={styles.label}>{t("visitPrep.summaryLabel")}</Text>
       {entryCount > 0 && (
         <Text style={styles.meta}>
-          Based on your {entryCount} most recent {entryCount === 1 ? "entry" : "entries"}
+          {t("visitPrep.metaPrefix")} {entryCount}{" "}
+          {entryCount === 1 ? t("visitPrep.metaEntry") : t("visitPrep.metaEntries")}
         </Text>
       )}
 
       {generating && summary.length === 0 ? (
         <View style={styles.loadingRow}>
           <ActivityIndicator size="small" color={colors.accentBlue} />
-          <Text style={styles.loading}>Reviewing your recent health…</Text>
+          <Text style={styles.loading}>{t("visitPrep.reviewing")}</Text>
         </View>
       ) : (
         <SpokenText id={VISIT_TTS_ID} text={summary} style={styles.text} />

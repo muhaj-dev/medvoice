@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { CornerBrackets } from "@/components/CornerBrackets";
 import { CameraView, cameraAvailable } from "@/lib/cameraModule";
 
@@ -17,6 +18,7 @@ type Props = {
  */
 export function DocumentCameraView({ hasPermission, onCaptured }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const cameraRef = useRef<any>(null);
   const [busy, setBusy] = useState(false);
   const showCamera = cameraAvailable && hasPermission;
@@ -74,7 +76,7 @@ export function DocumentCameraView({ hasPermission, onCaptured }: Props) {
 
         {!showCamera && (
           <Text style={styles.placeholder}>
-            {!cameraAvailable ? "Camera not available" : "Waiting for camera…"}
+            {!cameraAvailable ? t("scan.cameraNotAvailable") : t("scan.waitingForCamera")}
           </Text>
         )}
 

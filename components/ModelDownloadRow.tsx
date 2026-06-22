@@ -5,6 +5,7 @@
  */
 import { Text, View, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ModelState, ModelStatus } from "@/store/useModelStore";
 
 function statusIcon(status: ModelStatus): string {
@@ -23,6 +24,7 @@ type Props = {
 
 export function ModelDownloadRow({ label, size, state, background }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const isReady = state.status === "ready";
   const isLoading = state.status === "loading";
   const isError = state.status === "error";
@@ -37,12 +39,12 @@ export function ModelDownloadRow({ label, size, state, background }: Props) {
   const statusText = isLoading
     ? `${state.progress}%`
     : isReady
-    ? "READY"
+    ? t("misc.statusReady")
     : isError
-    ? "ERROR"
+    ? t("misc.statusError")
     : background
-    ? "BACKGROUND"
-    : "WAITING";
+    ? t("misc.statusBackground")
+    : t("misc.statusWaiting");
 
   return (
     <View style={s.row}>

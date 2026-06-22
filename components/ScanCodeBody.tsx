@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { QRScannerViewfinder } from "@/components/QRScannerViewfinder";
 
 type Props = {
@@ -20,6 +21,7 @@ export const ScanCodeBody = ({
   onEnterManually,
 }: Props) => {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
@@ -29,16 +31,16 @@ export const ScanCodeBody = ({
         hitSlop={{ top: 12, bottom: 12, left: 12, right: 24 }}
       >
         <Text style={[styles.backText, { color: colors.textSecondary }]}>
-          ← BACK
+          {t('family.back')}
         </Text>
       </TouchableOpacity>
 
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          {"Scan Family Member's Code"}
+          {t('family.scanFamilyCode')}
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Point your camera at their QR code
+          {t('family.pointCamera')}
         </Text>
       </View>
 
@@ -52,7 +54,7 @@ export const ScanCodeBody = ({
       </View>
 
       <Text style={[styles.hint, { color: colors.textSecondary }]}>
-        {"The code will be detected automatically.\nNo need to tap anything."}
+        {t('family.detectedAutomatically')}
       </Text>
 
       <TouchableOpacity
@@ -62,7 +64,7 @@ export const ScanCodeBody = ({
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Text style={[styles.manualText, { color: colors.accentBlue }]}>
-          NO QR CODE? ENTER CODE MANUALLY
+          {t('family.noQrEnterManually')}
         </Text>
       </TouchableOpacity>
     </View>

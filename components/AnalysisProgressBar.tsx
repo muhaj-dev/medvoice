@@ -7,6 +7,7 @@
  */
 import { View, Text, Animated, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = {
   anim: Animated.Value;
@@ -16,6 +17,7 @@ type Props = {
 
 export function AnalysisProgressBar({ anim, pct, done }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const width = anim.interpolate({
     inputRange: [0, 100],
@@ -32,7 +34,7 @@ export function AnalysisProgressBar({ anim, pct, done }: Props) {
       </View>
       <View style={s.pctRow}>
         <Text style={[s.pctLabel, { color: colors.textMuted }]}>
-          {done ? "ANALYSIS COMPLETE" : "ANALYZING ON DEVICE"}
+          {done ? t("analysis.progressComplete") : t("analysis.progressAnalyzing")}
         </Text>
         <Text style={[s.pctValue, { color: accent }]}>{pct}%</Text>
       </View>

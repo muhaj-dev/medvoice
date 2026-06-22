@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { ReadAloudButton } from "@/components/ReadAloudButton";
 import { SpokenText } from "@/components/SpokenText";
 import type { ColorTokens } from "@/constants/colors";
@@ -21,13 +22,13 @@ if (Platform.OS === "android") {
 
 type Props = { entry: HealthEntry };
 
-function formatTimestamp(iso: string): string {
+function formatTimestamp(iso: string, todayLabel: string, yesterdayLabel: string): string {
   const date = new Date(iso);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000);
   const time = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  if (diffDays === 0) return `Today • ${time}`;
-  if (diffDays === 1) return `Yesterday • ${time}`;
+  if (diffDays === 0) return `${todayLabel} • ${time}`;
+  if (diffDays === 1) return `${yesterdayLabel} • ${time}`;
   const day = date.toLocaleDateString([], { weekday: "short" });
   return `${day} • ${time}`;
 }
@@ -40,6 +41,7 @@ function severityColor(severity: NonNullable<Severity>, colors: ColorTokens): st
 
 export function TimelineEntryCard({ entry }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -59,7 +61,7 @@ export function TimelineEntryCard({ entry }: Props) {
 
       <TouchableOpacity style={styles.card} onPress={handleToggle} activeOpacity={0.85}>
         <View style={styles.header}>
-          <Text style={styles.timestamp}>{formatTimestamp(entry.timestamp)}</Text>
+          <Text style={styles.timestamp}>{formatTimestamp(entry.timestamp, t("timeline.today"), t("timeline.yesterday"))}</Text>
           <Text style={styles.chevron}>{expanded ? "∧" : "∨"}</Text>
         </View>
 
@@ -80,7 +82,7 @@ export function TimelineEntryCard({ entry }: Props) {
 
             {!!entry.analysis && (
               <View style={styles.summaryBox}>
-                <Text style={styles.summaryLabel}>MEDPSY SUMMARY</Text>
+                <Text style={styles.summaryLabel}>{t("timeline.medpsySummary")}</Text>
                 <SpokenText id={`tl-${entry.id}`} text={entry.analysis} style={styles.summaryText} />
                 <ReadAloudButton id={`tl-${entry.id}`} text={entry.analysis} />
               </View>

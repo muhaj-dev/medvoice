@@ -1,18 +1,20 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ColorTokens } from "@/constants/colors";
 
 type Props = { online?: boolean };
 
 export function LiveMonitoringBadge({ online = true }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors, online), [colors, online]);
 
   return (
     <View style={styles.pill}>
       <View style={styles.dot} />
-      <Text style={styles.label}>{online ? "LIVE" : "OFFLINE"}</Text>
+      <Text style={styles.label}>{online ? t("careView.live") : t("careView.offline")}</Text>
     </View>
   );
 }

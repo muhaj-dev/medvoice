@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { ShowCodeContent } from "@/components/ShowCodeContent";
 import { ConnectMemberModal } from "@/components/ConnectMemberModal";
 import { getOrCreatePublicKey, onPeerConnected } from "@/lib/p2p";
@@ -12,6 +13,7 @@ import type { FamilyMember } from "@/types/family";
 
 export default function ShowCodeScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { addMember } = useFamilyStore();
 
   const [publicKey, setPublicKey] = useState("");
@@ -63,12 +65,12 @@ export default function ShowCodeScreen() {
       setShowModal(false);
       router.back();
       Alert.alert(
-        "Share your health data?",
-        `Allow ${name} to see your health history and future updates? You can change this anytime from their card on the Family tab.`,
+        t("family.shareTitle"),
+        `${t("family.shareBodyPrefix")}${name}${t("family.shareBodySuffix")}`,
         [
-          { text: "Not now", style: "cancel" },
+          { text: t("family.notNow"), style: "cancel" },
           {
-            text: "Share",
+            text: t("family.share"),
             onPress: async () => {
               try {
                 const store = useFamilyStore.getState();
@@ -76,20 +78,20 @@ export default function ShowCodeScreen() {
                 const r = await store.syncHistoryTo(pendingPeerKey);
                 Alert.alert(
                   r.total === 0
-                    ? "Nothing to share yet"
+                    ? t("family.nothingToShare")
                     : r.ok
-                    ? "Health data shared"
-                    : "Sync incomplete",
+                    ? t("family.healthDataShared")
+                    : t("family.syncIncomplete"),
                   r.total === 0
-                    ? `You have no saved entries yet. New entries will sync to ${name} automatically.`
+                    ? `${t("family.noEntriesYetPrefix")}${name}${t("family.noEntriesYetSuffix")}`
                     : r.ok
-                    ? `Sent ${r.sent} ${r.sent === 1 ? "entry" : "entries"} to ${name}.`
-                    : `Sent ${r.sent} of ${r.total}. ${name} may be offline — the rest will sync when you reconnect.`
+                    ? `${t("family.sentPrefix")}${r.sent}${r.sent === 1 ? t("family.sentEntrySingular") : t("family.sentEntryPlural")}${t("family.sentToPrefix")}${name}${t("family.sentToSuffix")}`
+                    : `${t("family.sentPrefix")}${r.sent}${t("family.sentOf")}${r.total}${t("family.mayBeOfflinePrefix")}${name}${t("family.mayBeOfflineSuffix")}`
                 );
               } catch (e) {
                 Alert.alert(
-                  "Unable to share",
-                  e instanceof Error ? e.message : "Something went wrong. Please try again."
+                  t("family.unableToShare"),
+                  e instanceof Error ? e.message : t("family.somethingWentWrong")
                 );
               }
             },
@@ -97,7 +99,7 @@ export default function ShowCodeScreen() {
         ]
       );
     },
-    [addMember, pendingPeerKey]
+    [addMember, pendingPeerKey, t]
   );
 
   return (
@@ -109,7 +111,7 @@ export default function ShowCodeScreen() {
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 24 }}
         >
           <Text style={[styles.backText, { color: colors.textSecondary }]}>
-            ← BACK
+            {t('family.back')}
           </Text>
         </TouchableOpacity>
 

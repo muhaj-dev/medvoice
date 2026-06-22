@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { Modal, View, Text, TouchableOpacity, Animated, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useModelStore } from "@/store/useModelStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { retryModelDownloads } from "@/lib/qvac";
@@ -17,6 +18,7 @@ import { ModelDownloadRow } from "@/components/ModelDownloadRow";
 
 export function ModelDownloadGate() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { parakeet, medgemma, embedding, tts, coreReady } = useModelStore();
   const modelSize = useSettingsStore((s) => s.modelSize);
 
@@ -97,16 +99,16 @@ export function ModelDownloadGate() {
           )}
         </View>
 
-        <Text style={s.title}>{ready ? "You're all set" : "Preparing MedVoice"}</Text>
+        <Text style={s.title}>{ready ? t("misc.gateReadyTitle") : t("misc.gatePreparingTitle")}</Text>
         <Text style={s.subtitle}>
           {ready
-            ? "Voice and analysis are ready. Search and read-aloud finish downloading in the background."
-            : "Downloading your private on-device AI. This happens once — Wi-Fi recommended."}
+            ? t("misc.gateReadySubtitle")
+            : t("misc.gatePreparingSubtitle")}
         </Text>
         {lowDisk && freeGB !== null && (
           <Text style={s.diskWarn}>
-            LOW STORAGE: {freeGB.toFixed(1)} GB FREE, ~{requiredGB} GB NEEDED.{"\n"}
-            FREE UP SPACE IF A DOWNLOAD FAILS.
+            {t("misc.gateLowStoragePrefix")} {freeGB.toFixed(1)} {t("misc.gateLowStorageFree")} ~{requiredGB} {t("misc.gateLowStorageNeeded")}{"\n"}
+            {t("misc.gateLowStorageAction")}
           </Text>
         )}
 
@@ -114,18 +116,18 @@ export function ModelDownloadGate() {
           <View style={[s.trackFill, { width: `${coreProgress}%` }]} />
         </View>
         <View style={s.pctRow}>
-          <Text style={s.pctLabel}>{ready ? "CORE MODELS READY" : "DOWNLOADING"}</Text>
+          <Text style={s.pctLabel}>{ready ? t("misc.gateCoreModelsReady") : t("misc.downloading")}</Text>
           <Text style={s.pctValue}>{Math.round(coreProgress)}%</Text>
         </View>
 
-        <ModelDownloadRow label="Voice Recognition" size="750 MB" state={parakeet} />
-        <ModelDownloadRow label="Health Analysis" size={modelSize === "4b" ? "2.5 GB" : "1.1 GB"} state={medgemma} />
-        <ModelDownloadRow label="Semantic Search" size="330 MB" state={embedding} background />
-        <ModelDownloadRow label="Text-to-Speech" size="132 MB" state={tts} background />
+        <ModelDownloadRow label={t("misc.modelVoiceRecognition")} size="750 MB" state={parakeet} />
+        <ModelDownloadRow label={t("misc.modelHealthAnalysis")} size={modelSize === "4b" ? "2.5 GB" : "1.1 GB"} state={medgemma} />
+        <ModelDownloadRow label={t("misc.modelSemanticSearch")} size="330 MB" state={embedding} background />
+        <ModelDownloadRow label={t("misc.modelTextToSpeech")} size="132 MB" state={tts} background />
 
         {ready ? (
           <TouchableOpacity style={[s.btn, { backgroundColor: colors.successGreen }]} activeOpacity={0.85} onPress={() => setDismissed(true)}>
-            <Text style={s.btnText}>CONTINUE →</Text>
+            <Text style={s.btnText}>{t("misc.gateContinue")}</Text>
           </TouchableOpacity>
         ) : hasError ? (
           <>
@@ -135,7 +137,7 @@ export function ModelDownloadGate() {
               disabled={retrying}
               onPress={handleRetry}
             >
-              <Text style={s.btnText}>{retrying ? "RETRYING…" : "RETRY DOWNLOAD"}</Text>
+              <Text style={s.btnText}>{retrying ? t("misc.gateRetrying") : t("misc.gateRetryDownload")}</Text>
             </TouchableOpacity>
             {canContinueDegraded && !retrying && (
               <TouchableOpacity
@@ -143,7 +145,7 @@ export function ModelDownloadGate() {
                 activeOpacity={0.85}
                 onPress={() => setDismissed(true)}
               >
-                <Text style={[s.btnText, { color: colors.textSecondary }]}>CONTINUE WITHOUT AI →</Text>
+                <Text style={[s.btnText, { color: colors.textSecondary }]}>{t("misc.gateContinueWithoutAi")}</Text>
               </TouchableOpacity>
             )}
           </>
@@ -151,8 +153,8 @@ export function ModelDownloadGate() {
 
         <Text style={s.note}>
           {canContinueDegraded
-            ? "Voice journaling will work · AI analysis stays off until downloaded"
-            : "Downloads once · Always on-device · No cloud"}
+            ? t("misc.gateDegradedNote")
+            : t("misc.downloadsNote")}
         </Text>
       </View>
     </Modal>

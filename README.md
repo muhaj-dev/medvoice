@@ -1,5 +1,17 @@
 # MedVoice
 
+> **A private, on-device AI health companion.** Your voice in. Health insight out. Nothing ever leaves your phone.
+
+<div align="center">
+
+### ▶️ &nbsp; [**Watch the Demo Video**](#) &nbsp; · &nbsp; 📥 &nbsp; [**Download the APK**](https://expo.dev/artifacts/eas/_-siqiaaUWi2S2P47OreXcDOzxFfRa9xZzVyQ1oeMcY.apk) &nbsp; · &nbsp; 🔗 &nbsp; [**DoraHacks Submission**](#)
+
+</div>
+
+<!-- TODO: replace the # placeholders (demo video + DoraHacks link) with the real URLs -->
+
+---
+
 ##  The Story Behind MedVoice
 
 When I gained admission into university, it was one of the happiest moments of my life. For the first time, I was leaving home to pursue my dreams. But there was one problem I could never stop thinking about: my grandmother.
@@ -68,6 +80,31 @@ MedVoice lets anyone track their health **just by talking**, with **every AI ste
 
 ---
 
+##  Device Compatibility (Please Read)
+
+> ⚠️ **Android 11 and below cannot use all features.** The on-device AI engine
+> (QVAC's llama.cpp) **requires Android 12 (API 31) or newer**. iOS devices are
+> fully supported.
+
+The app is built to **degrade gracefully** — it never crashes on older devices —
+but the AI-powered features are unavailable below Android 12 and fall back to
+simpler alternatives:
+
+| Feature | iOS / Android 12+ | Android 11 and below |
+|---|---|---|
+| Voice journaling (transcription) | ✅ Full | ✅ Works |
+| Read-aloud responses (TTS) | ✅ Full | ✅ Works |
+| Family sharing (P2P) | ✅ Full | ✅ Works |
+| **AI health analysis** | ✅ Full | ⛔ Unavailable → saves a voice journal entry without AI summary |
+| **Ask MedVoice (AI Q&A)** | ✅ Full | ⛔ Unavailable → falls back to keyword search of your entries |
+| **Semantic timeline search** | ✅ Full | ⚠️ Keyword search only |
+
+**For the full MedVoice experience (AI analysis, Ask MedVoice, semantic search),
+use an iOS device or an Android phone running Android 12 or later** with ~3 GB
+free storage for the on-device models.
+
+---
+
 ##  Privacy Promise (Non-Negotiable)
 
 - ❌ No cloud database
@@ -130,7 +167,7 @@ The bottom navigation has 5 tabs: **HOME · TIMELINE · FAMILY · CARE VIEW · S
 
 ### Prerequisites
 - Node.js 18+
-- Android device/emulator (Android 12+ recommended for the QVAC llama.cpp engine) or iOS device
+- Android device/emulator (**Android 12+ / API 31 required** for the QVAC llama.cpp AI engine — older versions run without AI features, see [Device Compatibility](#--device-compatibility-please-read)) or iOS device
 - ~3 GB free storage on device for AI models
 
 ### Steps

@@ -10,8 +10,17 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { StringKey } from '@/constants/strings';
 
-const RELATIONSHIPS = ['Mother', 'Father', 'Son', 'Daughter', 'Spouse', 'Other'];
+const RELATIONSHIPS: { value: string; key: StringKey }[] = [
+  { value: 'Mother', key: 'family.relMother' },
+  { value: 'Father', key: 'family.relFather' },
+  { value: 'Son', key: 'family.relSon' },
+  { value: 'Daughter', key: 'family.relDaughter' },
+  { value: 'Spouse', key: 'family.relSpouse' },
+  { value: 'Other', key: 'family.relOther' },
+];
 
 type Props = {
   visible: boolean;
@@ -21,6 +30,7 @@ type Props = {
 
 export function ScanConnectModal({ visible, onConfirm, onDismiss }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [relationship, setRelationship] = useState('');
 
@@ -120,25 +130,25 @@ export function ScanConnectModal({ visible, onConfirm, onDismiss }: Props) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.sheet}>
           <View style={styles.handle} />
-          <Text style={styles.title}>Who is this?</Text>
+          <Text style={styles.title}>{t('family.whoIsThis')}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Their name"
+            placeholder={t('family.theirName')}
             placeholderTextColor={colors.textMuted}
             value={name}
             onChangeText={setName}
             autoFocus
           />
-          <Text style={styles.sectionLabel}>RELATIONSHIP</Text>
+          <Text style={styles.sectionLabel}>{t('family.relationshipLabel')}</Text>
           <View style={styles.chips}>
             {RELATIONSHIPS.map((r) => (
               <TouchableOpacity
-                key={r}
-                onPress={() => setRelationship(r)}
-                style={[styles.chip, relationship === r && styles.chipActive]}
+                key={r.value}
+                onPress={() => setRelationship(r.value)}
+                style={[styles.chip, relationship === r.value && styles.chipActive]}
               >
-                <Text style={[styles.chipText, relationship === r && styles.chipTextActive]}>
-                  {r}
+                <Text style={[styles.chipText, relationship === r.value && styles.chipTextActive]}>
+                  {t(r.key)}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -148,7 +158,7 @@ export function ScanConnectModal({ visible, onConfirm, onDismiss }: Props) {
             style={[styles.btn, (!name.trim() || !relationship) && styles.btnDisabled]}
             disabled={!name.trim() || !relationship}
           >
-            <Text style={styles.btnText}>CONNECT →</Text>
+            <Text style={styles.btnText}>{t('family.connect')}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

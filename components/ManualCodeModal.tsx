@@ -17,6 +17,7 @@ import {
 import * as Clipboard from "expo-clipboard";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = {
   visible: boolean;
@@ -26,6 +27,7 @@ type Props = {
 
 export function ManualCodeModal({ visible, onSubmit, onDismiss }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [code, setCode] = useState("");
 
   const handlePaste = async () => {
@@ -123,13 +125,13 @@ export function ManualCodeModal({ visible, onSubmit, onDismiss }: Props) {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View style={styles.sheet}>
           <View style={styles.handle} />
-          <Text style={styles.title}>Enter code manually</Text>
+          <Text style={styles.title}>{t('family.enterCodeManually')}</Text>
           <Text style={styles.subtitle}>
-            Paste the connection code your family member shared with you.
+            {t('family.enterCodeSubtitle')}
           </Text>
           <TextInput
             style={styles.input}
-            placeholder="Paste their code here"
+            placeholder={t('family.pasteCodePlaceholder')}
             placeholderTextColor={colors.textMuted}
             value={code}
             onChangeText={setCode}
@@ -139,14 +141,14 @@ export function ManualCodeModal({ visible, onSubmit, onDismiss }: Props) {
           />
           <TouchableOpacity style={styles.pasteBtn} onPress={handlePaste} activeOpacity={0.7}>
             <Ionicons name="clipboard-outline" size={16} color={colors.accentBlue} />
-            <Text style={styles.pasteText}>PASTE FROM CLIPBOARD</Text>
+            <Text style={styles.pasteText}>{t('family.pasteFromClipboard')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleNext}
             style={[styles.btn, !code.trim() && styles.btnDisabled]}
             disabled={!code.trim()}
           >
-            <Text style={styles.btnText}>NEXT →</Text>
+            <Text style={styles.btnText}>{t('family.next')}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

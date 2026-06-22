@@ -1,15 +1,16 @@
 import { View, Text } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-
-const STEPS = [
-  'Both phones need internet briefly',
-  'One person shows their QR code',
-  'The other person scans it',
-  'Connected! Health updates sync automatically',
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function HowP2PWorksCard() {
   const colors = useTheme();
+  const { t } = useTranslation();
+  const STEPS = [
+    t('family.step1'),
+    t('family.step2'),
+    t('family.step3'),
+    t('family.step4'),
+  ];
   return (
     <View
       style={{
@@ -30,7 +31,7 @@ export function HowP2PWorksCard() {
           color: colors.textSecondary,
         }}
       >
-        HOW P2P WORKS
+        {t('family.howP2PWorks')}
       </Text>
 
       {STEPS.map((step, i) => (

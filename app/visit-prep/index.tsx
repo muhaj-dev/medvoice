@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTtsStore } from "@/store/useTtsStore";
 import { useVisitPrep } from "@/hooks/useVisitPrep";
@@ -12,6 +13,7 @@ import { prewarmTTS } from "@/lib/tts";
 
 export default function VisitPrepScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
   const { status, summary, used, generate } = useVisitPrep();
 
@@ -45,16 +47,14 @@ export default function VisitPrepScreen() {
         activeOpacity={0.7}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Text style={styles.backText}>← BACK</Text>
+        <Text style={styles.backText}>{t("visitPrep.back")}</Text>
       </TouchableOpacity>
 
       <View style={styles.header}>
-        <Text style={styles.title}>Visit</Text>
-        <Text style={styles.titleAccent}>Prep</Text>
+        <Text style={styles.title}>{t("visitPrep.titleVisit")}</Text>
+        <Text style={styles.titleAccent}>{t("visitPrep.titlePrep")}</Text>
       </View>
-      <Text style={styles.subtitle}>
-        A private summary of your recent health — read it aloud or share it with your doctor.
-      </Text>
+      <Text style={styles.subtitle}>{t("visitPrep.subtitle")}</Text>
 
       <ScrollView
         style={styles.scroll}

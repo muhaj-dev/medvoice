@@ -11,10 +11,19 @@ import {
   Alert,
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 import { makeEditMemberStyles } from '@/components/EditMemberModal.styles';
+import type { StringKey } from '@/constants/strings';
 import type { FamilyMember } from '@/types/family';
 
-const RELATIONSHIPS = ['Daughter', 'Son', 'Parent', 'Sibling', 'Partner', 'Other'];
+const RELATIONSHIPS: { value: string; key: StringKey }[] = [
+  { value: 'Daughter', key: 'family.relDaughter' },
+  { value: 'Son', key: 'family.relSon' },
+  { value: 'Parent', key: 'family.relParent' },
+  { value: 'Sibling', key: 'family.relSibling' },
+  { value: 'Partner', key: 'family.relPartner' },
+  { value: 'Other', key: 'family.relOther' },
+];
 
 type Props = {
   member: FamilyMember | null;
@@ -47,6 +56,7 @@ function EditMemberForm({
   onDismiss,
 }: Props & { member: FamilyMember }) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const styles = useMemo(() => makeEditMemberStyles(colors), [colors]);
   const [name, setName] = useState(member.name);
   const [relationship, setRelationship] = useState(member.relationship);
@@ -59,11 +69,11 @@ function EditMemberForm({
 
   const handleRemove = () => {
     Alert.alert(
-      'Remove family member?',
-      `${member.name} will no longer receive your health summaries.`,
+      t('family.removeFamilyMember'),
+      `${t('family.removeBodyPrefix')}${member.name}${t('family.removeBodySuffix')}`,
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Remove', style: 'destructive', onPress: onRemove },
+        { text: t('family.cancel'), style: 'cancel' },
+        { text: t('family.remove'), style: 'destructive', onPress: onRemove },
       ]
     );
   };
@@ -74,33 +84,33 @@ function EditMemberForm({
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.sheet}>
           <View style={styles.handle} />
-          <Text style={styles.title}>Edit family member</Text>
+          <Text style={styles.title}>{t('family.editFamilyMember')}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Their name"
+            placeholder={t('family.theirName')}
             placeholderTextColor={colors.textMuted}
             value={name}
             onChangeText={setName}
           />
-          <Text style={styles.sectionLabel}>RELATIONSHIP</Text>
+          <Text style={styles.sectionLabel}>{t('family.relationshipLabel')}</Text>
           <View style={styles.chips}>
             {RELATIONSHIPS.map((r) => (
               <TouchableOpacity
-                key={r}
-                onPress={() => setRelationship(r)}
-                style={[styles.chip, relationship === r && styles.chipActive]}
+                key={r.value}
+                onPress={() => setRelationship(r.value)}
+                style={[styles.chip, relationship === r.value && styles.chipActive]}
               >
-                <Text style={[styles.chipText, relationship === r && styles.chipTextActive]}>
-                  {r}
+                <Text style={[styles.chipText, relationship === r.value && styles.chipTextActive]}>
+                  {t(r.key)}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
           <View style={styles.shareRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.shareTitle}>Share my health data</Text>
+              <Text style={styles.shareTitle}>{t('family.shareMyHealthData')}</Text>
               <Text style={styles.shareSub}>
-                They receive your entries, past and future
+                {t('family.shareMyHealthDataSub')}
               </Text>
             </View>
             <Switch
@@ -115,10 +125,10 @@ function EditMemberForm({
             style={[styles.saveBtn, (!name.trim() || !relationship) && styles.saveBtnDisabled]}
             disabled={!name.trim() || !relationship}
           >
-            <Text style={styles.saveText}>SAVE CHANGES</Text>
+            <Text style={styles.saveText}>{t('family.saveChanges')}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleRemove} style={styles.removeBtn}>
-            <Text style={styles.removeText}>REMOVE MEMBER</Text>
+            <Text style={styles.removeText}>{t('family.removeMember')}</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

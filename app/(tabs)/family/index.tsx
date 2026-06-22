@@ -3,6 +3,7 @@ import { ScrollView, View, Text, Alert, TouchableOpacity, ActivityIndicator } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useFamilyStore } from '@/store/useFamilyStore';
 import { P2PMeshBanner } from '@/components/P2PMeshBanner';
 import { FamilyMemberCard } from '@/components/FamilyMemberCard';
@@ -12,6 +13,7 @@ import { HowP2PWorksCard } from '@/components/HowP2PWorksCard';
 
 export default function FamilyScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { members, updateMember, removeMember, syncHistoryTo, refreshConnections } = useFamilyStore();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [reconnecting, setReconnecting] = useState(false);
@@ -40,15 +42,15 @@ export default function FamilyScreen() {
         const r = await syncHistoryTo(editingMember.publicKey);
         Alert.alert(
           r.total === 0
-            ? "Nothing to share yet"
+            ? t("family.nothingToShare")
             : r.ok
-            ? "Health data shared"
-            : "Sync incomplete",
+            ? t("family.healthDataShared")
+            : t("family.syncIncomplete"),
           r.total === 0
-            ? `You have no saved entries yet. New entries will sync to ${name} automatically.`
+            ? `${t("family.noEntriesYetPrefix")}${name}${t("family.noEntriesYetSuffix")}`
             : r.ok
-            ? `Sent ${r.sent} ${r.sent === 1 ? "entry" : "entries"} to ${name}.`
-            : `Sent ${r.sent} of ${r.total}. ${name} may be offline — the rest will sync when you reconnect.`
+            ? `${t("family.sentPrefix")}${r.sent}${r.sent === 1 ? t("family.sentEntrySingular") : t("family.sentEntryPlural")}${t("family.sentToPrefix")}${name}${t("family.sentToSuffix")}`
+            : `${t("family.sentPrefix")}${r.sent}${t("family.sentOf")}${r.total}${t("family.mayBeOfflinePrefix")}${name}${t("family.mayBeOfflineSuffix")}`
         );
       }
     }
@@ -70,13 +72,13 @@ export default function FamilyScreen() {
         <View className="flex-row justify-between items-start mb-6">
           <View>
             <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontWeight: '700', color: colors.textPrimary, lineHeight: 40 }}>
-              Family
+              {t('family.headingFamily')}
             </Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontStyle: 'italic', color: colors.accentBlueLight, lineHeight: 30 }}>
-              Connection
+              {t('family.headingConnection')}
             </Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textSecondary, marginTop: 6 }}>
-              Private P2P · No cloud server
+              {t('family.subtitle')}
             </Text>
           </View>
           <Ionicons name="flash-outline" size={22} color={colors.textSecondary} style={{ marginTop: 6 }} />
@@ -92,7 +94,7 @@ export default function FamilyScreen() {
           <View className="mb-7 gap-2.5">
             <View className="flex-row items-center justify-between mb-0.5">
               <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 1.2, color: colors.textSecondary }}>
-                CONNECTED
+                {t('family.connected')}
               </Text>
               <TouchableOpacity
                 onPress={handleReconnect}
@@ -107,7 +109,7 @@ export default function FamilyScreen() {
                   <Ionicons name="refresh" size={13} color={colors.accentBlue} />
                 )}
                 <Text style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: '600', letterSpacing: 1, color: colors.accentBlue }}>
-                  {reconnecting ? 'RECONNECTING' : 'RECONNECT'}
+                  {reconnecting ? t('family.reconnecting') : t('family.reconnect')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -121,10 +123,10 @@ export default function FamilyScreen() {
           >
             <Text style={{ fontSize: 36 }}>👨‍👩‍👧</Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 15, color: colors.textPrimary, textAlign: 'center', fontWeight: '600' }}>
-              No family members yet
+              {t('family.emptyTitle')}
             </Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 }}>
-              Share health summaries privately with family using the options below
+              {t('family.emptyBody')}
             </Text>
           </View>
         )}

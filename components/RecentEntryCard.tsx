@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ColorTokens } from "@/constants/colors";
 import type { HealthEntry } from "@/types/health";
 
@@ -8,7 +9,7 @@ type Props = {
   isLatest?: boolean;
 };
 
-function formatTimestamp(iso: string): string {
+function formatTimestamp(iso: string, todayLabel: string, yesterdayLabel: string): string {
   const d = new Date(iso);
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -19,8 +20,8 @@ function formatTimestamp(iso: string): string {
     minute: "2-digit",
     hour12: true,
   });
-  if (startOfEntry.getTime() === startOfToday.getTime()) return `Today · ${time}`;
-  if (startOfEntry.getTime() === startOfYesterday.getTime()) return `Yesterday · ${time}`;
+  if (startOfEntry.getTime() === startOfToday.getTime()) return `${todayLabel} · ${time}`;
+  if (startOfEntry.getTime() === startOfYesterday.getTime()) return `${yesterdayLabel} · ${time}`;
   return `${d.toLocaleDateString("en-US", { weekday: "short" })} · ${time}`;
 }
 
@@ -32,6 +33,7 @@ function severityColor(severity: HealthEntry["severity"], colors: ColorTokens): 
 
 export function RecentEntryCard({ entry, isLatest }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View
@@ -49,11 +51,11 @@ export function RecentEntryCard({ entry, isLatest }: Props) {
       <View className="flex-row items-center gap-2">
         <View style={[styles.dot, { backgroundColor: severityColor(entry.severity, colors) }]} />
         <Text style={{ fontFamily: "monospace", fontSize: 11, color: colors.textMuted, flex: 1 }}>
-          {formatTimestamp(entry.timestamp)}
+          {formatTimestamp(entry.timestamp, t("timeline.today"), t("timeline.yesterday"))}
         </Text>
         {isLatest && (
           <Text style={{ fontFamily: "monospace", fontSize: 10, color: colors.accentBlue, letterSpacing: 0.6 }}>
-            LATEST
+            {t("timeline.latest")}
           </Text>
         )}
       </View>
