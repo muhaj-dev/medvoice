@@ -2,6 +2,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /**
  * Timeline entry point for Doctor Visit Prep. Lives with the history view
@@ -10,6 +11,7 @@ import { useTheme } from "@/hooks/useTheme";
  */
 export function VisitPrepCard() {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     card: {
@@ -56,8 +58,8 @@ export function VisitPrepCard() {
         <Ionicons name="clipboard-outline" size={22} color={colors.textPrimary} />
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.title}>Prepare for a Doctor Visit</Text>
-        <Text style={styles.subtitle}>A summary of your recent health to bring</Text>
+        <Text style={styles.title}>{t("visitPrep.cardTitle")}</Text>
+        <Text style={styles.subtitle}>{t("visitPrep.cardSubtitle")}</Text>
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
     </Pressable>

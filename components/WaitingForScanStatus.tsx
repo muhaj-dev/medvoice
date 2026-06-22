@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Animated } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type Props = {
   connected: boolean;
@@ -8,6 +9,7 @@ type Props = {
 
 export function WaitingForScanStatus({ connected }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [pulse] = useState(() => new Animated.Value(0.4));
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export function WaitingForScanStatus({ connected }: Props) {
               color: '#0f172a',
             }}
           >
-            CONNECTED ✓
+            {t('family.connectedCheck')}
           </Text>
         </View>
       ) : (
@@ -90,7 +92,7 @@ export function WaitingForScanStatus({ connected }: Props) {
               color: colors.successGreen,
             }}
           >
-            WAITING FOR SCAN...
+            {t('family.waitingForScan')}
           </Text>
         </View>
       )}
@@ -104,7 +106,7 @@ export function WaitingForScanStatus({ connected }: Props) {
             textAlign: 'center',
           }}
         >
-          This code is unique to your device.
+          {t('family.uniqueToDevice')}
         </Text>
         <Text
           style={{
@@ -114,7 +116,7 @@ export function WaitingForScanStatus({ connected }: Props) {
             textAlign: 'center',
           }}
         >
-          Health data is encrypted end-to-end.
+          {t('family.encryptedEndToEnd')}
         </Text>
       </View>
     </View>

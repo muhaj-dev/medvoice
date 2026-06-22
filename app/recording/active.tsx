@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, type Href } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { useVoiceTranscription } from "@/hooks/useVoiceTranscription";
 import { WaveformAnimation } from "@/components/WaveformAnimation";
@@ -11,6 +12,7 @@ import { StopRecordingButton } from "@/components/StopRecordingButton";
 
 export default function RecordingActiveScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { setIsRecording, setAudioUri, setFinalTranscript, resetRecording } =
     useRecordingStore();
   const transcript = useRecordingStore((s) => s.transcript);
@@ -88,11 +90,13 @@ export default function RecordingActiveScreen() {
         activeOpacity={0.7}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Text style={styles.backText}>← BACK</Text>
+        <Text style={styles.backText}>{t("recording.back")}</Text>
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <Text style={styles.listeningLabel}>LISTENING • ON DEVICE</Text>
+        <Text style={styles.listeningLabel}>
+          {t("recording.listeningOnDevice")}
+        </Text>
 
         <View style={styles.waveformWrap}>
           <WaveformAnimation isActive={true} />

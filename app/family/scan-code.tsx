@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useCameraPermissions } from "expo-camera";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { ScanCodeBody } from "@/components/ScanCodeBody";
 import { ScanConnectModal } from "@/components/ScanConnectModal";
 import { ManualCodeModal } from "@/components/ManualCodeModal";
@@ -14,6 +15,7 @@ import type { FamilyMember } from "@/types/family";
 
 export default function ScanCodeScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { addMember, updateMemberStatus } = useFamilyStore();
   const [permission, requestPermission] = useCameraPermissions();
   const [paused, setPaused] = useState(false);
@@ -76,7 +78,7 @@ export default function ScanCodeScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ fontFamily: "Georgia", fontSize: 14, color: colors.textSecondary }}>
-            Requesting camera access…
+            {t('family.requestingCameraAccess')}
           </Text>
         </View>
       </SafeAreaView>

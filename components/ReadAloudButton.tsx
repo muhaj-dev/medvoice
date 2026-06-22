@@ -1,7 +1,9 @@
 import { Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useTtsStore } from "@/store/useTtsStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { hasVoice } from "@/constants/strings";
 
 type Props = {
   // Unique per screen context (e.g. `tl-<id>`), since local + synced entries
@@ -17,12 +19,15 @@ type Props = {
  */
 export function ReadAloudButton({ id, text }: Props) {
   const colors = useTheme();
+  const { t, language } = useTranslation();
   const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
   const activeId = useTtsStore((s) => s.activeId);
   const status = useTtsStore((s) => s.status);
   const toggle = useTtsStore((s) => s.toggle);
 
-  if (!ttsEnabled || !text.trim()) return null;
+  // Hidden when TTS is off, there's no text, or the current language has no
+  // QVAC voice (read-aloud only supports en/es/de/it).
+  if (!ttsEnabled || !hasVoice(language) || !text.trim()) return null;
 
   const mine = activeId === id;
   const loading = mine && status === "loading";
@@ -52,7 +57,7 @@ export function ReadAloudButton({ id, text }: Props) {
     },
   });
 
-  const label = loading ? "LOADING…" : playing ? "⏹  STOP" : "🔊  READ ALOUD";
+  const label = loading ? t("analysis.loading") : playing ? t("analysis.stop") : t("analysis.readAloud");
 
   return (
     <TouchableOpacity

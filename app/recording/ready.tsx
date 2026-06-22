@@ -2,11 +2,13 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { ReadyMicDisplay } from "@/components/ReadyMicDisplay";
 import { PulsingMicButton } from "@/components/PulsingMicButton";
 
 export default function RecordingReadyScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     root: {
@@ -71,22 +73,21 @@ export default function RecordingReadyScreen() {
         activeOpacity={0.7}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Text style={styles.backText}>← BACK</Text>
+        <Text style={styles.backText}>{t("recording.back")}</Text>
       </TouchableOpacity>
 
       {/* Upper content */}
       <View style={styles.content}>
-        <Text style={styles.readyLabel}>READY TO LISTEN</Text>
+        <Text style={styles.readyLabel}>{t("recording.readyToListen")}</Text>
 
         <View style={styles.micWrap}>
           <ReadyMicDisplay />
         </View>
 
-        <Text style={styles.heading}>How are you feeling?</Text>
+        <Text style={styles.heading}>{t("recording.howAreYouFeeling")}</Text>
 
         <Text style={styles.description}>
-          Tap the button below and speak naturally. MedPsy will analyze your
-          health update on this device.
+          {t("recording.readyDescription")}
         </Text>
       </View>
 

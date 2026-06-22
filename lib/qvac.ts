@@ -36,10 +36,13 @@ import {
   MEDGEMMA_4B_IT_Q4_1,
   QWEN3_1_7B_INST_Q4,
   EMBEDDINGGEMMA_300M_Q8_0,
-  TTS_EN_SUPERTONIC_Q4_0,
+  TTS_MULTILINGUAL_SUPERTONIC2_Q4_0,
 } from "@qvac/sdk";
 import { useModelStore, type ModelName } from "@/store/useModelStore";
 import { useSettingsStore, type ModelSize } from "@/store/useSettingsStore";
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { hasVoice, type Lang, type VoiceLang } from "@/constants/strings";
+import { TRANSLATION_SRC } from "@/lib/translationModels";
 import { supportsLlamaCppModels } from "@/lib/device";
 
 type AssetSrc = Parameters<typeof downloadAsset>[0]["assetSrc"];
@@ -50,12 +53,16 @@ let medgemmaModelId: string | null = null;
 let medgemmaLoadedSize: ModelSize | null = null; // size of the resident analysis model
 let embeddingModelId: string | null = null;
 let ttsModelId: string | null = null;
+let ttsLoadedLang: VoiceLang | null = null; // language of the resident TTS voice
+let translationModelId: string | null = null;
+let translationLoadedLang: Lang | null = null; // target language of resident NMT
 
 // In-flight load promises — prevent duplicate concurrent loads of one model.
 let parakeetPromise: Promise<string> | null = null;
 let medgemmaPromise: Promise<string> | null = null;
 let embeddingPromise: Promise<string> | null = null;
 let ttsPromise: Promise<string> | null = null;
+let translationPromise: Promise<string> | null = null;
 
 const analysisSrc = (size: ModelSize): AssetSrc =>
   size === "4b" ? MEDGEMMA_4B_IT_Q4_1 : QWEN3_1_7B_INST_Q4;
@@ -64,7 +71,7 @@ const pctOf = (percentage: number | undefined) =>
   typeof percentage === "number" ? Math.round(percentage) : 0;
 
 // Unload every resident model except `keep`, so only one stays in RAM.
-async function evictExcept(keep: ModelName): Promise<void> {
+async function evictExcept(keep: ModelName | "translation"): Promise<void> {
   const tasks: Promise<unknown>[] = [];
   if (keep !== "parakeet" && parakeetModelId) {
     tasks.push(unloadModel({ modelId: parakeetModelId }).catch(() => {}));
@@ -82,6 +89,12 @@ async function evictExcept(keep: ModelName): Promise<void> {
   if (keep !== "tts" && ttsModelId) {
     tasks.push(unloadModel({ modelId: ttsModelId }).catch(() => {}));
     ttsModelId = null;
+    ttsLoadedLang = null;
+  }
+  if (keep !== "translation" && translationModelId) {
+    tasks.push(unloadModel({ modelId: translationModelId }).catch(() => {}));
+    translationModelId = null;
+    translationLoadedLang = null;
   }
   await Promise.all(tasks);
 }
@@ -216,19 +229,44 @@ export function loadEmbeddingModel(
   return embeddingPromise;
 }
 
-// ── TTS Supertonic — read-aloud ───────────────────────────────────────────
+// ── TTS Supertonic 2 (multilingual) — read-aloud ──────────────────────────
+// One ~132 MB model speaks every supported language; the voice language comes
+// from the user's app-language setting. Switching language hot-swaps the voice
+// (reload with the new `language` config) on the next read-aloud, like the
+// analysis-model size swap.
 export function loadTTSModel(
   onProgress?: (pct: number) => void
 ): Promise<string> {
-  if (ttsModelId) return Promise.resolve(ttsModelId);
-  if (ttsPromise) return ttsPromise;
+  const appLang = useLanguageStore.getState().language;
+  // Only en/es/de/it have a QVAC voice. For any other UI language, read-aloud
+  // is unavailable — reject so callers (and the hidden buttons) degrade quietly
+  // rather than feeding an unsupported code to the TTS engine.
+  if (!hasVoice(appLang))
+    return Promise.reject(new Error(`No TTS voice for language "${appLang}"`));
+  const lang: VoiceLang = appLang;
+
+  if (ttsModelId && ttsLoadedLang === lang) return Promise.resolve(ttsModelId);
+  if (ttsPromise && ttsLoadedLang === lang) return ttsPromise;
+
+  // A load for a DIFFERENT language may be in flight — serialize behind it.
+  const prevLoad = ttsPromise;
+  ttsLoadedLang = lang;
 
   ttsPromise = (async () => {
+    if (prevLoad) {
+      try { await prevLoad; } catch {}
+    }
     await evictExcept("tts");
+    // A different-language voice may still be resident — unload it too.
+    if (ttsModelId) {
+      const stale = ttsModelId;
+      ttsModelId = null;
+      await unloadModel({ modelId: stale }).catch(() => {});
+    }
     return loadModel({
-      modelSrc: TTS_EN_SUPERTONIC_Q4_0,
+      modelSrc: TTS_MULTILINGUAL_SUPERTONIC2_Q4_0,
       modelType: "tts-ggml",
-      modelConfig: { ttsEngine: "supertonic", language: "en" },
+      modelConfig: { ttsEngine: "supertonic", language: lang },
       onProgress: ({ percentage }) => onProgress?.(pctOf(percentage)),
     });
   })()
@@ -239,11 +277,57 @@ export function loadTTSModel(
     })
     .catch((err) => {
       ttsPromise = null;
+      ttsLoadedLang = null;
       console.error("[qvac] tts load failed:", err);
       throw err;
     });
 
   return ttsPromise;
+}
+
+// ── Bergamot NMT — on-device UI translation (en → es/de/it) ────────────────
+// Loaded on demand the first time a non-English language is selected, so the
+// i18n layer can translate the string catalog. English never needs a model.
+export function loadTranslationModel(lang: Lang): Promise<string> {
+  const src = TRANSLATION_SRC[lang];
+  if (!src) return Promise.reject(new Error(`No translation model for "${lang}"`));
+
+  if (translationModelId && translationLoadedLang === lang)
+    return Promise.resolve(translationModelId);
+  if (translationPromise && translationLoadedLang === lang) return translationPromise;
+
+  const prevLoad = translationPromise;
+  translationLoadedLang = lang;
+
+  translationPromise = (async () => {
+    if (prevLoad) {
+      try { await prevLoad; } catch {}
+    }
+    await evictExcept("translation");
+    if (translationModelId) {
+      const stale = translationModelId;
+      translationModelId = null;
+      await unloadModel({ modelId: stale }).catch(() => {});
+    }
+    return loadModel({
+      modelSrc: src,
+      modelType: "nmtcpp-translation",
+      modelConfig: { engine: "Bergamot", from: "en", to: lang },
+    });
+  })()
+    .then((id) => {
+      translationModelId = id;
+      translationPromise = null;
+      return id;
+    })
+    .catch((err) => {
+      translationPromise = null;
+      translationLoadedLang = null;
+      console.error(`[qvac] translation model (en→${lang}) load failed:`, err);
+      throw err;
+    });
+
+  return translationPromise;
 }
 
 // ── Boot preload — DOWNLOAD only (no RAM load) ─────────────────────────────
@@ -279,7 +363,7 @@ export async function retryModelDownloads(): Promise<void> {
     parakeet: PARAKEET_TDT_0_6B_V3_Q8_0,
     medgemma: analysisSrc(size),
     embedding: EMBEDDINGGEMMA_300M_Q8_0,
-    tts: TTS_EN_SUPERTONIC_Q4_0,
+    tts: TTS_MULTILINGUAL_SUPERTONIC2_Q4_0,
   };
   // Never re-download llama.cpp models on devices where they can't load.
   const llamaOk = supportsLlamaCppModels();
@@ -302,6 +386,7 @@ export async function preloadAllModels(): Promise<void> {
   // but the pre-download would be wasted).
   try {
     await useSettingsStore.getState().loadFromStorage();
+    await useLanguageStore.getState().loadFromStorage();
   } catch {}
 
   // On Android < 12 the llama.cpp models can never load (native crash), so
@@ -325,7 +410,7 @@ export async function preloadAllModels(): Promise<void> {
   void (async () => {
     if (llamaOk) await downloadOne("embedding", EMBEDDINGGEMMA_300M_Q8_0);
     else skipUnsupported("embedding");
-    await downloadOne("tts", TTS_EN_SUPERTONIC_Q4_0);
+    await downloadOne("tts", TTS_MULTILINGUAL_SUPERTONIC2_Q4_0);
   })();
 }
 

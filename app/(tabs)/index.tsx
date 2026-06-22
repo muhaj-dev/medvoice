@@ -4,12 +4,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/store/useUserStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { useModelStore } from "@/store/useModelStore";
 import { PrivacyBadge } from "@/components/PrivacyBadge";
 import { TapToTalkCard } from "@/components/TapToTalkCard";
 import { ScanDocumentCard } from "@/components/ScanDocumentCard";
+import { AskHealthCard } from "@/components/AskHealthCard";
 import { RecentEntryCard } from "@/components/RecentEntryCard";
 import { ModelLoadingModal } from "@/components/ModelLoadingModal";
 
@@ -22,15 +24,16 @@ function getFormattedDate(): string {
   return `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}`;
 }
 
-function getGreeting(): string {
+function getGreetingKey(): "home.morning" | "home.afternoon" | "home.evening" {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning,";
-  if (h < 17) return "Good afternoon,";
-  return "Good evening,";
+  if (h < 12) return "home.morning";
+  if (h < 17) return "home.afternoon";
+  return "home.evening";
 }
 
 export default function HomeScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const profile = useUserStore((s) => s.profile);
   const entries = useHealthStore((s) => s.entries);
   const recentEntries = useMemo(() => entries.slice(0, 3), [entries]);
@@ -72,10 +75,10 @@ export default function HomeScreen() {
         {/* Greeting */}
         <View className="mb-4">
           <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', color: colors.textPrimary, lineHeight: 34 }}>
-            {getGreeting()}
+            {t(getGreetingKey())}
           </Text>
           <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', fontStyle: 'italic', color: colors.successGreen, lineHeight: 34 }}>
-            {profile?.name ?? "there"}
+            {profile?.name ?? t("home.there")}
           </Text>
         </View>
 
@@ -97,7 +100,7 @@ export default function HomeScreen() {
           <Text style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: 0.8,
             color: isReady ? colors.successGreen : isLoading ? colors.accentBlue : colors.textMuted,
           }}>
-            {isReady ? 'AI READY' : `AI MODELS · ${Math.round(totalProgress)}%`}
+            {isReady ? t("home.aiReady") : `${t("home.aiModels")} · ${Math.round(totalProgress)}%`}
           </Text>
           <Ionicons name="chevron-forward" size={10}
             color={isReady ? colors.successGreen : isLoading ? colors.accentBlue : colors.textMuted} />
@@ -114,21 +117,26 @@ export default function HomeScreen() {
         </View>
 
         {/* Scan a Document card */}
-        <View className="mb-5.5">
+        <View className="mb-3">
           <ScanDocumentCard />
+        </View>
+
+        {/* Ask MedVoice card */}
+        <View className="mb-5.5">
+          <AskHealthCard />
         </View>
 
         {/* Recent Entries header */}
         <View className="flex-row items-center justify-between mb-3">
           <Text style={{ fontFamily: 'monospace', fontSize: 11, color: colors.textSecondary, letterSpacing: 1.2 }}>
-            RECENT ENTRIES
+            {t("home.recentEntries")}
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/timeline" as any)}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={{ fontFamily: 'monospace', fontSize: 11, color: colors.accentBlue }}>SEE ALL →</Text>
+            <Text style={{ fontFamily: 'monospace', fontSize: 11, color: colors.accentBlue }}>{t("home.seeAll")} →</Text>
           </TouchableOpacity>
         </View>
 
@@ -136,9 +144,9 @@ export default function HomeScreen() {
         {recentEntries.length === 0 ? (
           <View className="items-center py-9 gap-1.5">
             <Text className="text-[32px] mb-2">🎙️</Text>
-            <Text style={{ fontFamily: 'Georgia', fontSize: 15, color: colors.textSecondary }}>No entries yet</Text>
+            <Text style={{ fontFamily: 'Georgia', fontSize: 15, color: colors.textSecondary }}>{t("home.noEntries")}</Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 20 }}>
-              Tap the microphone above to get started
+              {t("home.getStarted")}
             </Text>
           </View>
         ) : (

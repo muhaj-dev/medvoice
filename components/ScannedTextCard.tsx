@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = { text: string };
 
@@ -9,6 +10,7 @@ type Props = { text: string };
  */
 export function ScannedTextCard({ text }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     card: {
@@ -42,9 +44,9 @@ export function ScannedTextCard({ text }: Props) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>📄 SCANNED TEXT</Text>
+      <Text style={styles.label}>{t("scan.scannedTextLabel")}</Text>
       <Text style={text ? styles.text : styles.empty}>
-        {text || "No readable text was found in the photo. Try again with better lighting."}
+        {text || t("scan.noReadableText")}
       </Text>
     </View>
   );

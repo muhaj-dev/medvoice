@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRecordingStore } from "@/store/useRecordingStore";
 import { useHealthStore } from "@/store/useHealthStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -19,6 +20,7 @@ import type { HealthEntry } from "@/types/health";
 
 export default function AnalysisResultScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { finalTranscript, analysisResult, entryEmbedding, resetRecording } = useRecordingStore();
   const { addEntry } = useHealthStore();
   const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
@@ -140,10 +142,10 @@ export default function AnalysisResultScreen() {
         activeOpacity={0.7}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Text style={styles.backText}>← BACK</Text>
+        <Text style={styles.backText}>{t("analysis.back")}</Text>
       </TouchableOpacity>
 
-      <Text style={styles.screenLabel}>MEDPSY ANALYSIS</Text>
+      <Text style={styles.screenLabel}>{t("analysis.resultLabel")}</Text>
 
       <ScrollView
         style={styles.scroll}

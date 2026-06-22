@@ -3,21 +3,23 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { StringKey } from "@/constants/strings";
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>["name"];
 
 type TabConfig = {
   icon: IoniconsName;
   iconActive: IoniconsName;
-  label: string;
+  labelKey: StringKey;
 };
 
 const TAB_CONFIG: Record<string, TabConfig> = {
-  index:       { icon: "home-outline",     iconActive: "home",     label: "HOME"      },
-  timeline:    { icon: "time-outline",     iconActive: "time",     label: "TIMELINE"  },
-  family:      { icon: "people-outline",   iconActive: "people",   label: "FAMILY"    },
-  "care-view": { icon: "eye-outline",      iconActive: "eye",      label: "CARE VIEW" },
-  settings:    { icon: "settings-outline", iconActive: "settings", label: "SETTINGS"  },
+  index:       { icon: "home-outline",     iconActive: "home",     labelKey: "tab.home"     },
+  timeline:    { icon: "time-outline",     iconActive: "time",     labelKey: "tab.timeline" },
+  family:      { icon: "people-outline",   iconActive: "people",   labelKey: "tab.family"   },
+  "care-view": { icon: "eye-outline",      iconActive: "eye",      labelKey: "tab.careView" },
+  settings:    { icon: "settings-outline", iconActive: "settings", labelKey: "tab.settings" },
 };
 
 type CustomTabBarProps = {
@@ -38,6 +40,7 @@ type CustomTabBarProps = {
 function CustomTabBar({ state, navigation }: CustomTabBarProps) {
   const colors = useTheme();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   return (
     <View
@@ -52,11 +55,10 @@ function CustomTabBar({ state, navigation }: CustomTabBarProps) {
     >
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
-        const config = TAB_CONFIG[route.name] ?? {
-          icon: "help-outline" as IoniconsName,
-          iconActive: "help" as IoniconsName,
-          label: route.name.toUpperCase(),
-        };
+        const config = TAB_CONFIG[route.name];
+        const label = config ? t(config.labelKey) : route.name.toUpperCase();
+        const iconName = config?.icon ?? ("help-outline" as IoniconsName);
+        const iconActive = config?.iconActive ?? ("help" as IoniconsName);
 
         const onPress = () => {
           const event = navigation.emit({
@@ -77,7 +79,7 @@ function CustomTabBar({ state, navigation }: CustomTabBarProps) {
             className="flex-1 items-center justify-center gap-0.5"
           >
             <Ionicons
-              name={isFocused ? config.iconActive : config.icon}
+              name={isFocused ? iconActive : iconName}
               size={22}
               color={isFocused ? colors.tabActive : colors.tabInactive}
             />
@@ -89,7 +91,7 @@ function CustomTabBar({ state, navigation }: CustomTabBarProps) {
                 color: isFocused ? colors.tabActive : colors.tabInactive,
               }}
             >
-              {config.label}
+              {label}
             </Text>
             <View
               style={{

@@ -1,6 +1,7 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useModelStore, ModelStatus } from '@/store/useModelStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 
@@ -15,6 +16,7 @@ type Props = { visible: boolean; onClose: () => void };
 
 export function ModelLoadingModal({ visible, onClose }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { parakeet, medgemma, embedding, tts, allReady } = useModelStore();
   const states = { parakeet, medgemma, embedding, tts };
   const modelSize = useSettingsStore((s) => s.modelSize);
@@ -23,10 +25,10 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
   // load into RAM one at a time on demand). Health-analysis size depends on the
   // selected model (Settings → AI Model).
   const MODELS: { key: keyof typeof states; label: string; size: string }[] = [
-    { key: 'parakeet',  label: 'Voice Recognition', size: '750 MB' },
-    { key: 'medgemma',  label: 'Health Analysis',   size: modelSize === '4b' ? '2.5 GB' : '1.1 GB' },
-    { key: 'embedding', label: 'Semantic Search',   size: '330 MB' },
-    { key: 'tts',       label: 'Text-to-Speech',    size: '132 MB' },
+    { key: 'parakeet',  label: t('misc.modelVoiceRecognition'), size: '750 MB' },
+    { key: 'medgemma',  label: t('misc.modelHealthAnalysis'),   size: modelSize === '4b' ? '2.5 GB' : '1.1 GB' },
+    { key: 'embedding', label: t('misc.modelSemanticSearch'),   size: '330 MB' },
+    { key: 'tts',       label: t('misc.modelTextToSpeech'),     size: '132 MB' },
   ];
 
   const totalProgress =
@@ -76,7 +78,7 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
             <View style={s.handle} />
 
             <View style={s.header}>
-              <Text style={s.title}>AI MODELS</Text>
+              <Text style={s.title}>{t('misc.aiModels')}</Text>
               <TouchableOpacity
                 style={s.closeBtn}
                 onPress={onClose}
@@ -93,7 +95,7 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
                 <View style={[s.trackFill, { width: `${totalProgress}%` }]} />
               </View>
               <View style={s.pctRow}>
-                <Text style={s.pctLabel}>{ready ? 'ALL MODELS READY' : 'DOWNLOADING'}</Text>
+                <Text style={s.pctLabel}>{ready ? t('misc.allModelsReady') : t('misc.downloading')}</Text>
                 <Text style={s.pctValue}>{Math.round(totalProgress)}%</Text>
               </View>
 
@@ -127,13 +129,13 @@ export function ModelLoadingModal({ visible, onClose }: Props) {
                       )}
                     </View>
                     <Text style={[s.rowMeta, { color }]}>
-                      {isLoading ? `${state.progress}%` : isReady ? 'READY' : isError ? 'ERROR' : 'IDLE'}
+                      {isLoading ? `${state.progress}%` : isReady ? t('misc.statusReady') : isError ? t('misc.statusError') : t('misc.statusIdle')}
                     </Text>
                   </View>
                 );
               })}
 
-              <Text style={s.note}>Downloads once · Always on-device · No cloud</Text>
+              <Text style={s.note}>{t('misc.downloadsNote')}</Text>
             </View>
           </View>
         </Pressable>

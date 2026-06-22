@@ -3,6 +3,7 @@ import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
 import { RoleCard } from "@/components/RoleCard";
 import { OnboardingNavButtons } from "@/components/OnboardingNavButtons";
@@ -13,19 +14,20 @@ const ROLES = [
   {
     id: "patient" as UserRole,
     emoji: "🧑",
-    title: "I am tracking my own health",
-    description: "Log daily symptoms, get AI insights, stay on top of your wellbeing",
+    titleKey: "onboarding.role.patient.title",
+    descriptionKey: "onboarding.role.patient.description",
   },
   {
     id: "caregiver" as UserRole,
     emoji: "👥",
-    title: "I am caring for a family member",
-    description: "Monitor a loved one's health, receive updates, stay connected privately",
+    titleKey: "onboarding.role.caregiver.title",
+    descriptionKey: "onboarding.role.caregiver.description",
   },
-];
+] as const;
 
 export default function RoleScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const profile = useUserStore((s) => s.profile);
   const setProfile = useUserStore((s) => s.setProfile);
@@ -57,13 +59,13 @@ export default function RoleScreen() {
 
         <View className="mb-7">
           <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', color: colors.textPrimary, lineHeight: 36 }}>
-            How will you use
+            {t("onboarding.role.headingLine1")}
           </Text>
           <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', fontStyle: 'italic', color: colors.accentBlue, lineHeight: 36, marginBottom: 10 }}>
-            MedVoice?
+            {t("onboarding.role.headingLine2")}
           </Text>
           <Text style={{ fontFamily: 'Georgia', fontSize: 14, color: colors.textSecondary }}>
-            {"We'll personalise the app for you."}
+            {t("onboarding.role.subtitle")}
           </Text>
         </View>
 
@@ -72,8 +74,8 @@ export default function RoleScreen() {
             <RoleCard
               key={role.id}
               emoji={role.emoji}
-              title={role.title}
-              description={role.description}
+              title={t(role.titleKey)}
+              description={t(role.descriptionKey)}
               selected={selectedRole === role.id}
               onPress={() => setSelectedRole(role.id)}
             />

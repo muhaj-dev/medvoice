@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { DocumentCameraView } from "@/components/DocumentCameraView";
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 
 export const ScanCaptureBody = ({ hasPermission, onBack, onCaptured }: Props) => {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
@@ -18,13 +20,13 @@ export const ScanCaptureBody = ({ hasPermission, onBack, onCaptured }: Props) =>
         style={styles.backBtn}
         hitSlop={{ top: 12, bottom: 12, left: 12, right: 24 }}
       >
-        <Text style={[styles.backText, { color: colors.textSecondary }]}>← BACK</Text>
+        <Text style={[styles.backText, { color: colors.textSecondary }]}>{t("scan.back")}</Text>
       </TouchableOpacity>
 
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>Scan a Document</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>{t("scan.title")}</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Point your camera at the page
+          {t("scan.pointCamera")}
         </Text>
       </View>
 
@@ -33,7 +35,7 @@ export const ScanCaptureBody = ({ hasPermission, onBack, onCaptured }: Props) =>
       </View>
 
       <Text style={[styles.hint, { color: colors.textSecondary }]}>
-        {"Hold steady and fill the frame with the text.\nTap the button to capture."}
+        {t("scan.captureHint")}
       </Text>
     </View>
   );

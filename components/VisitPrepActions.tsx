@@ -1,8 +1,10 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, Share, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useTtsStore } from "@/store/useTtsStore";
 import { VISIT_TTS_ID } from "@/components/VisitSummaryCard";
+import { hasVoice } from "@/constants/strings";
 import type { ColorTokens } from "@/constants/colors";
 
 type Props = {
@@ -17,6 +19,7 @@ type Props = {
  */
 export function VisitPrepActions({ summary, ttsEnabled }: Props) {
   const colors = useTheme();
+  const { t, language } = useTranslation();
   const styles = makeStyles(colors);
 
   const toggle = useTtsStore((s) => s.toggle);
@@ -35,7 +38,7 @@ export function VisitPrepActions({ summary, ttsEnabled }: Props) {
 
   return (
     <View style={styles.row}>
-      {ttsEnabled && (
+      {ttsEnabled && hasVoice(language) && (
         <TouchableOpacity
           style={[styles.btn, styles.secondary]}
           onPress={() => toggle(VISIT_TTS_ID, summary)}
@@ -51,7 +54,11 @@ export function VisitPrepActions({ summary, ttsEnabled }: Props) {
             />
           )}
           <Text style={styles.secondaryText}>
-            {isLoading ? "LOADING" : isSpeaking ? "STOP" : "READ ALOUD"}
+            {isLoading
+              ? t("visitPrep.loading")
+              : isSpeaking
+                ? t("visitPrep.stop")
+                : t("visitPrep.readAloud")}
           </Text>
         </TouchableOpacity>
       )}
@@ -62,7 +69,7 @@ export function VisitPrepActions({ summary, ttsEnabled }: Props) {
         activeOpacity={0.85}
       >
         <Ionicons name="share-outline" size={18} color={colors.textPrimary} />
-        <Text style={styles.primaryText}>SHARE</Text>
+        <Text style={styles.primaryText}>{t("visitPrep.share")}</Text>
       </TouchableOpacity>
     </View>
   );

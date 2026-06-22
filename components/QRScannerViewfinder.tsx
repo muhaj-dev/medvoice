@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 import { CornerBrackets } from '@/components/CornerBrackets';
 import { CameraView, cameraAvailable } from '@/lib/cameraModule';
 
@@ -12,6 +13,7 @@ type Props = {
 
 export function QRScannerViewfinder({ onCodeDetected, hasPermission, paused, showSuccess }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const showCamera = cameraAvailable && hasPermission && !paused;
 
   const styles = StyleSheet.create({
@@ -63,13 +65,13 @@ export function QRScannerViewfinder({ onCodeDetected, hasPermission, paused, sho
 
       {!showCamera && !showSuccess && (
         <Text style={styles.placeholder}>
-          {!cameraAvailable ? 'Camera not available' : 'Waiting for camera…'}
+          {!cameraAvailable ? t('family.cameraNotAvailable') : t('family.waitingForCamera')}
         </Text>
       )}
 
       {showSuccess && (
         <View style={styles.successOverlay}>
-          <Text style={styles.successText}>✓  Code detected!</Text>
+          <Text style={styles.successText}>{t('family.codeDetected')}</Text>
         </View>
       )}
 

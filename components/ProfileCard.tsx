@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { UserProfile } from "@/types/user";
 
 type Props = {
@@ -7,17 +8,18 @@ type Props = {
   onPress: () => void;
 };
 
-function buildSubtitle(profile: UserProfile): string {
+function buildSubtitle(profile: UserProfile, ageLabel: string): string {
   const parts: string[] = [];
-  if (profile.age) parts.push(`Age ${profile.age}`);
+  if (profile.age) parts.push(`${ageLabel} ${profile.age}`);
   if (profile.conditions.length > 0) parts.push(profile.conditions[0]);
   return parts.join(" · ");
 }
 
 export function ProfileCard({ profile, onPress }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const initial = profile.name.charAt(0).toUpperCase();
-  const subtitle = buildSubtitle(profile);
+  const subtitle = buildSubtitle(profile, t("profile.ageValue"));
 
   const styles = StyleSheet.create({
     card: {

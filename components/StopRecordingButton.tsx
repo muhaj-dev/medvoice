@@ -1,10 +1,12 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = { onPress: () => void };
 
 export function StopRecordingButton({ onPress }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     wrap: {
@@ -47,7 +49,7 @@ export function StopRecordingButton({ onPress }: Props) {
       >
         <View style={styles.square} />
       </TouchableOpacity>
-      <Text style={styles.label}>Tap to stop & analyze</Text>
+      <Text style={styles.label}>{t("recording.tapToStopAndAnalyze")}</Text>
     </View>
   );
 }

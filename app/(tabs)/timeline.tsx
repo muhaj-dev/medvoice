@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, FlatList, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useHealthStore } from "@/store/useHealthStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { TimelineSearchBar } from "@/components/TimelineSearchBar";
@@ -14,6 +15,7 @@ import type { HealthEntry } from "@/types/health";
 
 export default function TimelineScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { entries } = useHealthStore();
   const backfillEmbeddings = useHealthStore((s) => s.backfillEmbeddings);
   const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
@@ -93,10 +95,10 @@ export default function TimelineScreen() {
           <>
             <View className="px-5 pt-4 pb-6">
               <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontWeight: '700', color: colors.textPrimary, lineHeight: 44 }}>
-                Health
+                {t("timeline.headingHealth")}
               </Text>
               <Text style={{ fontFamily: 'Georgia', fontSize: 36, fontWeight: '700', fontStyle: 'italic', color: colors.accentBlue, lineHeight: 44 }}>
-                Timeline
+                {t("timeline.headingTimeline")}
               </Text>
             </View>
             <View className="px-5 mb-4">
@@ -111,7 +113,7 @@ export default function TimelineScreen() {
               <View className="items-center pt-6 pb-2">
                 <ActivityIndicator size="small" color={colors.accentBlue} />
                 <Text style={{ fontFamily: "monospace", fontSize: 11, color: colors.textSecondary, letterSpacing: 1, marginTop: 8 }}>
-                  SEARCHING...
+                  {t("timeline.searching")}
                 </Text>
               </View>
             )}
@@ -122,12 +124,12 @@ export default function TimelineScreen() {
             <View className="items-center pt-[60px] px-10 gap-3">
               <Text className="text-[36px]">🔍</Text>
               <Text style={{ fontFamily: 'Georgia', fontSize: 15, color: colors.textSecondary, textAlign: 'center' }}>
-                No entries found
+                {t("timeline.emptyTitle")}
               </Text>
               <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 20 }}>
                 {query
-                  ? "Try a different search term"
-                  : "Record your first health entry to get started"}
+                  ? t("timeline.emptyDifferentTerm")
+                  : t("timeline.emptyRecordFirst")}
               </Text>
             </View>
           )

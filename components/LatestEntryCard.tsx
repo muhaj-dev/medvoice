@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { ReadAloudButton } from "@/components/ReadAloudButton";
 import { SpokenText } from "@/components/SpokenText";
 import type { ColorTokens } from "@/constants/colors";
@@ -16,32 +17,33 @@ function tagColor(tag: string, colors: ColorTokens): string {
     : colors.textSecondary;
 }
 
-function formatTimestamp(iso: string): string {
+function formatTimestamp(iso: string, todayLabel: string): string {
   const d = new Date(iso);
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const entryStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-  if (entryStart.getTime() === todayStart.getTime()) return `Today · ${time}`;
+  if (entryStart.getTime() === todayStart.getTime()) return `${todayLabel} · ${time}`;
   return `${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · ${time}`;
 }
 
 export function LatestEntryCard({ entry }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
-        <Text style={styles.entryLabel}>LATEST ENTRY</Text>
-        <Text style={styles.timestamp}>{formatTimestamp(entry.timestamp)}</Text>
+        <Text style={styles.entryLabel}>{t("timeline.latestEntry")}</Text>
+        <Text style={styles.timestamp}>{formatTimestamp(entry.timestamp, t("timeline.today"))}</Text>
       </View>
 
       <View style={styles.divider} />
       <Text style={styles.transcript}>{`"${entry.transcript}"`}</Text>
       <View style={styles.divider} />
 
-      <Text style={styles.summaryLabel}>MEDPSY SUMMARY</Text>
+      <Text style={styles.summaryLabel}>{t("timeline.medpsySummary")}</Text>
       <SpokenText id={`cv-latest-${entry.id}`} text={entry.analysis} style={styles.summaryText} />
 
       <View style={styles.readAloud}>

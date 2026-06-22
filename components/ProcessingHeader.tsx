@@ -1,18 +1,20 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export const ProcessingHeader = () => {
   const colors = useTheme();
+  const { t } = useTranslation();
   return (
     <View>
       <Text style={[styles.label, { color: colors.textSecondary }]}>
-        MEDPSY PROCESSING
+        {t("analysis.processingLabel")}
       </Text>
       <Text style={[styles.h1, { color: colors.textPrimary }]}>
-        Analyzing your
+        {t("analysis.processingTitle")}
       </Text>
       <Text style={[styles.h1italic, { color: colors.accentBlue }]}>
-        health entry
+        {t("analysis.processingTitleAccent")}
       </Text>
     </View>
   );

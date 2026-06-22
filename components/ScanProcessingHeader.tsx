@@ -1,13 +1,15 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export const ScanProcessingHeader = () => {
   const colors = useTheme();
+  const { t } = useTranslation();
   return (
     <View>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>READING DOCUMENT</Text>
-      <Text style={[styles.h1, { color: colors.textPrimary }]}>Understanding your</Text>
-      <Text style={[styles.h1italic, { color: colors.accentBlue }]}>document</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>{t("scan.readingDocument")}</Text>
+      <Text style={[styles.h1, { color: colors.textPrimary }]}>{t("scan.understandingYour")}</Text>
+      <Text style={[styles.h1italic, { color: colors.accentBlue }]}>{t("scan.document")}</Text>
     </View>
   );
 };

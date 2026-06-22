@@ -10,6 +10,26 @@
 import { completion } from "@qvac/sdk";
 import { loadMedGemmaModel } from "./qvac";
 import type { Pattern } from "@/store/useRecordingStore";
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { languageMeta } from "@/constants/strings";
+
+/**
+ * Append a "respond in this language" instruction to a system prompt when the
+ * user's app language isn't English. The on-device analysis models (Qwen3 /
+ * MedGemma) are multilingual, so this makes the written answer — and therefore
+ * the read-aloud voice, which speaks that same text — come out in the chosen
+ * language. English is left untouched.
+ */
+function withLanguage(systemPrompt: string): string {
+  const lang = useLanguageStore.getState().language;
+  if (lang === "en") return systemPrompt;
+  const { englishName, nativeName } = languageMeta(lang);
+  return (
+    systemPrompt +
+    `\n\nIMPORTANT: Write your ENTIRE response in ${englishName} (${nativeName}). ` +
+    `Use clear, simple, natural ${englishName}. Do not reply in English.`
+  );
+}
 
 const SYSTEM_PROMPT = `You are MedVoice, a private on-device health companion.
 
@@ -40,6 +60,18 @@ The person may be deaf or unable to speak, so the scanned text below is how they
 5. Flag anything that needs a doctor or pharmacist. Never diagnose.
 
 Be caring, clear, and brief. The reader may be elderly or not medically trained. Do not use markdown headers.`;
+
+// Conversational Q&A variant. The user asks a question about their OWN past
+// health updates ("When did my knee pain start?"); we answer grounded ONLY in
+// the entries retrieved by semantic search (RAG). This is the "Ask MedVoice"
+// flow — voice question in, spoken answer out, all on-device.
+const QA_SYSTEM_PROMPT = `You are MedVoice, a private on-device health companion. The user is asking a question about their OWN past health updates.
+
+Answer using ONLY the past entries provided as context. Follow these rules:
+- If the context answers the question, reply warmly and specifically — mention what was logged and roughly when.
+- If the context does NOT contain enough to answer, say plainly that you don't have a record of that yet. Never guess or invent details.
+- Never diagnose. For anything concerning, gently suggest seeing a doctor.
+- Keep it short, clear, and conversational — the listener may be elderly. Plain text, no markdown headers.`;
 
 // Doctor-visit-prep variant. From the user's recent entries, produce a short
 // brief they can take to an appointment: what to mention, what to ask, and a
@@ -83,6 +115,10 @@ const MAX_PROMPT_TRANSCRIPT_CHARS = 1500;
 // analysis step drag on slow devices. ~320 tokens (≈240 words) is plenty for the
 // "1–3 caring insights" the system prompt asks for, and it bounds the worst case.
 const MAX_ANALYSIS_TOKENS = 320;
+
+// A spoken Q&A answer should be brief — one or two caring sentences, not an
+// essay — so it reads aloud quickly and the listener doesn't lose the thread.
+const MAX_ANSWER_TOKENS = 256;
 
 // Visit prep has three sections, so it needs more room than a single Q&A
 // answer — but still bounded so it doesn't crawl on a slow CPU.
@@ -128,6 +164,50 @@ export async function analyzeDocument(
 }
 
 /**
+ * Answer a user's spoken question about their own health history, grounded in
+ * the entries retrieved by semantic search. Streams the answer token by token
+ * (onToken) for a live, conversational feel. Returns just the answer text — no
+ * tags/severity/patterns, since this is a question, not a new health entry.
+ *
+ * @param question - What the user asked (from Parakeet transcription or typed)
+ * @param context  - Relevant past entries as plain text (from buildRagContext)
+ */
+export async function answerHealthQuestion(
+  question: string,
+  context: string = "",
+  onToken?: (token: string) => void,
+  onProgress?: (pct: number) => void
+): Promise<string> {
+  const modelId = await loadMedGemmaModel(onProgress);
+
+  const userMessage = context
+    ? `My past health entries:\n${context}\n\nMy question: "${question.trim()}"`
+    : `I have no saved health entries yet.\n\nMy question: "${question.trim()}"`;
+
+  const run = completion({
+    modelId,
+    stream: true,
+    generationParams: { predict: MAX_ANSWER_TOKENS },
+    history: [
+      { role: "system", content: withLanguage(QA_SYSTEM_PROMPT) },
+      { role: "user", content: userMessage },
+    ],
+  });
+
+  // Same streaming contract as runMedPsy: drain run.events or run.final hangs.
+  let streamed = "";
+  for await (const event of run.events) {
+    if (event.type === "contentDelta") {
+      streamed += event.text;
+      onToken?.(event.text);
+    }
+  }
+
+  const result = await run.final;
+  return (result.contentText || streamed).trim();
+}
+
+/**
  * Generate a doctor-visit-prep brief from the user's recent entries. Streams
  * three plain-text sections (symptoms to mention, questions to ask, recent
  * timeline) grounded only in the provided history. Returns the full text.
@@ -146,7 +226,7 @@ export async function generateVisitSummary(
     stream: true,
     generationParams: { predict: MAX_VISIT_TOKENS },
     history: [
-      { role: "system", content: VISIT_PREP_SYSTEM_PROMPT },
+      { role: "system", content: withLanguage(VISIT_PREP_SYSTEM_PROMPT) },
       {
         role: "user",
         content: `My recent health entries:\n${context}\n\nPlease prepare my doctor-visit summary.`,
@@ -192,7 +272,7 @@ async function runMedPsy(
     stream: true,
     generationParams: { predict: MAX_ANALYSIS_TOKENS },
     history: [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: withLanguage(systemPrompt) },
       { role: "user", content: userMessage },
     ],
   });

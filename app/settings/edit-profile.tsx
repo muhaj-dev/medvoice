@@ -12,10 +12,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/store/useUserStore";
 
 export default function EditProfileScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const profile = useUserStore((s) => s.profile);
   const setProfile = useUserStore((s) => s.setProfile);
@@ -52,7 +54,7 @@ export default function EditProfileScreen() {
           >
             <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
           </TouchableOpacity>
-          <Text className="font-georgia text-[18px] font-bold text-white">Edit Profile</Text>
+          <Text className="font-georgia text-[18px] font-bold text-white">{t("profile.editTitle")}</Text>
           <View className="w-[38px]" />
         </View>
 
@@ -64,7 +66,7 @@ export default function EditProfileScreen() {
           <View className="gap-4">
             <View>
               <Text className="font-code text-[11px] text-dim tracking-[1.2px] mb-1.5">
-                YOUR NAME *
+                {t("profile.nameLabel")}
               </Text>
               <TextInput
                 value={name}
@@ -77,7 +79,7 @@ export default function EditProfileScreen() {
 
             <View>
               <Text className="font-code text-[11px] text-dim tracking-[1.2px] mb-1.5">
-                AGE
+                {t("profile.ageLabel")}
               </Text>
               <TextInput
                 value={age}
@@ -91,13 +93,13 @@ export default function EditProfileScreen() {
 
             <View>
               <Text className="font-code text-[11px] text-dim tracking-[1.2px] mb-1.5">
-                KNOWN CONDITIONS
+                {t("profile.conditionsLabel")}
               </Text>
               <TextInput
                 value={conditions}
                 onChangeText={setConditions}
                 className="bg-card border-edge border-[1.5px] rounded-xl h-14 px-4 font-georgia text-base text-white"
-                placeholder="e.g. Type 2 diabetes, arthritis"
+                placeholder={t("profile.conditionsPlaceholder")}
                 placeholderTextColor={colors.textMuted}
                 returnKeyType="next"
               />
@@ -105,13 +107,13 @@ export default function EditProfileScreen() {
 
             <View>
               <Text className="font-code text-[11px] text-dim tracking-[1.2px] mb-1.5">
-                CURRENT MEDICATIONS
+                {t("profile.medicationsLabel")}
               </Text>
               <TextInput
                 value={medications}
                 onChangeText={setMedications}
                 className="bg-card border-edge border-[1.5px] rounded-xl h-14 px-4 font-georgia text-base text-white"
-                placeholder="e.g. Metformin 500mg"
+                placeholder={t("profile.medicationsPlaceholder")}
                 placeholderTextColor={colors.textMuted}
                 returnKeyType="done"
               />
@@ -128,7 +130,7 @@ export default function EditProfileScreen() {
             disabled={!name.trim()}
           >
             <Text className="font-code text-[13px] font-semibold text-white tracking-[1.2px]">
-              SAVE CHANGES
+              {t("profile.saveChanges")}
             </Text>
           </TouchableOpacity>
         </View>

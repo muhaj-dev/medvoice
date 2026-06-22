@@ -2,9 +2,11 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function AddFamilyMemberSection() {
   const colors = useTheme();
+  const { t } = useTranslation();
   return (
     <View style={{ gap: 12 }}>
       <Text
@@ -16,7 +18,7 @@ export function AddFamilyMemberSection() {
           color: colors.textSecondary,
         }}
       >
-        ADD A FAMILY MEMBER
+        {t('family.addAFamilyMember')}
       </Text>
 
       <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -47,7 +49,7 @@ export function AddFamilyMemberSection() {
               textAlign: 'center',
             }}
           >
-            SHOW MY{'\n'}CODE
+            {t('family.showMyCode')}
           </Text>
         </TouchableOpacity>
 
@@ -78,7 +80,7 @@ export function AddFamilyMemberSection() {
               textAlign: 'center',
             }}
           >
-            SCAN CODE
+            {t('family.scanCode')}
           </Text>
         </TouchableOpacity>
       </View>

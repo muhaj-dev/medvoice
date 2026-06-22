@@ -1,24 +1,33 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/store/useUserStore";
+import { useLanguageStore } from "@/store/useLanguageStore";
+import { languageMeta } from "@/constants/strings";
 import { images } from "@/constants/images";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
 import { FeatureRow } from "@/components/FeatureRow";
+import { LanguagePickerModal } from "@/components/LanguagePickerModal";
 
 const FEATURES = [
-  { emoji: "🎙", text: "Speak naturally about how you feel" },
-  { emoji: "🧠", text: "MedPsy AI analyzes your health locally" },
-  { emoji: "📡", text: "Share with family via private P2P" },
+  { emoji: "🎙", key: "onboarding.feature.speak" },
+  { emoji: "🧠", key: "onboarding.feature.analyze" },
+  { emoji: "📡", key: "onboarding.feature.share" },
 ] as const;
 
 export default function WelcomeScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const onboardingComplete = useUserStore((s) => s.onboardingComplete);
+  const language = useLanguageStore((s) => s.language);
+  const langMeta = languageMeta(language);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     if (onboardingComplete) router.replace("/(tabs)" as any);
@@ -66,6 +75,26 @@ export default function WelcomeScreen() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
+        {/* Language picker — first choice, so the whole app + voice match the
+            user's language. Only the chosen language is downloaded. */}
+        <View className="flex-row justify-end mb-4">
+          <TouchableOpacity
+            onPress={() => setPickerOpen(true)}
+            activeOpacity={0.75}
+            style={{
+              flexDirection: "row", alignItems: "center", gap: 6,
+              borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bgCard,
+              borderRadius: 99, paddingVertical: 7, paddingHorizontal: 12,
+            }}
+          >
+            <Text style={{ fontSize: 16 }}>{langMeta.flag}</Text>
+            <Text style={{ fontFamily: "Georgia", fontSize: 14, color: colors.textPrimary }}>
+              {langMeta.nativeName}
+            </Text>
+            <Ionicons name="chevron-down" size={14} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+
         <View className="items-center mb-9">
           <OnboardingProgressDots current={1} />
         </View>
@@ -83,16 +112,15 @@ export default function WelcomeScreen() {
           MedVoice
         </Text>
         <Text style={{ fontFamily: 'Georgia', fontSize: 18, fontStyle: 'italic', color: colors.accentBlue, textAlign: 'center', marginBottom: 16 }}>
-          Your Private Health Companion
+          {t("onboarding.welcome.tagline")}
         </Text>
         <Text style={{ fontFamily: 'Georgia', fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: 28, lineHeight: 22, maxWidth: 280, alignSelf: 'center' }}>
-          AI-powered health insights that live entirely on your phone. Your data
-          never leaves your device. Ever.
+          {t("onboarding.welcome.subtitle")}
         </Text>
 
         <View className="gap-2.5">
           {FEATURES.map((f) => (
-            <FeatureRow key={f.emoji} emoji={f.emoji} text={f.text} />
+            <FeatureRow key={f.emoji} emoji={f.emoji} text={t(f.key)} />
           ))}
         </View>
       </ScrollView>
@@ -104,10 +132,12 @@ export default function WelcomeScreen() {
           style={styles.getStartedBtn}
         >
           <Text className="font-code text-[14px] font-bold text-white tracking-[0.5px]">
-            GET STARTED →
+            {t("onboarding.welcome.getStarted")}
           </Text>
         </TouchableOpacity>
       </View>
+
+      <LanguagePickerModal visible={pickerOpen} onClose={() => setPickerOpen(false)} />
     </SafeAreaView>
   );
 }

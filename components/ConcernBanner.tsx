@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Severity = "moderate" | "mild" | "good";
 
@@ -11,27 +12,28 @@ type Props = {
 
 export function ConcernBanner({ severity, patternCount = 0 }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const cfg = useMemo(() => ({
     moderate: {
-      label: "MODERATE CONCERN",
+      label: t("analysis.moderateConcern"),
       color: colors.warningRed,
       bg: "rgba(248,113,113,0.1)",
       borderColor: "rgba(248,113,113,0.25)",
     },
     mild: {
-      label: "MILD CONCERN",
+      label: t("analysis.mildConcern"),
       color: colors.warningAmber,
       bg: "rgba(251,191,36,0.08)",
       borderColor: "rgba(251,191,36,0.25)",
     },
     good: {
-      label: "LOOKING GOOD",
+      label: t("analysis.lookingGood"),
       color: colors.successGreen,
       bg: "rgba(52,211,153,0.08)",
       borderColor: "rgba(52,211,153,0.25)",
     },
-  })[severity], [severity, colors]);
+  })[severity], [severity, colors, t]);
 
   const showPatterns = severity !== "good" && patternCount > 0;
 
@@ -43,12 +45,12 @@ export function ConcernBanner({ severity, patternCount = 0 }: Props) {
           <Text style={[styles.label, { color: cfg.color }]}>{cfg.label}</Text>
           {showPatterns && (
             <Text style={[styles.count, { color: cfg.color }]}>
-              · {patternCount} pattern{patternCount !== 1 ? "s" : ""} flagged
+              · {patternCount} {patternCount !== 1 ? t("analysis.patternsFlagged") : t("analysis.patternFlagged")}
             </Text>
           )}
         </View>
         <Text style={[styles.subtext, { color: colors.textSecondary }]}>
-          {"Review MedPsy's findings below"}
+          {t("analysis.reviewFindings")}
         </Text>
       </View>
     </View>

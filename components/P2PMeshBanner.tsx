@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type Props = {
   connectedCount: number;
@@ -7,6 +8,7 @@ type Props = {
 
 export function P2PMeshBanner({ connectedCount }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   return (
     <View
       style={{
@@ -38,7 +40,7 @@ export function P2PMeshBanner({ connectedCount }: Props) {
           color: colors.successGreen,
         }}
       >
-        P2P MESH ACTIVE · {connectedCount} CONNECTED
+        {t('family.meshActivePrefix')}{connectedCount}{t('family.meshActiveSuffix')}
       </Text>
     </View>
   );

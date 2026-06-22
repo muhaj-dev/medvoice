@@ -1,5 +1,7 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
+import { hasVoice } from "@/constants/strings";
 
 type Props = {
   isSpeaking: boolean;
@@ -13,6 +15,9 @@ type Props = {
 
 export function AnalysisActionButtons({ isSpeaking, isLoading = false, ttsEnabled = true, onReadAloud, onSave, saved, isSaving }: Props) {
   const colors = useTheme();
+  const { t, language } = useTranslation();
+  // Read-aloud only exists for languages QVAC can speak (en/es/de/it).
+  const voiceAvailable = hasVoice(language);
 
   const styles = StyleSheet.create({
     row: {
@@ -58,23 +63,25 @@ export function AnalysisActionButtons({ isSpeaking, isLoading = false, ttsEnable
 
   return (
     <View style={styles.row}>
-      <TouchableOpacity
-        style={[styles.readAloudBtn, !ttsEnabled && { opacity: 0.4 }]}
-        onPress={ttsEnabled ? onReadAloud : undefined}
-        activeOpacity={0.75}
-        disabled={!ttsEnabled}
-      >
-        {isLoading && <ActivityIndicator size="small" color={colors.accentBlue} style={{ marginRight: 7 }} />}
-        <Text style={styles.readAloudText}>
-          {!ttsEnabled
-            ? "🔇  TTS OFF"
-            : isLoading
-            ? "LOADING…"
-            : isSpeaking
-            ? "⏹  STOP"
-            : "🔊  READ ALOUD"}
-        </Text>
-      </TouchableOpacity>
+      {voiceAvailable && (
+        <TouchableOpacity
+          style={[styles.readAloudBtn, !ttsEnabled && { opacity: 0.4 }]}
+          onPress={ttsEnabled ? onReadAloud : undefined}
+          activeOpacity={0.75}
+          disabled={!ttsEnabled}
+        >
+          {isLoading && <ActivityIndicator size="small" color={colors.accentBlue} style={{ marginRight: 7 }} />}
+          <Text style={styles.readAloudText}>
+            {!ttsEnabled
+              ? t("analysis.ttsOff")
+              : isLoading
+              ? t("analysis.loading")
+              : isSpeaking
+              ? t("analysis.stop")
+              : t("analysis.readAloud")}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={[styles.saveBtn, saved && styles.savedBtn]}
@@ -83,7 +90,7 @@ export function AnalysisActionButtons({ isSpeaking, isLoading = false, ttsEnable
         disabled={saved || isSaving}
       >
         <Text style={styles.saveBtnText}>
-          {saved ? "✓  SAVED" : isSaving ? "SAVING..." : "💾  SAVE"}
+          {saved ? t("analysis.saved") : isSaving ? t("analysis.saving") : t("analysis.save")}
         </Text>
       </TouchableOpacity>
     </View>

@@ -4,12 +4,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useCameraPermissions } from "expo-camera";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { ScanCaptureBody } from "@/components/ScanCaptureBody";
 import { CameraPermissionError } from "@/components/CameraPermissionError";
 import { useScanStore } from "@/store/useScanStore";
 
 export default function ScanCaptureScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const setImageUri = useScanStore((s) => s.setImageUri);
 
@@ -32,7 +34,7 @@ export default function ScanCaptureScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text style={{ fontFamily: "Georgia", fontSize: 14, color: colors.textSecondary }}>
-            Requesting camera access…
+            {t("scan.requestingCameraAccess")}
           </Text>
         </View>
       </SafeAreaView>

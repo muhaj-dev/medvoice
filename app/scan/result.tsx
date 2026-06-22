@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useScanStore } from "@/store/useScanStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useTtsStore } from "@/store/useTtsStore";
@@ -16,6 +17,7 @@ import { prewarmTTS } from "@/lib/tts";
 
 export default function ScanResultScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const { imageUri, analysisResult } = useScanStore();
   const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
 
@@ -39,7 +41,7 @@ export default function ScanResultScreen() {
   );
 
   const result = analysisResult ?? {
-    summary: "Your scanned document has been read on this device.",
+    summary: t("scan.defaultSummary"),
     tags: [] as string[],
     severity: "good" as const,
     patterns: [],
@@ -56,10 +58,10 @@ export default function ScanResultScreen() {
         activeOpacity={0.7}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Text style={[styles.backText, { color: colors.textSecondary }]}>← BACK</Text>
+        <Text style={[styles.backText, { color: colors.textSecondary }]}>{t("scan.back")}</Text>
       </TouchableOpacity>
 
-      <Text style={[styles.screenLabel, { color: colors.textSecondary }]}>DOCUMENT ANALYSIS</Text>
+      <Text style={[styles.screenLabel, { color: colors.textSecondary }]}>{t("scan.documentAnalysis")}</Text>
 
       <ScrollView
         style={{ flex: 1 }}

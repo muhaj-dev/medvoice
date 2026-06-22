@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { DeviceQRCode } from "@/components/DeviceQRCode";
 import { WaitingForScanStatus } from "@/components/WaitingForScanStatus";
 
@@ -21,15 +22,16 @@ export const ShowCodeContent = ({
   onRetry,
 }: Props) => {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.body}>
       <View style={styles.titleBlock}>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Your Device Code
+          {t('family.yourDeviceCode')}
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Ask your family member to scan this code with their MedVoice app
+          {t('family.yourDeviceCodeSubtitle')}
         </Text>
       </View>
 
@@ -41,14 +43,14 @@ export const ShowCodeContent = ({
           ]}
         >
           <Text style={[styles.errorText, { color: colors.warningRed }]}>
-            Could not generate device code.
+            {t('family.couldNotGenerate')}
           </Text>
           <TouchableOpacity
             onPress={onRetry}
             style={[styles.pill, { borderColor: colors.accentBlue }]}
           >
             <Text style={[styles.pillText, { color: colors.accentBlue }]}>
-              RETRY
+              {t('family.retry')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -69,7 +71,7 @@ export const ShowCodeContent = ({
                 { color: copied ? colors.successGreen : colors.accentBlue },
               ]}
             >
-              {copied ? "✓  COPIED" : "COPY CODE"}
+              {copied ? t('family.copied') : t('family.copyCode')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -82,7 +84,7 @@ export const ShowCodeContent = ({
         >
           <ActivityIndicator color={colors.accentBlue} size="large" />
           <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-            Generating code…
+            {t('family.generatingCode')}
           </Text>
         </View>
       )}

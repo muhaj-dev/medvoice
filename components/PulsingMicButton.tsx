@@ -4,9 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { AudioModule } from "expo-audio";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function PulsingMicButton() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [pulseOpacity] = useState(() => new Animated.Value(0.3));
 
   useEffect(() => {
@@ -31,9 +33,9 @@ export function PulsingMicButton() {
       const permission = await AudioModule.requestRecordingPermissionsAsync();
       if (!permission.granted) {
         Alert.alert(
-          "Microphone Access Needed",
-          "MedVoice needs the microphone to record your health update privately on this device. Please enable it in Settings.",
-          [{ text: "OK" }]
+          t("recording.micPermissionTitle"),
+          t("recording.micPermissionMessage"),
+          [{ text: t("recording.micPermissionOk") }]
         );
         return;
       }
@@ -92,7 +94,7 @@ export function PulsingMicButton() {
       >
         <Ionicons name="mic" size={28} color={colors.textPrimary} />
       </TouchableOpacity>
-      <Text style={styles.tapLabel}>Tap to start</Text>
+      <Text style={styles.tapLabel}>{t("recording.tapToStart")}</Text>
     </View>
   );
 }

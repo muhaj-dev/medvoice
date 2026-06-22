@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useFamilyStore } from "@/store/useFamilyStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { prewarmTTS } from "@/lib/tts";
@@ -24,6 +25,7 @@ const normKey = (k: string | undefined) => (k ?? "").trim().toLowerCase();
 
 export default function CareViewScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const members = useFamilyStore((s) => s.members);
   const syncedEntries = useFamilyStore((s) => s.syncedEntries);
   // null until the user picks someone — then we honor their choice; otherwise
@@ -76,7 +78,7 @@ export default function CareViewScreen() {
       >
         <View className="flex-row items-center justify-between mb-3.5">
           <Text style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: '600', color: colors.textSecondary, letterSpacing: 1.2 }}>
-            MONITORING
+            {t("careView.monitoring")}
           </Text>
           <LiveMonitoringBadge online={isLive} />
         </View>
@@ -96,7 +98,7 @@ export default function CareViewScreen() {
             {selectedMember.name}&apos;s
           </Text>
           <Text style={{ fontFamily: 'Georgia', fontSize: 32, fontWeight: '700', fontStyle: 'italic', color: colors.successGreen, lineHeight: 38 }}>
-            Health
+            {t("careView.healthSuffix")}
           </Text>
         </View>
 
@@ -108,16 +110,16 @@ export default function CareViewScreen() {
           <View style={{ backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 20, alignItems: 'center', marginBottom: 14, gap: 8 }}>
             <Text style={{ fontSize: 28 }}>📡</Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
-              Waiting for P2P sync
+              {t("careView.waitingForSync")}
             </Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 12, color: colors.textMuted, textAlign: 'center', lineHeight: 18 }}>
-              {selectedMember.name} needs to open their MedVoice app to sync health data
+              {`${selectedMember.name} ${t("careView.syncHint")}`}
             </Text>
           </View>
         )}
 
         <Text style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: '600', color: colors.textSecondary, letterSpacing: 1.2, marginBottom: 14 }}>
-          ENTRY HISTORY · READ ONLY
+          {t("careView.entryHistory")}
         </Text>
 
         {recentEntries.length > 0 ? (
@@ -127,7 +129,7 @@ export default function CareViewScreen() {
         ) : (
           <View className="items-center py-6">
             <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textMuted }}>
-              No previous entries
+              {t("careView.noPreviousEntries")}
             </Text>
           </View>
         )}

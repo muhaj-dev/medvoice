@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { View, Text, Animated, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Props = { transcript: string };
 
 export function LiveTranscriptCard({ transcript }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
   const [cursorOpacity] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
@@ -60,7 +62,7 @@ export function LiveTranscriptCard({ transcript }: Props) {
   return (
     <View style={styles.card}>
       <Text style={hasText ? styles.text : styles.placeholder}>
-        {hasText ? transcript : "Listening..."}
+        {hasText ? transcript : t("recording.listening")}
         <Animated.Text style={[styles.cursor, { opacity: cursorOpacity }]}>
           {" |"}
         </Animated.Text>

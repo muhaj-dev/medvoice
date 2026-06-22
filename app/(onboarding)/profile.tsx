@@ -11,12 +11,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { OnboardingProgressDots } from "@/components/OnboardingProgressDots";
 import { OnboardingNavButtons } from "@/components/OnboardingNavButtons";
 import { useUserStore } from "@/store/useUserStore";
 
 export default function ProfileScreen() {
   const colors = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const profile = useUserStore((s) => s.profile);
   const setProfile = useUserStore((s) => s.setProfile);
@@ -90,19 +92,19 @@ export default function ProfileScreen() {
 
           <View className="mb-7">
             <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', color: colors.textPrimary, lineHeight: 36 }}>
-              Tell us about
+              {t("onboarding.profile.headingLine1")}
             </Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 28, fontWeight: '700', fontStyle: 'italic', color: colors.accentBlue, lineHeight: 36, marginBottom: 8 }}>
-              yourself
+              {t("onboarding.profile.headingLine2")}
             </Text>
             <Text style={{ fontFamily: 'Georgia', fontSize: 13, color: colors.textSecondary }}>
-              Stored only on your device. Never shared.
+              {t("onboarding.profile.subtitle")}
             </Text>
           </View>
 
           <View style={styles.fields}>
             <View>
-              <Text style={styles.label}>YOUR NAME *</Text>
+              <Text style={styles.label}>{t("onboarding.profile.nameLabel")}</Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
@@ -112,7 +114,7 @@ export default function ProfileScreen() {
               />
             </View>
             <View>
-              <Text style={styles.label}>AGE *</Text>
+              <Text style={styles.label}>{t("onboarding.profile.ageLabel")}</Text>
               <TextInput
                 value={age}
                 onChangeText={setAge}
@@ -123,23 +125,23 @@ export default function ProfileScreen() {
               />
             </View>
             <View>
-              <Text style={styles.label}>KNOWN CONDITIONS (OPTIONAL)</Text>
+              <Text style={styles.label}>{t("onboarding.profile.conditionsLabel")}</Text>
               <TextInput
                 value={conditions}
                 onChangeText={setConditions}
                 style={styles.input}
-                placeholder="e.g. Type 2 diabetes, arthritis"
+                placeholder={t("onboarding.profile.conditionsPlaceholder")}
                 placeholderTextColor={colors.textMuted}
                 returnKeyType="next"
               />
             </View>
             <View>
-              <Text style={styles.label}>CURRENT MEDICATIONS (OPTIONAL)</Text>
+              <Text style={styles.label}>{t("onboarding.profile.medicationsLabel")}</Text>
               <TextInput
                 value={medications}
                 onChangeText={setMedications}
                 style={styles.input}
-                placeholder="e.g. Metformin 500mg"
+                placeholder={t("onboarding.profile.medicationsPlaceholder")}
                 placeholderTextColor={colors.textMuted}
                 returnKeyType="done"
               />
@@ -151,7 +153,7 @@ export default function ProfileScreen() {
           <OnboardingNavButtons
             onBack={() => router.back()}
             onContinue={handleSubmit}
-            continueLabel="LET'S GO 🎉"
+            continueLabel={t("onboarding.profile.submit")}
             continueEnabled={name.trim().length > 0}
           />
         </View>

@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type Props = {
   onBack: () => void;
@@ -8,6 +9,7 @@ type Props = {
 
 export function CameraPermissionError({ onBack, onRequestPermission }: Props) {
   const colors = useTheme();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     wrap: { flex: 1, paddingHorizontal: 20, paddingTop: 8 },
@@ -56,15 +58,15 @@ export function CameraPermissionError({ onBack, onRequestPermission }: Props) {
         style={styles.backBtn}
         hitSlop={{ top: 12, bottom: 12, left: 12, right: 24 }}
       >
-        <Text style={styles.backText}>← BACK</Text>
+        <Text style={styles.backText}>{t('family.back')}</Text>
       </TouchableOpacity>
       <View style={styles.body}>
-        <Text style={styles.title}>Camera access required</Text>
+        <Text style={styles.title}>{t('family.cameraAccessRequired')}</Text>
         <Text style={styles.subtitle}>
-          Enable camera access in Settings to scan QR codes.
+          {t('family.cameraAccessSubtitle')}
         </Text>
         <TouchableOpacity onPress={onRequestPermission} style={styles.btn}>
-          <Text style={styles.btnText}>ENABLE CAMERA</Text>
+          <Text style={styles.btnText}>{t('family.enableCamera')}</Text>
         </TouchableOpacity>
       </View>
     </View>
