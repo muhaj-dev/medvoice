@@ -18,21 +18,21 @@ function severityColor(severity: HealthEntry["severity"], colors: ColorTokens): 
   return colors.successGreen;
 }
 
-function formatTimestamp(iso: string, todayLabel: string, yesterdayLabel: string): string {
+function formatTimestamp(iso: string, todayLabel: string, yesterdayLabel: string, locale: string): string {
   const d = new Date(iso);
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterdayStart = new Date(todayStart.getTime() - 86_400_000);
   const entryStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+  const time = d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12: true });
   if (entryStart.getTime() === todayStart.getTime()) return `${todayLabel} · ${time}`;
   if (entryStart.getTime() === yesterdayStart.getTime()) return `${yesterdayLabel} · ${time}`;
-  return `${d.toLocaleDateString("en-US", { weekday: "short" })} · ${time}`;
+  return `${d.toLocaleDateString(locale, { weekday: "short" })} · ${time}`;
 }
 
 export function CareViewEntryRow({ entry, isLast }: Props) {
   const colors = useTheme();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [expanded, setExpanded] = useState(false);
   const sc = severityColor(entry.severity, colors);
@@ -50,7 +50,7 @@ export function CareViewEntryRow({ entry, isLast }: Props) {
         activeOpacity={0.8}
       >
         <View style={styles.headerRow}>
-          <Text style={styles.timestamp}>{formatTimestamp(entry.timestamp, t("careView.today"), t("careView.yesterday"))}</Text>
+          <Text style={styles.timestamp}>{formatTimestamp(entry.timestamp, t("careView.today"), t("careView.yesterday"), language)}</Text>
           <Text style={styles.chevron}>{expanded ? "∧" : "∨"}</Text>
         </View>
         <Text style={styles.transcript} numberOfLines={expanded ? undefined : 2}>

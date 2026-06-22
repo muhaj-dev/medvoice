@@ -35,7 +35,14 @@ export default function AskScreen() {
   const handleSubmit = useCallback(
     async (q: string) => {
       const full = await ask(q);
-      if (full && ttsEnabled) useTtsStore.getState().toggle("ask", full);
+      if (full && ttsEnabled) {
+        // A previous answer may still be playing under the same "ask" id —
+        // toggle() would read that as "tap to stop" and never speak the new
+        // one. Reset first so the new answer always starts fresh.
+        const tts = useTtsStore.getState();
+        tts.stop();
+        tts.toggle("ask", full);
+      }
     },
     [ask, ttsEnabled]
   );

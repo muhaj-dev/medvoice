@@ -55,6 +55,9 @@ export const familyStrings = {
   // FamilyMemberCard
   "family.timeNever": "Never",
   "family.timeJustNow": "Just now",
+  "family.timeMinutesAgo": "m ago",
+  "family.timeHoursAgo": "h ago",
+  "family.timeDaysAgo": "d ago",
   "family.online": "ONLINE",
   "family.offline": "OFFLINE",
 

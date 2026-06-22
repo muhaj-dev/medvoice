@@ -13,6 +13,7 @@
  */
 
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useHealthStore } from "@/store/useHealthStore";
 import { semanticSearch, buildRagContext } from "@/lib/embeddings";
 import { answerHealthQuestion } from "@/lib/medpsy";
@@ -40,6 +41,7 @@ function keywordSearch(
 }
 
 export function useHealthQuery() {
+  const { t } = useTranslation();
   const entries = useHealthStore((s) => s.entries);
   const [status, setStatus] = useState<AskStatus>("idle");
   const [question, setQuestion] = useState("");
@@ -95,13 +97,13 @@ export function useHealthQuery() {
         // the entries we did find so the question isn't a dead end.
         setAnswer(
           top.length > 0
-            ? "The AI answer model can't run on this phone, but I found related entries from your history below — tap one to read what you logged."
-            : "The AI answer model can't run on this phone, and I couldn't find any saved entries matching that question yet."
+            ? t("ask.modelFailedWithEntries")
+            : t("ask.modelFailedNoEntries")
         );
         setStatus("error");
       }
     },
-    [entries]
+    [entries, t]
   );
 
   return { status, question, answer, sources, ask, reset };

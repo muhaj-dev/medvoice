@@ -10,7 +10,9 @@ export const recordingStrings = {
     "Tap the button below and speak naturally. MedPsy will analyze your health update on this device.",
   "recording.tapToStart": "Tap to start",
   "recording.listeningOnDevice": "LISTENING • ON DEVICE",
+  "recording.preparingOnDevice": "PREPARING • ON DEVICE",
   "recording.listening": "Listening...",
+  "recording.warmingModel": "Warming up the voice model… keep speaking, nothing is missed.",
   "recording.tapToStopAndAnalyze": "Tap to stop & analyze",
   "recording.micPermissionTitle": "Microphone Access Needed",
   "recording.micPermissionMessage":

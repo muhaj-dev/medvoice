@@ -89,7 +89,12 @@ export function ensureCatalog(lang: Lang): Promise<void> {
     // 2. Translate with QVAC NMT. The native engine isn't safe on old Android
     //    (same constraint as the analysis models), so leave the UI in English
     //    there rather than risk a native crash.
-    if (!supportsLlamaCppModels()) return;
+    if (!supportsLlamaCppModels()) {
+      console.warn(
+        `[i18n] UI stays in English: on-device translation to "${lang}" needs the QVAC NMT engine, unavailable on this device (Android < 12).`
+      );
+      return;
+    }
 
     translating.add(lang);
     emit();

@@ -17,26 +17,26 @@ function tagColor(tag: string, colors: ColorTokens): string {
     : colors.textSecondary;
 }
 
-function formatTimestamp(iso: string, todayLabel: string): string {
+function formatTimestamp(iso: string, todayLabel: string, locale: string): string {
   const d = new Date(iso);
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const entryStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+  const time = d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12: true });
   if (entryStart.getTime() === todayStart.getTime()) return `${todayLabel} · ${time}`;
-  return `${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · ${time}`;
+  return `${d.toLocaleDateString(locale, { weekday: "short", month: "short", day: "numeric" })} · ${time}`;
 }
 
 export function LatestEntryCard({ entry }: Props) {
   const colors = useTheme();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
         <Text style={styles.entryLabel}>{t("timeline.latestEntry")}</Text>
-        <Text style={styles.timestamp}>{formatTimestamp(entry.timestamp, t("timeline.today"))}</Text>
+        <Text style={styles.timestamp}>{formatTimestamp(entry.timestamp, t("timeline.today"), language)}</Text>
       </View>
 
       <View style={styles.divider} />
