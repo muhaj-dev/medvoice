@@ -87,7 +87,7 @@ export default function ProfileScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View className="items-center mb-9">
-            <OnboardingProgressDots current={3} />
+            <OnboardingProgressDots current={4} />
           </View>
 
           <View className="mb-7">

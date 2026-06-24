@@ -96,7 +96,7 @@ export default function WelcomeScreen() {
         </View>
 
         <View className="items-center mb-9">
-          <OnboardingProgressDots current={1} />
+          <OnboardingProgressDots current={2} />
         </View>
 
         {/* MedVoice shield mark with blue glow — shadow requires StyleSheet */}

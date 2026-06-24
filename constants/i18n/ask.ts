@@ -6,6 +6,7 @@ export const askStrings = {
   "ask.back": "← BACK",
   "ask.titleAsk": "Ask",
   "ask.titleAccent": "MedVoice",
+  "ask.newChat": "NEW CHAT",
   "ask.answerLabel": "MEDVOICE",
   "ask.searchingHistory": "Searching your history…",
   "ask.loading": "LOADING…",
