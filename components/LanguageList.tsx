@@ -47,6 +47,7 @@ export function LanguageList({ selected, onSelect }: Props) {
             {item.englishName.toUpperCase()}
           </Text>
         </View>
+        {active && <Ionicons name="checkmark-circle" size={20} color={colors.accentBlue} />}
         {item.voice && (
           <View style={[styles.voiceTag, { borderColor: colors.successGreen }]}>
             <Ionicons name="volume-high" size={10} color={colors.successGreen} />
@@ -55,7 +56,6 @@ export function LanguageList({ selected, onSelect }: Props) {
             </Text>
           </View>
         )}
-        {active && <Ionicons name="checkmark-circle" size={20} color={colors.accentBlue} />}
       </TouchableOpacity>
     );
   };
