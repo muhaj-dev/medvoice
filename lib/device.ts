@@ -23,6 +23,21 @@ export function isLowRamDevice(): boolean {
   return gb === null || gb < MIN_RAM_FOR_4B_GB;
 }
 
+// Below this much total RAM, holding TWO llama.cpp models resident at once
+// (analysis ~1.1 GB + embedding ~330 MB) risks an OOM kill. On such devices the
+// chat keeps only the analysis model and uses keyword search instead.
+const MIN_RAM_FOR_TWO_MODELS_GB = 6;
+
+// True when the phone can keep the analysis AND embedding models resident
+// together — so "Ask MedVoice" can use semantic (embedding) search without
+// evicting the pinned analysis model. Requires llama.cpp support and enough RAM;
+// unknown RAM is treated as low-end (safer → keyword search, no second model).
+export function canHoldTwoModels(): boolean {
+  if (!supportsLlamaCppModels()) return false;
+  const gb = getTotalRamGB();
+  return gb !== null && gb >= MIN_RAM_FOR_TWO_MODELS_GB;
+}
+
 // QVAC's llama.cpp engine (analysis + embedding models) needs Android 12+
 // (API 31). On older devices (e.g. Galaxy S9+ on Android 10) it CRASHES
 // NATIVELY at init — JS cannot catch that — so those models must never even

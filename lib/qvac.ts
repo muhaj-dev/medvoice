@@ -57,6 +57,22 @@ let ttsLoadedLang: VoiceLang | null = null; // language of the resident TTS voic
 let translationModelId: string | null = null;
 let translationLoadedLang: Lang | null = null; // target language of resident NMT
 
+// When true, evictExcept never unloads the resident analysis model — even if it
+// isn't the model being kept. The "Ask MedVoice" chat pins it while open so a
+// multi-turn conversation loads the ~1.1 GB analysis model ONCE instead of
+// swapping it out for the embedding model and back on every single question.
+let analysisPinned = false;
+
+// Keep the analysis model resident across an interactive session (chat). Pair
+// every pin with an unpin so background eviction can reclaim its RAM again.
+export function pinAnalysisModel(): void {
+  analysisPinned = true;
+}
+
+export function unpinAnalysisModel(): void {
+  analysisPinned = false;
+}
+
 // In-flight load promises — prevent duplicate concurrent loads of one model.
 let parakeetPromise: Promise<string> | null = null;
 let medgemmaPromise: Promise<string> | null = null;
@@ -77,7 +93,9 @@ async function evictExcept(keep: ModelName | "translation"): Promise<void> {
     tasks.push(unloadModel({ modelId: parakeetModelId }).catch(() => {}));
     parakeetModelId = null;
   }
-  if (keep !== "medgemma" && medgemmaModelId) {
+  // Respect the chat pin: keep the analysis model resident even when it isn't
+  // the model being kept, so the embedding load for query search doesn't evict it.
+  if (keep !== "medgemma" && medgemmaModelId && !analysisPinned) {
     tasks.push(unloadModel({ modelId: medgemmaModelId }).catch(() => {}));
     medgemmaModelId = null;
     medgemmaLoadedSize = null;
@@ -422,6 +440,10 @@ export async function preloadAllModels(): Promise<void> {
 // ── Lifecycle ─────────────────────────────────────────────────────────────
 
 export async function unloadAllModels(): Promise<void> {
+  // A full teardown (e.g. app backgrounded) ends any chat session, so drop the
+  // pin — these direct unloads bypass evictExcept and free RAM regardless, but
+  // clearing the flag keeps the next session from inheriting a stale pin.
+  analysisPinned = false;
   const unloads: Promise<unknown>[] = [];
   if (parakeetModelId) {
     unloads.push(unloadModel({ modelId: parakeetModelId }).catch(() => {}));
