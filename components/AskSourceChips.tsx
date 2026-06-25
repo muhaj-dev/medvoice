@@ -7,9 +7,9 @@ import type { HealthEntry } from "@/types/health";
 
 type Props = { sources: HealthEntry[] };
 
-function shortDate(iso: string): string {
+function shortDate(iso: string, locale: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return d.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
 /**
@@ -19,7 +19,7 @@ function shortDate(iso: string): string {
  */
 export function AskSourceChips({ sources }: Props) {
   const colors = useTheme();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const styles = makeStyles(colors);
 
   if (sources.length === 0) return null;
@@ -35,7 +35,7 @@ export function AskSourceChips({ sources }: Props) {
             activeOpacity={0.7}
             onPress={() => router.push("/(tabs)/timeline" as any)}
           >
-            <Text style={styles.chipDate}>{shortDate(entry.timestamp)}</Text>
+            <Text style={styles.chipDate}>{shortDate(entry.timestamp, language)}</Text>
             <Text style={styles.chipText} numberOfLines={1}>
               {entry.tags[0] ?? entry.transcript.slice(0, 24)}
             </Text>

@@ -8,10 +8,10 @@ function timeAgo(iso: string | null, t: (key: StringKey) => string): string {
   if (!iso) return t('family.timeNever');
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
   if (mins < 1) return t('family.timeJustNow');
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return `${mins}${t('family.timeMinutesAgo')}`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  if (hours < 24) return `${hours}${t('family.timeHoursAgo')}`;
+  return `${Math.floor(hours / 24)}${t('family.timeDaysAgo')}`;
 }
 
 type Props = {

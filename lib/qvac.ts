@@ -252,7 +252,7 @@ export function loadTTSModel(
   const prevLoad = ttsPromise;
   ttsLoadedLang = lang;
 
-  ttsPromise = (async () => {
+  const thisLoad: Promise<string> = (async () => {
     if (prevLoad) {
       try { await prevLoad; } catch {}
     }
@@ -272,15 +272,20 @@ export function loadTTSModel(
   })()
     .then((id) => {
       ttsModelId = id;
-      ttsPromise = null;
+      // Only clear if a newer load hasn't already taken over ttsPromise,
+      // otherwise this older callback would wipe the in-flight reference.
+      if (ttsPromise === thisLoad) ttsPromise = null;
       return id;
     })
     .catch((err) => {
-      ttsPromise = null;
-      ttsLoadedLang = null;
+      if (ttsPromise === thisLoad) {
+        ttsPromise = null;
+        ttsLoadedLang = null;
+      }
       console.error("[qvac] tts load failed:", err);
       throw err;
     });
+  ttsPromise = thisLoad;
 
   return ttsPromise;
 }
@@ -434,6 +439,11 @@ export async function unloadAllModels(): Promise<void> {
   if (ttsModelId) {
     unloads.push(unloadModel({ modelId: ttsModelId }).catch(() => {}));
     ttsModelId = null;
+  }
+  if (translationModelId) {
+    unloads.push(unloadModel({ modelId: translationModelId }).catch(() => {}));
+    translationModelId = null;
+    translationLoadedLang = null;
   }
   await Promise.all(unloads);
 }

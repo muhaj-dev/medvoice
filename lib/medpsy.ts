@@ -65,13 +65,18 @@ Be caring, clear, and brief. The reader may be elderly or not medically trained.
 // health updates ("When did my knee pain start?"); we answer grounded ONLY in
 // the entries retrieved by semantic search (RAG). This is the "Ask MedVoice"
 // flow — voice question in, spoken answer out, all on-device.
-const QA_SYSTEM_PROMPT = `You are MedVoice, a private on-device health companion. The user is asking a question about their OWN past health updates.
+const QA_SYSTEM_PROMPT = `You are MedVoice, a private on-device health companion having an ongoing conversation with the user about their health.
 
-Answer using ONLY the past entries provided as context. Follow these rules:
-- If the context answers the question, reply warmly and specifically — mention what was logged and roughly when.
-- If the context does NOT contain enough to answer, say plainly that you don't have a record of that yet. Never guess or invent details.
+You may be given two things:
+- The earlier turns of THIS conversation — use them so each answer connects to what was already asked and said, instead of starting over.
+- Relevant entries from the user's OWN saved health history, when any match the question.
+
+Follow these rules:
+- When health entries are provided, ground your answer in them — mention what was logged and roughly when. Never invent details that aren't there.
+- When NO relevant entries are provided, still be helpful: answer from what the user has told you earlier in this conversation, give general, non-diagnostic guidance, and gently encourage them to log how they're feeling so MedVoice can track it over time.
+- Build on the earlier turns so the chat feels connected and continuous.
 - Never diagnose. For anything concerning, gently suggest seeing a doctor.
-- Keep it short, clear, and conversational — the listener may be elderly. Plain text, no markdown headers.`;
+- Keep replies short, warm, and clear — the listener may be elderly. You may use simple markdown: short paragraphs, **bold** for key points, and "-" bullet lists. Avoid long headings.`;
 
 // Doctor-visit-prep variant. From the user's recent entries, produce a short
 // brief they can take to an appointment: what to mention, what to ask, and a
@@ -119,6 +124,14 @@ const MAX_ANALYSIS_TOKENS = 320;
 // A spoken Q&A answer should be brief — one or two caring sentences, not an
 // essay — so it reads aloud quickly and the listener doesn't lose the thread.
 const MAX_ANSWER_TOKENS = 256;
+
+// One turn of the Ask conversation, fed back so follow-up questions connect to
+// what was already asked and answered.
+export type QATurn = { role: "user" | "assistant"; content: string };
+
+// How many prior turns of the conversation to replay to the model. Enough for
+// continuity ("what about last week?"), small enough to keep the prompt cheap.
+const MAX_HISTORY_TURNS = 6;
 
 // Visit prep has three sections, so it needs more room than a single Q&A
 // answer — but still bounded so it doesn't crawl on a slow CPU.
@@ -171,10 +184,12 @@ export async function analyzeDocument(
  *
  * @param question - What the user asked (from Parakeet transcription or typed)
  * @param context  - Relevant past entries as plain text (from buildRagContext)
+ * @param history  - Earlier turns of this conversation, so follow-ups connect
  */
 export async function answerHealthQuestion(
   question: string,
   context: string = "",
+  history: QATurn[] = [],
   onToken?: (token: string) => void,
   onProgress?: (pct: number) => void
 ): Promise<string> {
@@ -182,7 +197,10 @@ export async function answerHealthQuestion(
 
   const userMessage = context
     ? `My past health entries:\n${context}\n\nMy question: "${question.trim()}"`
-    : `I have no saved health entries yet.\n\nMy question: "${question.trim()}"`;
+    : `I have no saved health entries matching this yet.\n\nMy question: "${question.trim()}"`;
+
+  // Keep only the last few turns so the prompt stays small on slow devices.
+  const recent = history.slice(-MAX_HISTORY_TURNS);
 
   const run = completion({
     modelId,
@@ -190,6 +208,7 @@ export async function answerHealthQuestion(
     generationParams: { predict: MAX_ANSWER_TOKENS },
     history: [
       { role: "system", content: withLanguage(QA_SYSTEM_PROMPT) },
+      ...recent.map((turn) => ({ role: turn.role, content: turn.content })),
       { role: "user", content: userMessage },
     ],
   });

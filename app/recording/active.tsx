@@ -16,7 +16,7 @@ export default function RecordingActiveScreen() {
   const { setIsRecording, setAudioUri, setFinalTranscript, resetRecording } =
     useRecordingStore();
   const transcript = useRecordingStore((s) => s.transcript);
-  const { start, stop } = useVoiceTranscription();
+  const { start, stop, warming } = useVoiceTranscription();
 
   useEffect(() => {
     setIsRecording(true);
@@ -95,14 +95,16 @@ export default function RecordingActiveScreen() {
 
       <View style={styles.content}>
         <Text style={styles.listeningLabel}>
-          {t("recording.listeningOnDevice")}
+          {warming
+            ? t("recording.preparingOnDevice")
+            : t("recording.listeningOnDevice")}
         </Text>
 
         <View style={styles.waveformWrap}>
           <WaveformAnimation isActive={true} />
         </View>
 
-        <LiveTranscriptCard transcript={transcript} />
+        <LiveTranscriptCard transcript={transcript} warming={warming} />
       </View>
 
       <View style={styles.stopArea}>

@@ -54,7 +54,7 @@ export default function RoleScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }} edges={["top", "bottom"]}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
         <View className="items-center mb-9">
-          <OnboardingProgressDots current={2} />
+          <OnboardingProgressDots current={3} />
         </View>
 
         <View className="mb-7">

@@ -16,7 +16,7 @@
  * the WAV URI fallback.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   useAudioStream,
   requestRecordingPermissionsAsync,
@@ -39,6 +39,10 @@ export function useVoiceTranscription() {
   const runIdRef = useRef(0);
   // Live Parakeet streaming session for the current run (null until ready).
   const liveRef = useRef<LiveTranscription | null>(null);
+  // True while Parakeet is loading into RAM (first record can take seconds).
+  // Drives the "warming up the voice model" UI on the active screen. Audio is
+  // already being captured during this window — only live words are delayed.
+  const [warming, setWarming] = useState(false);
 
   const setTranscript = useRecordingStore((s) => s.setTranscript);
 
@@ -100,6 +104,8 @@ export function useVoiceTranscription() {
     if (myRun !== runIdRef.current) return;
 
     // Load Parakeet (downloads on first run), then open the live stream.
+    // Flag the warm-up so the UI can show a loading state until words flow.
+    setWarming(true);
     try {
       const modelId = await loadParakeetModel();
       if (myRun !== runIdRef.current) return;
@@ -118,11 +124,15 @@ export function useVoiceTranscription() {
       liveRef.current = live;
     } catch (e) {
       console.error("[transcription] live transcription unavailable", e);
+    } finally {
+      // Only clear if this run is still current — a newer start() owns the flag.
+      if (myRun === runIdRef.current) setWarming(false);
     }
   }, [setTranscript]);
 
   const stop = useCallback(async (): Promise<StopResult> => {
     runIdRef.current++; // cancel any in-flight start()
+    setWarming(false);
     try {
       streamRef.current.stop();
     } catch {}
@@ -164,5 +174,5 @@ export function useVoiceTranscription() {
     return { text, wavUri };
   }, []);
 
-  return { start, stop };
+  return { start, stop, warming };
 }

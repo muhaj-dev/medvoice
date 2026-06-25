@@ -9,7 +9,7 @@ export const timelineStrings = {
   "timeline.emptyTitle": "No entries found",
   "timeline.emptyDifferentTerm": "Try a different search term",
   "timeline.emptyRecordFirst": "Record your first health entry to get started",
-  "timeline.searchPlaceholder": 'Ask anything — "When did my knee pain star...',
+  "timeline.searchPlaceholder": 'Ask anything — "When did my knee pain start...',
   "timeline.medpsySummary": "MEDPSY SUMMARY",
   "timeline.today": "Today",
   "timeline.yesterday": "Yesterday",

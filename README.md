@@ -167,7 +167,7 @@ The bottom navigation has 5 tabs: **HOME · TIMELINE · FAMILY · CARE VIEW · S
 
 ### Prerequisites
 - Node.js 18+
-- Android device/emulator (**Android 12+ / API 31 required** for the QVAC llama.cpp AI engine — older versions run without AI features, see [Device Compatibility](#--device-compatibility-please-read)) or iOS device
+- Android device/emulator (**Android 12+ / API 31 required** for the QVAC llama.cpp AI engine — older versions run without AI features, see [Device Compatibility](#device-compatibility-please-read)) or iOS device
 - ~3 GB free storage on device for AI models
 
 ### Steps

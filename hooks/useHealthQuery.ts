@@ -1,7 +1,10 @@
 /**
- * "Ask MedVoice" orchestrator — RAG over the user's own health history.
+ * "Ask MedVoice" orchestrator — a multi-turn RAG chat over the user's own
+ * health history.
  *
- * Given a question (spoken or typed), it:
+ * It keeps a running conversation of `messages` (alternating user questions and
+ * MedVoice answers), so the screen can render a ChatGPT/Claude-style thread.
+ * Each question independently:
  *   1. retrieves the most relevant past entries (semantic search, with a
  *      keyword fallback when the embedding model can't run),
  *   2. builds a small context string from them, and
@@ -13,16 +16,32 @@
  */
 
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useHealthStore } from "@/store/useHealthStore";
 import { semanticSearch, buildRagContext } from "@/lib/embeddings";
-import { answerHealthQuestion } from "@/lib/medpsy";
+import { answerHealthQuestion, type QATurn } from "@/lib/medpsy";
 import type { HealthEntry } from "@/types/health";
 
 export type AskStatus = "idle" | "thinking" | "answering" | "done" | "error";
 
+export type ChatRole = "user" | "assistant";
+
+export type ChatMessage = {
+  id: string;
+  role: ChatRole;
+  text: string;
+  // assistant-only — drives the inline status + grounding chips.
+  status?: AskStatus;
+  sources?: HealthEntry[];
+};
+
 // How many past entries to retrieve and feed to the model as context. Small,
 // since the analysis model's prompt budget is tight on slow devices.
 const TOP_K = 4;
+
+// Monotonic id source for messages — stable keys without leaking into render.
+let idSeq = 0;
+const makeId = (prefix: string): string => `${prefix}-${Date.now()}-${++idSeq}`;
 
 function keywordSearch(
   query: string,
@@ -40,31 +59,48 @@ function keywordSearch(
 }
 
 export function useHealthQuery() {
+  const { t } = useTranslation();
   const entries = useHealthStore((s) => s.entries);
-  const [status, setStatus] = useState<AskStatus>("idle");
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [sources, setSources] = useState<HealthEntry[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [busy, setBusy] = useState(false);
   // Monotonic run id — a newer ask() cancels an older one's late updates.
   const runIdRef = useRef(0);
+  // Mirror of messages so ask() can read the current thread without being
+  // recreated on every turn. Assigning in render is idempotent and safe.
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
+
+  // Immutably patch a single message by id (used as tokens stream in).
+  const patch = useCallback((id: string, partial: Partial<ChatMessage>) => {
+    setMessages((msgs) => msgs.map((m) => (m.id === id ? { ...m, ...partial } : m)));
+  }, []);
 
   const reset = useCallback(() => {
     runIdRef.current++;
-    setStatus("idle");
-    setQuestion("");
-    setAnswer("");
-    setSources([]);
+    setMessages([]);
+    setBusy(false);
   }, []);
 
   const ask = useCallback(
-    async (raw: string): Promise<string | undefined> => {
+    async (raw: string): Promise<{ id: string; text: string } | undefined> => {
       const text = raw.trim();
       if (!text) return;
       const myRun = ++runIdRef.current;
-      setQuestion(text);
-      setAnswer("");
-      setSources([]);
-      setStatus("thinking");
+
+      // Earlier turns become the model's conversation memory, so a follow-up
+      // ("what about last week?") connects to what was already asked/answered.
+      const history: QATurn[] = messagesRef.current
+        .filter((m) => m.text.trim().length > 0 && m.status !== "error")
+        .map((m) => ({ role: m.role, content: m.text }));
+
+      const aId = makeId("a");
+      // Append the question and an empty, "thinking" answer in one update.
+      setMessages((msgs) => [
+        ...msgs,
+        { id: makeId("u"), role: "user", text },
+        { id: aId, role: "assistant", text: "", status: "thinking", sources: [] },
+      ]);
+      setBusy(true);
 
       // 1. Retrieve relevant past entries. Semantic first; keyword if the
       //    embedding model isn't available on this device.
@@ -75,34 +111,39 @@ export function useHealthQuery() {
         top = keywordSearch(text, entries, TOP_K);
       }
       if (myRun !== runIdRef.current) return;
-      setSources(top);
+      patch(aId, { sources: top, status: "answering" });
 
       const context = buildRagContext(top, TOP_K);
 
       // 2. Stream a grounded answer from the analysis model.
       try {
-        setStatus("answering");
-        const full = await answerHealthQuestion(text, context, (tok) => {
-          if (myRun === runIdRef.current) setAnswer((a) => a + tok);
+        const full = await answerHealthQuestion(text, context, history, (tok) => {
+          if (myRun !== runIdRef.current) return;
+          setMessages((msgs) =>
+            msgs.map((m) => (m.id === aId ? { ...m, text: m.text + tok } : m))
+          );
         });
         if (myRun !== runIdRef.current) return;
-        if (full) setAnswer(full);
-        setStatus("done");
-        return full;
+        // Prefer the model's final text; keep the streamed text if it's empty.
+        patch(aId, { status: "done", ...(full ? { text: full } : {}) });
+        setBusy(false);
+        return { id: aId, text: full };
       } catch {
         if (myRun !== runIdRef.current) return;
         // Degraded: the analysis model can't run here. Be honest, and lean on
         // the entries we did find so the question isn't a dead end.
-        setAnswer(
-          top.length > 0
-            ? "The AI answer model can't run on this phone, but I found related entries from your history below — tap one to read what you logged."
-            : "The AI answer model can't run on this phone, and I couldn't find any saved entries matching that question yet."
-        );
-        setStatus("error");
+        patch(aId, {
+          status: "error",
+          text:
+            top.length > 0
+              ? t("ask.modelFailedWithEntries")
+              : t("ask.modelFailedNoEntries"),
+        });
+        setBusy(false);
       }
     },
-    [entries]
+    [entries, t, patch]
   );
 
-  return { status, question, answer, sources, ask, reset };
+  return { messages, busy, ask, reset };
 }

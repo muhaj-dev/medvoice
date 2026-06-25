@@ -6,6 +6,7 @@ export const askStrings = {
   "ask.back": "← BACK",
   "ask.titleAsk": "Ask",
   "ask.titleAccent": "MedVoice",
+  "ask.newChat": "NEW CHAT",
   "ask.answerLabel": "MEDVOICE",
   "ask.searchingHistory": "Searching your history…",
   "ask.loading": "LOADING…",
@@ -20,6 +21,10 @@ export const askStrings = {
   "ask.suggestion2": "How has my sleep been lately?",
   "ask.suggestion3": "What did I say about my knee?",
   "ask.suggestion4": "Have I mentioned any chest pain?",
+  "ask.modelFailedWithEntries":
+    "The AI answer model can't run on this phone, but I found related entries from your history below — tap one to read what you logged.",
+  "ask.modelFailedNoEntries":
+    "The AI answer model can't run on this phone, and I couldn't find any saved entries matching that question yet.",
   "ask.emptyTitle": "Ask about your health",
   "ask.emptySubtitle":
     "Speak or type a question. MedVoice answers from your own private history — nothing leaves this phone.",

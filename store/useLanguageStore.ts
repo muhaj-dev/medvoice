@@ -28,15 +28,18 @@ export const useLanguageStore = create<LanguageStore>((set) => ({
 
   setLanguage: async (language) => {
     set({ language });
-    await AsyncStorage.setItem(LANGUAGE_KEY, language).catch(() => {});
+    await AsyncStorage.setItem(LANGUAGE_KEY, language).catch((e) =>
+      console.warn("[language] failed to persist language preference:", e)
+    );
   },
 
   loadFromStorage: async () => {
     try {
       const raw = await AsyncStorage.getItem(LANGUAGE_KEY);
       if (isLang(raw)) set({ language: raw });
-    } catch {
+    } catch (e) {
       // corrupted storage — keep default English
+      console.warn("[language] failed to load language preference:", e);
     }
   },
 }));

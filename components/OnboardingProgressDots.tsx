@@ -2,10 +2,11 @@ import { View, StyleSheet } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
 
 type Props = {
-  current: 1 | 2 | 3;
+  current: number;
+  total?: number;
 };
 
-export function OnboardingProgressDots({ current }: Props) {
+export function OnboardingProgressDots({ current, total = 4 }: Props) {
   const colors = useTheme();
 
   const styles = StyleSheet.create({
@@ -36,7 +37,7 @@ export function OnboardingProgressDots({ current }: Props) {
 
   return (
     <View style={styles.row}>
-      {([1, 2, 3] as const).map((n) => (
+      {Array.from({ length: total }, (_, i) => i + 1).map((n) => (
         <View
           key={n}
           style={[

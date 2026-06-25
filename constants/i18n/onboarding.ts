@@ -3,6 +3,11 @@
  * EN_STRINGS by constants/strings.ts. Keys are namespaced "onboarding.*".
  */
 export const onboardingStrings = {
+  // language.tsx
+  "onboarding.language.title": "Choose your language",
+  "onboarding.language.subtitle":
+    "MedVoice will speak and show everything in this language. You can change it anytime in Settings.",
+
   // welcome.tsx
   "onboarding.feature.speak": "Speak naturally about how you feel",
   "onboarding.feature.analyze": "MedPsy AI analyzes your health locally",
