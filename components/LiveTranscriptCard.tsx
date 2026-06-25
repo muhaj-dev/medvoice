@@ -78,7 +78,13 @@ export function LiveTranscriptCard({ transcript, warming = false }: Props) {
   return (
     <View style={styles.card}>
       {showWarming ? (
-        <View style={styles.warmingRow}>
+        <View
+          style={styles.warmingRow}
+          accessible
+          accessibilityRole="alert"
+          accessibilityLabel={t("recording.warmingModel")}
+          accessibilityLiveRegion="polite"
+        >
           <ActivityIndicator size="small" color={colors.accentBlue} />
           <Text style={styles.warmingText}>{t("recording.warmingModel")}</Text>
         </View>

@@ -130,8 +130,9 @@ const MAX_ANSWER_TOKENS = 256;
 export type QATurn = { role: "user" | "assistant"; content: string };
 
 // How many prior turns of the conversation to replay to the model. Enough for
-// continuity ("what about last week?"), small enough to keep the prompt cheap.
-const MAX_HISTORY_TURNS = 6;
+// continuity ("what about last week?"), small enough to keep the prompt cheap —
+// the prompt is reprocessed on CPU each turn, so fewer turns = faster first token.
+const MAX_HISTORY_TURNS = 4;
 
 // Visit prep has three sections, so it needs more room than a single Q&A
 // answer — but still bounded so it doesn't crawl on a slow CPU.

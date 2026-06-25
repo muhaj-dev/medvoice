@@ -11,6 +11,7 @@ import { stripMarkdown } from "@/components/AskMarkdown";
 import { AskInputBar } from "@/components/AskInputBar";
 import { AskThread } from "@/components/AskThread";
 import { prewarmTTS } from "@/lib/tts";
+import { pinAnalysisModel, unpinAnalysisModel } from "@/lib/qvac";
 
 export default function AskScreen() {
   const colors = useTheme();
@@ -22,6 +23,14 @@ export default function AskScreen() {
   useEffect(() => {
     if (ttsEnabled) prewarmTTS();
   }, [ttsEnabled]);
+
+  // Keep the analysis model resident for the whole chat session so a multi-turn
+  // conversation loads it once instead of swapping it out per question. Unpin on
+  // unmount so background eviction can reclaim its RAM again.
+  useEffect(() => {
+    pinAnalysisModel();
+    return () => unpinAnalysisModel();
+  }, []);
 
   // Stop any read-aloud when leaving the screen.
   useEffect(
