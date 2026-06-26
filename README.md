@@ -4,7 +4,7 @@
 
 <div align="center">
 
-### ▶️ &nbsp; [**Watch the Demo Video**](#) &nbsp; · &nbsp; 📥 &nbsp; [**Download the APK (latest build)**](https://expo.dev/accounts/holawale/projects/Medv/builds/366ed81b-675f-45b7-a9b1-36d1f484e177) &nbsp; · &nbsp; 🔗 &nbsp; [**DoraHacks Submission**](#)
+### ▶️ &nbsp; [**Watch the Demo Video**](#) &nbsp; · &nbsp; 📥 &nbsp; [**Latest EAS Build (APK)**](https://expo.dev/accounts/holawale/projects/Medv/builds/366ed81b-675f-45b7-a9b1-36d1f484e177) &nbsp; · &nbsp; 🔗 &nbsp; [**DoraHacks Submission**](#)
 
 </div>
 
@@ -71,8 +71,8 @@ MedVoice lets anyone track their health **just by talking**, with **every AI ste
 |  **Voice health journaling** | Speak how you feel; live transcription on-device | QVAC Transcription (Parakeet / Whisper) |
 |  **AI health analysis** | Local medical LLM produces a caring summary, severity, tags & patterns | QVAC LLM inference (Qwen3 1.7B / MedGemma 4B) |
 |  **Ask MedVoice (AI Q&A chat)** | Conversational chatbot that answers questions about your own history — ask by voice or text, hear the answer spoken back | QVAC LLM + Embeddings (on-device RAG) |
-|  **Document scan** | Photograph a prescription, lab result or doctor's note; on-device OCR reads it and the AI explains it in plain language and aloud | On-device OCR + QVAC LLM + TTS |
-|  **Visit prep** | Generates a doctor-visit brief from your recent entries — what to mention, what to ask, a quick timeline — with read-aloud and share | QVAC LLM |
+|  **Document Scan** | Photograph a prescription, lab result or doctor's note; on-device OCR reads it and the AI explains it in plain language and aloud | On-device OCR + QVAC LLM + TTS |
+|  **Visit Prep** | Generates a doctor-visit brief from your recent entries — what to mention, what to ask, a quick timeline — with read-aloud and share | QVAC LLM |
 |  **Read-aloud responses** | Hears the analysis spoken back — accessibility for elderly users | QVAC Text-to-Speech |
 |  **Semantic health timeline** | Search past entries by meaning, not keywords | QVAC Embeddings + on-device RAG |
 |  **Multi-language** | One setting translates the whole UI (~47 languages), the AI's written replies, and the spoken voice (en/es/de/it) | QVAC NMT (Bergamot) + multilingual TTS |
@@ -82,10 +82,12 @@ MedVoice lets anyone track their health **just by talking**, with **every AI ste
 
 **Everything above runs on the phone.** The only network use is Holepunch DHT peer discovery for the P2P handshake — and even that carries **no health data**.
 
-> ⚡ **Performance:** Ask MedVoice keeps the analysis model resident across a chat
-> session (and skips the embedding model on low-RAM devices) so multi-turn
-> conversations load the model once instead of swapping it in and out on every
-> message — noticeably faster follow-up answers, fully on-device.
+> ⚡ **Performance:** Ask MedVoice pins the analysis model resident across a chat
+> session (`pinAnalysisModel` in `lib/qvac.ts`) so multi-turn conversations load
+> it once instead of swapping it out for the embedding model and back on every
+> message — the embedding model is still loaded on demand for search, but the
+> analysis model avoids the load-unload cycle, giving noticeably faster follow-up
+> answers, fully on-device.
 
 ---
 
