@@ -1,156 +1,210 @@
-# MedVoice
-
-> **A private, on-device AI health companion.** Your voice in. Health insight out. Nothing ever leaves your phone.
-
 <div align="center">
 
-### ▶️ &nbsp; [**Watch the Demo Video**](#) &nbsp; · &nbsp; 📥 &nbsp; [**Latest EAS Build (APK)**](https://expo.dev/accounts/holawale/projects/Medv/builds/366ed81b-675f-45b7-a9b1-36d1f484e177) &nbsp; · &nbsp; 🔗 &nbsp; [**DoraHacks Submission**](#)
+<img src="./assets/images/logo-full.png" alt="MedVoice" width="160" />
 
-</div>
+# MedVoice
 
-<!-- TODO: replace the # placeholders (demo video + DoraHacks link) with the real URLs -->
+**A private, on-device AI health companion.**
+_Your voice in. Health insight out. Nothing ever leaves your phone._
 
----
-
-##  The Story Behind MedVoice
-
-When I gained admission into university, it was one of the happiest moments of my life. For the first time, I was leaving home to pursue my dreams. But there was one problem I could never stop thinking about: my grandmother.
-
-She was getting older. Like many elderly people, she often forgot to mention when she wasn't feeling well. Sometimes she would have headaches for days before telling anyone. Sometimes she would feel dizzy, struggle to sleep, or have pain in her joints — and simply say, *"I'm fine."*
-
-Living hundreds of kilometers away at school, I couldn't check on her every day. Phone calls helped, but they were never enough. I worried about the things she wasn't saying.
-
-I looked at existing health apps, hoping to find something that could help. But most required typing long notes. Many sent health data to cloud servers. Some needed accounts, subscriptions, or constant internet access. None felt designed for someone like my grandmother.
-
-Then I asked a simple question:
-
-> **"What if all she had to do was talk?"**
-
-What if she could simply pick up her phone and say:
-
-- *"Today I have a headache."*
-- *"I didn't sleep well."*
-- *"My chest feels uncomfortable."*
-
-And what if an AI could listen, understand, provide health insights, keep a history of those conversations, and privately share important updates with family members? Not through the cloud. Not through a third-party server. But directly on her own device.
-
-**That idea became MedVoice.**
-
-MedVoice is a private, on-device AI health companion. Users simply speak about how they feel. MedVoice transcribes their voice, analyzes it using an on-device medical AI model, reads the response back aloud, builds a searchable health timeline, and allows trusted family members to receive private health summaries through encrypted peer-to-peer connections.
-
-Everything happens on the device. No cloud. No API keys. No health data leaves the phone. Ever. Because privacy shouldn't be a feature hidden in settings — it should be the foundation.
-
-For my grandmother, MedVoice means she doesn't need to learn complicated technology. She just talks. For family members living far from home, it means peace of mind. And for millions of elderly and chronically ill people around the world, it means health support that is private, simple, accessible, and always available.
-
-MedVoice wasn't built because we wanted to create another health app. It was built because the people we care about deserve technology that cares about them too.
-
----
-
-**A private, on-device AI health companion. Your voice in. Health insight out. Nothing ever leaves your phone.**
+### ▶️ &nbsp; [**Watch the Demo**](#13-demo-video) &nbsp; · &nbsp; 📥 &nbsp; [**Download APK**](https://expo.dev/accounts/holawale/projects/Medv/builds/366ed81b-675f-45b7-a9b1-36d1f484e177) &nbsp; · &nbsp; 🔗 &nbsp; [**DoraHacks Submission**](#)
 
 Built for the **QVAC "Unleash Edge AI" Hackathon** by Tether, on DoraHacks.
 
-> Speak how you feel → MedVoice transcribes it, reasons about it with a medical LLM, reads the result back to you, builds a searchable health timeline, and lets you privately share summaries with family — **100% on-device, no cloud, no API keys, no health data ever transmitted.**
+<!-- TODO: replace the # placeholders (demo video + DoraHacks link) with real URLs -->
+
+</div>
 
 ---
 
-##  The Problem
+## Table of Contents
 
-Most health apps send your most sensitive data — symptoms, conditions, medications — to cloud servers. Elderly and chronically ill users, who would benefit most from continuous health tracking, are often the least comfortable typing detailed logs or trusting Big Tech with their medical history.
-
-##  The Solution
-
-MedVoice lets anyone track their health **just by talking**, with **every AI step running locally on the device** via the QVAC SDK. No account. No internet required for AI. No data collection. A privacy promise that is architecturally enforced, not just stated.
+1. [Project Overview](#1-project-overview)
+2. [Problem Statement](#2-problem-statement)
+3. [Solution](#3-solution)
+4. [Features](#4-features)
+5. [Screenshots](#5-screenshots)
+6. [Tech Stack](#6-tech-stack)
+7. [Architecture](#7-architecture)
+8. [Installation](#8-installation)
+9. [Device Compatibility](#9-device-compatibility)
+10. [AI Usage](#10-ai-usage)
+11. [Challenges](#11-challenges)
+12. [Future Work](#12-future-work)
+13. [Demo Video](#13-demo-video)
+14. [Privacy Promise](#14-privacy-promise)
+15. [Team & License](#15-team--license)
 
 ---
 
-##  Core Features
+## 1. Project Overview
+
+**MedVoice** is a private, on-device AI health companion that lets anyone track their health **just by talking**. Users speak about how they feel; MedVoice transcribes their voice, analyzes it with an on-device medical AI model, reads the response back aloud, builds a searchable health timeline, and privately shares health summaries with trusted family members over an encrypted peer-to-peer connection.
+
+**Every AI step runs entirely on the device.** No cloud. No API keys. No health data ever leaves the phone — because privacy shouldn't be a feature hidden in settings, it should be the foundation.
+
+> ### The Story Behind MedVoice
+>
+> When I left home for university, I couldn't stop thinking about my grandmother. Like many elderly people, she often forgot to mention when she wasn't feeling well — headaches for days, dizziness, joint pain — and would simply say, *"I'm fine."* Living hundreds of kilometers away, I worried about the things she wasn't saying.
+>
+> Existing health apps required typing long notes, sent data to the cloud, or needed accounts and constant internet. None felt designed for someone like her. So I asked a simple question: **"What if all she had to do was talk?"**
+>
+> That idea became MedVoice — health support that is private, simple, accessible, and always available. Not because we wanted to build another health app, but because the people we care about deserve technology that cares about them too.
+
+---
+
+## 2. Problem Statement
+
+Most health apps send your most sensitive data — symptoms, conditions, medications — to cloud servers. Yet the people who would benefit most from continuous health tracking — the elderly and chronically ill — are often the least comfortable typing detailed logs or trusting Big Tech with their medical history.
+
+The result: critical symptoms go unrecorded, family members far from home have no visibility, and miscommunication leads to poorer health outcomes. Health tracking that demands typing, accounts, subscriptions, and an internet connection simply isn't built for the people who need it most.
+
+---
+
+## 3. Solution
+
+MedVoice lets anyone track their health **by voice alone**, with **every AI step running locally on the device** via the QVAC SDK.
+
+A user speaks how they feel → MedVoice transcribes it on-device → a local medical LLM reasons about it and produces a caring summary, severity, and patterns → the result is read back aloud → it's saved to a searchable health timeline → and important summaries can be privately shared with family, encrypted and peer-to-peer.
+
+No account. No internet required for AI. No data collection. A privacy promise that is **architecturally enforced, not just stated.**
+
+---
+
+## 4. Features
 
 | Feature | What it does | QVAC capability |
 |---|---|---|
-|  **Voice health journaling** | Speak how you feel; live transcription on-device | QVAC Transcription (Parakeet / Whisper) |
-|  **AI health analysis** | Local medical LLM produces a caring summary, severity, tags & patterns | QVAC LLM inference (Qwen3 1.7B / MedGemma 4B) |
-|  **Ask MedVoice (AI Q&A chat)** | Conversational chatbot that answers questions about your own history — ask by voice or text, hear the answer spoken back | QVAC LLM + Embeddings (on-device RAG) |
-|  **Document Scan** | Photograph a prescription, lab result or doctor's note; on-device OCR reads it and the AI explains it in plain language and aloud | On-device OCR + QVAC LLM + TTS |
-|  **Visit Prep** | Generates a doctor-visit brief from your recent entries — what to mention, what to ask, a quick timeline — with read-aloud and share | QVAC LLM |
-|  **Read-aloud responses** | Hears the analysis spoken back — accessibility for elderly users | QVAC Text-to-Speech |
-|  **Semantic health timeline** | Search past entries by meaning, not keywords | QVAC Embeddings + on-device RAG |
-|  **Multi-language** | One setting translates the whole UI (~47 languages), the AI's written replies, and the spoken voice (en/es/de/it) | QVAC NMT (Bergamot) + multilingual TTS |
-|  **Private family sharing** | Share health summaries device-to-device, encrypted | QVAC Holepunch P2P (HyperDHT) |
-|  **Care View** | Caregivers read a loved one's summaries, read-only | P2P sync |
-|  **Light & dark mode** | Polished, accessible, elderly-friendly UI | — |
+| 🎙️ **Voice health journaling** | Speak how you feel; live transcription on-device | QVAC Transcription (Parakeet / Whisper) |
+| 🧠 **AI health analysis** | Local medical LLM produces a caring summary, severity, tags & patterns | QVAC LLM inference (Qwen3 1.7B / MedGemma 4B) |
+| 💬 **Ask MedVoice (AI Q&A chat)** | Conversational chatbot that answers questions about your own history — by voice or text, with the answer spoken back | QVAC LLM + Embeddings (on-device RAG) |
+| 📄 **Document Scan** | Photograph a prescription, lab result or doctor's note; on-device OCR reads it and the AI explains it in plain language and aloud | On-device OCR + QVAC LLM + TTS |
+| 📋 **Visit Prep** | Generates a doctor-visit brief from your recent entries — what to mention, what to ask, a quick timeline — with read-aloud and share | QVAC LLM |
+| 🔊 **Read-aloud responses** | Hears the analysis spoken back — accessibility for elderly users | QVAC Text-to-Speech |
+| 🔍 **Semantic health timeline** | Search past entries by meaning, not keywords | QVAC Embeddings + on-device RAG |
+| 🌍 **Multi-language** | One setting translates the whole UI (~47 languages), the AI's written replies, and the spoken voice (en/es/de/it) | QVAC NMT (Bergamot) + multilingual TTS |
+| 👨‍👩‍👧 **Private family sharing** | Share health summaries device-to-device, encrypted | QVAC Holepunch P2P (HyperDHT) |
+| 👁️ **Care View** | Caregivers read a loved one's summaries, read-only | P2P sync |
+| 🌗 **Light & dark mode** | Polished, accessible, elderly-friendly UI | — |
 
 **Everything above runs on the phone.** The only network use is Holepunch DHT peer discovery for the P2P handshake — and even that carries **no health data**.
 
-> ⚡ **Performance:** Ask MedVoice pins the analysis model resident across a chat
-> session (`pinAnalysisModel` in `lib/qvac.ts`) so multi-turn conversations load
-> it once instead of swapping it out for the embedding model and back on every
-> message — the embedding model is still loaded on demand for search, but the
-> analysis model avoids the load-unload cycle, giving noticeably faster follow-up
-> answers, fully on-device.
+---
+
+## 5. Screenshots
+
+<div align="center">
+
+| Welcome / Onboarding | Home | Recording (live) |
+|:---:|:---:|:---:|
+| <img src="./docs/screenshots/splash.png" width="240" alt="Welcome screen" /> | <img src="./docs/screenshots/home.png" width="240" alt="Home screen" /> | <img src="./docs/screenshots/recording.png" width="240" alt="Recording screen" /> |
+
+| MedPsy Processing | Analysis Result | Health Timeline |
+|:---:|:---:|:---:|
+| <img src="./docs/screenshots/processing.png" width="240" alt="MedPsy processing pipeline" /> | <img src="./docs/screenshots/analysis.png" width="240" alt="Analysis result" /> | <img src="./docs/screenshots/timeline.png" width="240" alt="Health timeline" /> |
+
+| Family (P2P pairing) | Care View | Settings |
+|:---:|:---:|:---:|
+| <img src="./docs/screenshots/family.png" width="240" alt="Family connection" /> | <img src="./docs/screenshots/care-view.png" width="240" alt="Care view" /> | <img src="./docs/screenshots/settings.png" width="240" alt="Settings" /> |
+
+| Ready to Listen | Light Mode | Ask MedVoice _(to add)_ |
+|:---:|:---:|:---:|
+| <img src="./docs/screenshots/recording-ready.png" width="240" alt="Ready to listen" /> | <img src="./docs/screenshots/light-mode.png" width="240" alt="Light mode" /> | <img src="./docs/screenshots/ask.png" width="240" alt="Ask MedVoice chat" /> |
+
+</div>
+
+> 📸 **Adding / updating screenshots:** drop a PNG into `docs/screenshots/`
+> using the file name shown in each cell (e.g. `ask.png`). The image appears
+> automatically — no README edits needed. Keep all images the same width so the
+> grid stays aligned (the `<img width="240">` tags handle display sizing). To add
+> a brand-new screenshot, copy one table cell and change the `src` + caption.
 
 ---
 
-##  Device Compatibility (Please Read)
+## 6. Tech Stack
 
-> ⚠️ **Android 11 and below cannot use all features.** The on-device AI engine
-> (QVAC's llama.cpp) **requires Android 12 (API 31) or newer**. iOS devices are
-> fully supported.
+**Frontend / Mobile**
+- Expo SDK 56 · React Native 0.85 · TypeScript
+- Expo Router (file-based routing)
+- NativeWind v5 / Tailwind CSS v4 — light + dark theming
 
-The app is built to **degrade gracefully** — it never crashes on older devices —
-but the AI-powered features are unavailable below Android 12 and fall back to
-simpler alternatives:
+**Edge AI (all on-device, no cloud)**
+- [`@qvac/sdk`](https://github.com/tetherto/qvac) `0.12.x` — transcription, LLM, TTS, embeddings, translation
+- QVAC Fabric for on-device LLM inference (llama.cpp engine)
 
-| Feature | iOS / Android 12+ | Android 11 and below |
-|---|---|---|
-| Voice journaling (transcription) | ✅ Full | ✅ Works |
-| Read-aloud responses (TTS) | ✅ Full | ✅ Works |
-| Family sharing (P2P) | ✅ Full | ✅ Works |
-| **AI health analysis** | ✅ Full | ⛔ Unavailable → saves a voice journal entry without AI summary |
-| **Ask MedVoice (AI Q&A)** | ✅ Full | ⛔ Unavailable → falls back to keyword search of your entries |
-| **Semantic timeline search** | ✅ Full | ⚠️ Keyword search only |
+**State & Storage (all local)**
+- Zustand — global app state
+- `expo-sqlite` — health entries & patterns
+- AsyncStorage — profile, settings, theme preference
 
-**For the full MedVoice experience (AI analysis, Ask MedVoice, semantic search),
-use an iOS device or an Android phone running Android 12 or later** with ~3 GB
-free storage for the on-device models.
+**Native capabilities**
+- `expo-audio` — real-time PCM mic capture for live transcription
+- `@react-native-ml-kit/text-recognition` — on-device OCR for Document Scan
+- `react-native-qrcode-svg` + `expo-camera` — family QR pairing
+- `react-native-bare-kit` — Bare worklet hosting the Holepunch P2P node
 
----
-
-##  Privacy Promise (Non-Negotiable)
-
-- ❌ No cloud database
-- ❌ No cloud AI / external inference
-- ❌ No external health APIs
-- ❌ No analytics or crash reporting that sends data off device
-- ✅ Health entries stored locally in **SQLite**
-- ✅ Profile / settings / theme in **AsyncStorage**
-- ✅ All AI inference on-device via **QVAC SDK**
-- ✅ Family sharing is **encrypted, peer-to-peer**, server-free
-
----
-
-##  Tech Stack
-
-- **Framework:** Expo SDK 56 · React Native 0.85 · TypeScript · Expo Router (file-based routing)
-- **AI / Edge inference:** [`@qvac/sdk`](https://github.com/tetherto/qvac) `0.12.x` — transcription, LLM, TTS, embeddings
-- **P2P:** QVAC Holepunch (HyperDHT) via a Bare worklet bundled with `bare-pack`
-- **State:** Zustand · **Local DB:** `expo-sqlite` · **Persistence:** AsyncStorage
-- **Audio:** `expo-audio` (real-time PCM mic capture for live transcription)
-- **UI:** NativeWind v5 / Tailwind CSS v4 · light + dark theming
-- **QR (family pairing):** `react-native-qrcode-svg` + `expo-camera`
+**Networking**
+- QVAC Holepunch (HyperDHT) for peer discovery only — **no health data, no server**
 
 ### AI Models (user-selectable in Settings → AI Model)
 | Model | Size | Use |
 |---|---|---|
-| **Qwen3 1.7B (default)** | ~1.1 GB | Smaller download, lower RAM — runs on most devices |
+| **Qwen3 1.7B** (default) | ~1.1 GB | Smaller download, lower RAM — runs on most devices |
 | **MedGemma 4B** | ~2.5 GB | Google's medical Gemma — higher-fidelity summaries |
 
 Models download once on first use and run entirely offline thereafter.
 
 ---
 
-## 📱 App Flow
+## 7. Architecture
 
+```
+┌──────────────────────────── USER'S PHONE (everything runs here) ───────────────────────────┐
+│                                                                                             │
+│   🎙️  Voice in                                                                              │
+│        │                                                                                    │
+│        ▼                                                                                    │
+│   ┌─────────────────┐   PCM audio   ┌──────────────────────┐   text   ┌──────────────────┐ │
+│   │  expo-audio     │ ───────────►  │ QVAC Transcription   │ ───────► │  QVAC LLM        │ │
+│   │  (mic capture)  │               │ (Parakeet / Whisper) │          │ (Qwen3 / MedGemma)│ │
+│   └─────────────────┘               └──────────────────────┘          └────────┬─────────┘ │
+│                                                                                 │           │
+│            ┌────────────────────────────────────────────────────────────────────┘           │
+│            │ summary · severity · tags · patterns                                            │
+│            ▼                                                                                 │
+│   ┌──────────────────┐   embeddings   ┌──────────────────┐        ┌──────────────────────┐  │
+│   │  QVAC Embeddings │ ─────────────► │  expo-sqlite     │        │  QVAC TTS            │  │
+│   │  (RAG search)    │ ◄───────────── │  (health entries)│        │  (read-aloud)  🔊    │  │
+│   └──────────────────┘                └──────────────────┘        └──────────────────────┘  │
+│                                                                                             │
+│   State: Zustand   ·   Settings/Profile/Theme: AsyncStorage                                 │
+│                                                                                             │
+└──────────────────────────────────────┬──────────────────────────────────────────────────────┘
+                                        │  encrypted health summaries (JSON only)
+                                        │  via QVAC Holepunch P2P (HyperDHT)
+                                        ▼
+                          ┌────────────────────────────┐
+                          │   FAMILY MEMBER'S PHONE     │
+                          │   Care View (read-only)     │
+                          └────────────────────────────┘
+
+   ⚠️  The DHT is used ONLY for peer discovery during the handshake.
+       No health data ever passes through any server.
+```
+
+### Project structure
+```
+app/            Expo Router screens (onboarding, tabs, recording, analysis, family)
+components/     Reusable UI (cards, badges, waveform, pipeline rows)
+lib/            qvac.ts · medpsy.ts · transcription.ts · tts.ts · embeddings.ts · p2p.ts · db.ts
+store/          Zustand stores (user, health, family, recording, settings, theme)
+constants/      colors.ts (light+dark tokens) · typography.ts · images.ts
+p2p/            Bare worklet + bundled Holepunch P2P node
+docs/           Documentation assets (screenshots)
+types/          Shared TypeScript types
+```
+
+### App flow
 ```
 Onboarding (role · profile · privacy)
       │
@@ -167,24 +221,18 @@ Onboarding (role · profile · privacy)
       │
   SETTINGS (model selection · theme · profile · privacy)
 ```
-
-The bottom navigation has 5 tabs: **HOME · TIMELINE · FAMILY · CARE VIEW · SETTINGS**.
-
-Beyond the core loop, **Ask MedVoice** (conversational Q&A over your history) and
-**Visit Prep** (doctor-visit brief) are reachable from the Timeline, **Document
-Scan** turns a photographed prescription or lab result into a plain-language
-explanation, and **Settings** includes the app-wide language picker.
+The bottom navigation has 5 tabs: **HOME · TIMELINE · FAMILY · CARE VIEW · SETTINGS**. Beyond the core loop, **Ask MedVoice**, **Visit Prep**, and **Document Scan** are reachable from the Timeline, and **Settings** holds the app-wide language picker.
 
 ---
 
-##  Running Locally
+## 8. Installation
 
 > MedVoice uses native modules (QVAC SDK, Bare P2P worklet, camera, audio). **It requires a development build — it will not run in Expo Go.**
 
 ### Prerequisites
 - Node.js 18+
-- Android device/emulator (**Android 12+ / API 31 required** for the QVAC llama.cpp AI engine — older versions run without AI features, see [Device Compatibility](#device-compatibility-please-read)) or iOS device
-- ~3 GB free storage on device for AI models
+- An Android device/emulator (**Android 12+ / API 31 required** for the AI engine — see [Device Compatibility](#9-device-compatibility)) or an iOS device
+- ~3 GB free storage on device for the AI models
 
 ### Steps
 ```bash
@@ -203,6 +251,9 @@ npx expo start --dev-client
 
 On first launch, granting microphone permission and selecting an AI model triggers a one-time on-device model download.
 
+### Or just install the APK
+Download the prebuilt Android APK from the [latest EAS build page](https://expo.dev/accounts/holawale/projects/Medv/builds/366ed81b-675f-45b7-a9b1-36d1f484e177).
+
 ### Quality gates
 ```bash
 npm run lint
@@ -211,39 +262,112 @@ npm run typecheck
 
 ---
 
-##  Project Structure
+## 9. Device Compatibility
 
-```
-app/            Expo Router screens (onboarding, tabs, recording, analysis, family)
-components/     Reusable UI (cards, badges, waveform, pipeline rows)
-lib/            qvac.ts · medpsy.ts · transcription.ts · tts.ts · embeddings.ts · p2p.ts · db.ts
-store/          Zustand stores (user, health, family, recording, settings, theme)
-constants/      colors.ts (light+dark tokens) · typography.ts · images.ts
-p2p/            Bare worklet + bundled Holepunch P2P node
-types/          Shared TypeScript types
-```
+> ⚠️ **Android 11 and below cannot use all features.** The on-device AI engine
+> (QVAC's llama.cpp) **requires Android 12 (API 31) or newer**. iOS devices are
+> fully supported.
+
+The app **degrades gracefully** — it never crashes on older devices — but AI-powered features fall back to simpler alternatives below Android 12:
+
+| Feature | iOS / Android 12+ | Android 11 and below |
+|---|---|---|
+| Voice journaling (transcription) | ✅ Full | ✅ Works |
+| Read-aloud responses (TTS) | ✅ Full | ✅ Works |
+| Family sharing (P2P) | ✅ Full | ✅ Works |
+| **AI health analysis** | ✅ Full | ⛔ Saves a voice journal entry without AI summary |
+| **Ask MedVoice (AI Q&A)** | ✅ Full | ⛔ Falls back to keyword search |
+| **Semantic timeline search** | ✅ Full | ⚠️ Keyword search only |
+
+**For the full experience, use an iOS device or an Android phone running Android 12 or later** with ~3 GB free storage.
 
 ---
 
-##  Demo
+## 10. AI Usage
 
-- **Demo video:** _<!-- TODO: add public YouTube/Vimeo link -->_
-- **Download APK (Android):** [Latest EAS build page](https://expo.dev/accounts/holawale/projects/Medv/builds/366ed81b-675f-45b7-a9b1-36d1f484e177) — grab the APK artifact once the build finishes.
-- **Screenshots:** _<!-- TODO: add screenshots in /docs -->_
+Every AI capability in MedVoice is powered by the **QVAC SDK** and runs **fully on-device**. Nothing is sent to OpenAI, Google, or any cloud — there are no API keys at all.
+
+| AI capability | Model / engine | Why we chose it | What it does in MedVoice |
+|---|---|---|---|
+| **Speech-to-text** | QVAC Transcription (Parakeet / Whisper) | Accurate, runs offline, supports real-time streaming | Transcribes the user's spoken health updates live |
+| **Medical reasoning** | Qwen3 1.7B (default) or MedGemma 4B | Qwen3 is light enough for most phones; MedGemma is Google's medical-tuned model for higher fidelity | Produces a caring summary, severity, tags & patterns; also powers Ask MedVoice and Visit Prep |
+| **Text-to-speech** | QVAC TTS | Natural multilingual voice, on-device | Reads analysis and answers back aloud (accessibility for elderly users) |
+| **Embeddings / RAG** | QVAC Embeddings | Enables semantic search without a cloud vector DB | Powers "search by meaning" on the timeline and grounds Ask MedVoice in the user's own history |
+| **Translation** | QVAC NMT (Bergamot) | On-device neural machine translation | One setting translates the UI (~47 languages) and the AI's written replies |
+
+> ⚡ **Performance note:** Ask MedVoice pins the analysis model resident across a chat
+> session (`pinAnalysisModel` in `lib/qvac.ts`) so multi-turn conversations load it
+> once instead of swapping it for the embedding model and back on every message —
+> giving noticeably faster follow-up answers, fully on-device.
+
+**Why on-device AI?** Health data is the most sensitive data a person has. Running every model locally means the privacy promise is enforced by architecture, not policy — there is simply no network path for health data to leak.
 
 ---
 
-##  Team
+## 11. Challenges
 
+Honest account of what was hard:
+
+- **Real-time transcription needs raw PCM.** The transcription model requires 16 kHz mono PCM; the default recorded `.m4a` won't transcribe. We had to capture raw mic frames via `expo-audio`'s streaming API and feed them live.
+- **On-device LLM on real phones.** The QVAC llama.cpp engine requires Android 12+. On older devices it caused a native crash, so we added a `supportsLlamaCppModels()` guard that degrades to a simpler voice-journal / keyword-search mode instead of crashing.
+- **Model load/unload latency.** Swapping between the analysis model and the embedding model on every chat message was slow. We solved it by pinning the analysis model resident across a conversation.
+- **Peer-to-peer with no server.** Getting encrypted device-to-device sync working over Holepunch HyperDHT — bundled as a Bare worklet via `bare-pack` — required a custom native build pipeline and two physical devices to test.
+- **Multi-language without bloat.** Driving the UI, AI replies, and TTS voice from a single language setting (with translation caching) while keeping the bundle small.
+- **Storage & memory budget.** Balancing model quality against ~1–2.5 GB downloads and RAM limits on mid-range phones.
+
+---
+
+## 12. Future Work
+
+- 🩺 **Medical terminology optimization** — fine-tune prompts/models for clinical accuracy
+- 🌐 **Expanded on-device translation & TTS voices** beyond en/es/de/it
+- 👨‍⚕️ **Caregiver dashboard** with trend charts and alerts
+- ⌚ **Wearable integration** (heart rate, sleep, activity as additional signals)
+- 🔔 **Smart reminders** ("you mentioned headaches 3 days in a row — consider seeing a doctor")
+- 📈 **Pattern detection across time** with on-device trend analysis
+- 🗣️ **Local-language expansion** for underserved regions
+
+---
+
+## 13. Demo Video
+
+A 2–3 minute walkthrough showing the problem, the solution, a live demo, and the impact.
+
+- **Demo video:** _<!-- TODO: add public YouTube/Vimeo link, then update the top-of-page link -->_
+
+<!-- To embed a thumbnail that links to your video, replace VIDEO_ID and VIDEO_URL:
+[![Watch the demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](VIDEO_URL)
+-->
+
+---
+
+## 14. Privacy Promise (Non-Negotiable)
+
+- ❌ No cloud database
+- ❌ No cloud AI / external inference
+- ❌ No external health APIs
+- ❌ No analytics or crash reporting that sends data off device
+- ✅ Health entries stored locally in **SQLite**
+- ✅ Profile / settings / theme in **AsyncStorage**
+- ✅ All AI inference on-device via **QVAC SDK**
+- ✅ Family sharing is **encrypted, peer-to-peer**, server-free
+
+---
+
+## 15. Team & License
+
+**Team**
 - **Ajibade Muhammod** — Developer — GitHub [@muhaj-dev](https://github.com/muhaj-dev) · DoraHacks [@muhaj](https://dorahacks.io/hacker/Muhaj)
 - **Adeshina Fuad** — Designer · DoraHacks [@leadui](https://dorahacks.io/hacker/Leadui)
 
----
-
-##  License
+**License**
 
 Released under the [MIT License](./LICENSE).
 
 ---
 
+<div align="center">
+
 *Built with ❤️ and zero cloud calls using the QVAC SDK by Tether.*
+
+</div>
