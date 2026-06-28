@@ -7,11 +7,9 @@
 **A private, on-device AI health companion.**
 _Your voice in. Health insight out. Nothing ever leaves your phone._
 
-### ▶️ &nbsp; [**Watch the Demo**](#13-demo-video) &nbsp; · &nbsp; 📥 &nbsp; [**Download APK**](https://expo.dev/accounts/holawale/projects/Medv/builds/366ed81b-675f-45b7-a9b1-36d1f484e177) &nbsp; · &nbsp; 🔗 &nbsp; [**DoraHacks Submission**](#)
+<p>▶️ &nbsp; <a href="https://www.youtube.com/watch?v=FpOGRjWDFWo"><strong>Watch the Demo</strong></a> &nbsp; · &nbsp; 📥 &nbsp; <a href="https://expo.dev/artifacts/eas/lOHovgiCvXl3OT3qxqa3qc0kSoR8oqAEPlcGfOuEVyw.apk"><strong>Download APK</strong></a> &nbsp; · &nbsp; 🔗 &nbsp; <a href="https://dorahacks.io/buidl/45490"><strong>DoraHacks Submission</strong></a></p>
 
 Built for the **QVAC "Unleash Edge AI" Hackathon** by Tether, on DoraHacks.
-
-<!-- TODO: replace the # placeholders (demo video + DoraHacks link) with real URLs -->
 
 </div>
 
@@ -93,23 +91,56 @@ No account. No internet required for AI. No data collection. A privacy promise t
 
 ## 5. Screenshots
 
+### Onboarding
 <div align="center">
 
-| Welcome / Onboarding | Home | Recording (live) |
+| Welcome | Role | Profile |
 |:---:|:---:|:---:|
-| <img src="./docs/screenshots/splash.png" width="240" alt="Welcome screen" /> | <img src="./docs/screenshots/home.png" width="240" alt="Home screen" /> | <img src="./docs/screenshots/recording.png" width="240" alt="Recording screen" /> |
+| <img src="./docs/screenshots/splash.png" width="240" alt="Welcome screen" /> | <img src="./docs/screenshots/role.png" width="240" alt="Role selection" /> | <img src="./docs/screenshots/profile.png" width="240" alt="Profile form" /> |
 
-| MedPsy Processing | Analysis Result | Health Timeline |
-|:---:|:---:|:---:|
-| <img src="./docs/screenshots/processing.png" width="240" alt="MedPsy processing pipeline" /> | <img src="./docs/screenshots/analysis.png" width="240" alt="Analysis result" /> | <img src="./docs/screenshots/timeline.png" width="240" alt="Health timeline" /> |
+</div>
 
-| Family (P2P pairing) | Care View | Settings |
-|:---:|:---:|:---:|
-| <img src="./docs/screenshots/family.png" width="240" alt="Family connection" /> | <img src="./docs/screenshots/care-view.png" width="240" alt="Care view" /> | <img src="./docs/screenshots/settings.png" width="240" alt="Settings" /> |
+### Core loop — speak → analyze → save
+<div align="center">
 
-| Ready to Listen | Light Mode | Ask MedVoice _(to add)_ |
+| Home | Ready to Listen | Recording (live) |
 |:---:|:---:|:---:|
-| <img src="./docs/screenshots/recording-ready.png" width="240" alt="Ready to listen" /> | <img src="./docs/screenshots/light-mode.png" width="240" alt="Light mode" /> | <img src="./docs/screenshots/ask.png" width="240" alt="Ask MedVoice chat" /> |
+| <img src="./docs/screenshots/home.png" width="240" alt="Home screen" /> | <img src="./docs/screenshots/recording-ready.png" width="240" alt="Ready to listen" /> | <img src="./docs/screenshots/recording.png" width="240" alt="Recording screen" /> |
+
+| MedPsy Processing | Analysis Result | |
+|:---:|:---:|:---:|
+| <img src="./docs/screenshots/processing.png" width="240" alt="MedPsy processing pipeline" /> | <img src="./docs/screenshots/analysis.png" width="240" alt="Analysis result" /> | |
+
+</div>
+
+### Timeline & semantic search
+<div align="center">
+
+| Health Timeline | Semantic Search | |
+|:---:|:---:|:---:|
+| <img src="./docs/screenshots/timeline.png" width="240" alt="Health timeline" /> | <img src="./docs/screenshots/search.png" width="240" alt="Semantic search" /> | |
+
+</div>
+
+### Family P2P & Care View
+<div align="center">
+
+| Family Connection | Show My Code (QR) | Scan Code |
+|:---:|:---:|:---:|
+| <img src="./docs/screenshots/family.png" width="240" alt="Family connection" /> | <img src="./docs/screenshots/show-code.png" width="240" alt="Show device QR code" /> | <img src="./docs/screenshots/scan-code.png" width="240" alt="Scan family member code" /> |
+
+| Care View (caregiver) | | |
+|:---:|:---:|:---:|
+| <img src="./docs/screenshots/care-view.png" width="240" alt="Care view" /> | | |
+
+</div>
+
+### Settings & theming
+<div align="center">
+
+| Settings (dark) | Light Mode | Ask MedVoice _(to add)_ |
+|:---:|:---:|:---:|
+| <img src="./docs/screenshots/settings.png" width="240" alt="Settings" /> | <img src="./docs/screenshots/light-mode.png" width="240" alt="Light mode" /> | <img src="./docs/screenshots/ask.png" width="240" alt="Ask MedVoice chat" /> |
 
 </div>
 
@@ -118,6 +149,10 @@ No account. No internet required for AI. No data collection. A privacy promise t
 > automatically — no README edits needed. Keep all images the same width so the
 > grid stays aligned (the `<img width="240">` tags handle display sizing). To add
 > a brand-new screenshot, copy one table cell and change the `src` + caption.
+>
+> _Still to capture: **Ask MedVoice** chat (`ask.png`), **Document Scan**
+> (`scan-doc.png`), and **Visit Prep** (`visit-prep.png`) — these screens exist in
+> the app but weren't in the design exports._
 
 ---
 
@@ -147,6 +182,7 @@ No account. No internet required for AI. No data collection. A privacy promise t
 - QVAC Holepunch (HyperDHT) for peer discovery only — **no health data, no server**
 
 ### AI Models (user-selectable in Settings → AI Model)
+
 | Model | Size | Use |
 |---|---|---|
 | **Qwen3 1.7B** (default) | ~1.1 GB | Smaller download, lower RAM — runs on most devices |
@@ -158,7 +194,7 @@ Models download once on first use and run entirely offline thereafter.
 
 ## 7. Architecture
 
-```
+```text
 ┌──────────────────────────── USER'S PHONE (everything runs here) ───────────────────────────┐
 │                                                                                             │
 │   🎙️  Voice in                                                                              │
@@ -193,7 +229,7 @@ Models download once on first use and run entirely offline thereafter.
 ```
 
 ### Project structure
-```
+```text
 app/            Expo Router screens (onboarding, tabs, recording, analysis, family)
 components/     Reusable UI (cards, badges, waveform, pipeline rows)
 lib/            qvac.ts · medpsy.ts · transcription.ts · tts.ts · embeddings.ts · p2p.ts · db.ts
@@ -205,7 +241,7 @@ types/          Shared TypeScript types
 ```
 
 ### App flow
-```
+```text
 Onboarding (role · profile · privacy)
       │
       ▼
@@ -221,7 +257,7 @@ Onboarding (role · profile · privacy)
       │
   SETTINGS (model selection · theme · profile · privacy)
 ```
-The bottom navigation has 5 tabs: **HOME · TIMELINE · FAMILY · CARE VIEW · SETTINGS**. Beyond the core loop, **Ask MedVoice**, **Visit Prep**, and **Document Scan** are reachable from the Timeline, and **Settings** holds the app-wide language picker.
+The bottom navigation has 5 tabs: **HOME · TIMELINE · FAMILY · CARE VIEW · SETTINGS**. Beyond the core loop, the **Home** tab also surfaces **Ask MedVoice** (conversational Q&A) and **Document Scan** as cards alongside Tap to Talk, **Visit Prep** is reached from the **Timeline**, and **Settings** holds the app-wide language picker.
 
 ---
 
@@ -252,7 +288,7 @@ npx expo start --dev-client
 On first launch, granting microphone permission and selecting an AI model triggers a one-time on-device model download.
 
 ### Or just install the APK
-Download the prebuilt Android APK from the [latest EAS build page](https://expo.dev/accounts/holawale/projects/Medv/builds/366ed81b-675f-45b7-a9b1-36d1f484e177).
+Download the prebuilt Android APK directly: [**MedVoice.apk**](https://expo.dev/artifacts/eas/lOHovgiCvXl3OT3qxqa3qc0kSoR8oqAEPlcGfOuEVyw.apk). (You can also browse the [EAS build page](https://expo.dev/accounts/holawale/projects/Medv/builds/366ed81b-675f-45b7-a9b1-36d1f484e177), where you may need to sign in to grab the APK artifact.)
 
 ### Quality gates
 ```bash
@@ -333,11 +369,13 @@ Honest account of what was hard:
 
 A 2–3 minute walkthrough showing the problem, the solution, a live demo, and the impact.
 
-- **Demo video:** _<!-- TODO: add public YouTube/Vimeo link, then update the top-of-page link -->_
+**▶️ Watch on YouTube:** <https://www.youtube.com/watch?v=FpOGRjWDFWo>
 
-<!-- To embed a thumbnail that links to your video, replace VIDEO_ID and VIDEO_URL:
-[![Watch the demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](VIDEO_URL)
--->
+<div align="center">
+
+[![Watch the MedVoice demo](https://img.youtube.com/vi/FpOGRjWDFWo/maxresdefault.jpg)](https://www.youtube.com/watch?v=FpOGRjWDFWo)
+
+</div>
 
 ---
 
